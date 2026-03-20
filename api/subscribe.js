@@ -140,9 +140,9 @@ export default async function handler(req, res) {
 
     // ── 2. Send welcome email via Brevo ─────────────────
     await transporter.sendMail({
-      from: `Neural Brief <${process.env.BREVO_SMTP_LOGIN}>`,
+      from: `Neural Brief <${process.env.BREVO_FROM_EMAIL}>`,
       to: email,
-      replyTo: process.env.BREVO_SMTP_LOGIN,
+      replyTo: process.env.BREVO_FROM_EMAIL,
       subject: 'Welcome to Neural Brief 🧠 — You\'re in!',
       html: buildWelcomeEmail(),
     })
