@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import logo from './assets/logo.jpg'
 
-// ── Subscribe Form Component ──────────────────────────────
 function SubscribeForm({ id }) {
-  const [email, setEmail]     = useState('')
-  const [status, setStatus]   = useState('idle') // idle | loading | success | error
+  const [email, setEmail]   = useState('')
+  const [status, setStatus] = useState('idle')
 
   const handleSubmit = async () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -12,21 +11,15 @@ function SubscribeForm({ id }) {
       setTimeout(() => setStatus('idle'), 2200)
       return
     }
-
     setStatus('loading')
-
     try {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       })
-      if (res.ok) {
-        setStatus('success')
-      } else {
-        setStatus('idle')
-        alert('Something went wrong. Please try again.')
-      }
+      if (res.ok) { setStatus('success') }
+      else { setStatus('idle'); alert('Something went wrong. Please try again.') }
     } catch (err) {
       console.error(err)
       setStatus('idle')
@@ -37,7 +30,6 @@ function SubscribeForm({ id }) {
   return (
     <div className="subscribe-wrap" id={id}>
       <span className="sub-label">Drop your email — it's free</span>
-
       {status !== 'success' ? (
         <>
           <div className="form-row">
@@ -50,27 +42,22 @@ function SubscribeForm({ id }) {
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
               autoComplete="email"
             />
-            <button
-              className="btn-sub"
-              onClick={handleSubmit}
-              disabled={status === 'loading'}
-            >
+            <button className="btn-sub" onClick={handleSubmit} disabled={status === 'loading'}>
               {status === 'loading' ? 'Joining...' : 'Subscribe →'}
             </button>
           </div>
-          <span className="form-note">No spam · Unsubscribe anytime · ~3 min read daily</span>
+          <span className="form-note">No spam · Unsubscribe anytime · Every Friday 9am IST</span>
         </>
       ) : (
         <div className="success-box">
           <span className="success-title">✦ You're in!</span>
-          <span className="success-sub">Check inbox to confirm · First brief tomorrow 9am</span>
+          <span className="success-sub">Check inbox to confirm · First brief this Friday 9am IST</span>
         </div>
       )}
     </div>
   )
 }
 
-// ── Main App ──────────────────────────────────────────────
 export default function App() {
   return (
     <>
@@ -81,7 +68,7 @@ export default function App() {
           <span className="logo-text">Neural <span>Brief</span></span>
         </a>
         <div className="nav-right">
-          <span className="nav-chip">Daily · Free</span>
+          <span className="nav-chip">Every Friday · Free</span>
           <a className="nav-cta" href="#subscribe">Subscribe Free</a>
         </div>
       </nav>
@@ -92,7 +79,7 @@ export default function App() {
           <div className="masthead-name">Neural<br /><em>Brief</em></div>
           <div className="masthead-meta">
             Vol. 1, No. 1 &nbsp;·&nbsp; Est. 2025<br />
-            Daily AI digest for students<br />
+            Weekly AI digest for students<br />
             Plain English · Free forever<br />
             <strong style={{ color: 'var(--accent)' }}>neuralbriefai.in</strong>
           </div>
@@ -100,7 +87,7 @@ export default function App() {
         <div className="masthead-rule">
           <span>The smartest way to follow AI</span>
           <span>✦ ✦ ✦</span>
-          <span>5 stories · 3 min read · ₹0 forever</span>
+          <span>15 stories · every Friday · ₹0 forever</span>
         </div>
       </div>
 
@@ -109,10 +96,10 @@ export default function App() {
         <div className="hero-grid">
           <div className="hero-main fi">
             <div className="kicker">
-              <span className="kicker-bar"></span>Curated AI News Digest<span className="kicker-bar"></span>
+              <span className="kicker-bar"></span>Weekly AI News Digest<span className="kicker-bar"></span>
             </div>
             <h1>Stop missing the AI<br />stories that matter.</h1>
-            <p className="hero-deck">Every day, Neural Brief lands in your inbox with the top 5 AI stories — summarised in plain English. No jargon. No hype. Just signal.</p>
+            <p className="hero-deck">Every Friday, Neural Brief lands in your inbox with the top 15 AI stories of the week — summarised in plain English. No jargon. No hype. Just signal.</p>
             <p className="why-line">AI moves fast. Most people don't have time to track everything. Neural Brief filters the noise and gives you only the stories worth knowing.</p>
 
             <div className="cta-group">
@@ -123,7 +110,7 @@ export default function App() {
             <SubscribeForm id="subscribe" />
 
             <div className="trust-badges">
-              {['No spam','Free forever','Plain English','Unsubscribe anytime','Curated daily'].map(b => (
+              {['No spam','Free forever','Plain English','Unsubscribe anytime','Every Friday'].map(b => (
                 <span className="badge" key={b}><span className="badge-dot"></span>{b}</span>
               ))}
             </div>
@@ -132,7 +119,13 @@ export default function App() {
           <div className="hero-sidebar fi">
             <div className="sb-section">
               <span className="sb-label">By the numbers</span>
-              {[['Top stories per issue','5'],['Read time','< 3 min'],['Delivery','Daily'],['Language','Plain English'],['Cost','₹0']].map(([k,v]) => (
+              {[
+                ['Top stories per issue','15'],
+                ['Read time','~15 min'],
+                ['Delivery','Every Friday'],
+                ['Language','Plain English'],
+                ['Cost','₹0'],
+              ].map(([k,v]) => (
                 <div className="stat-row" key={k}><span className="stat-key">{k}</span><span className="stat-val">{v}</span></div>
               ))}
             </div>
@@ -158,10 +151,10 @@ export default function App() {
           <div className="section-hd"><span className="section-sym">§</span><h2>How it works</h2></div>
           <div className="steps">
             {[
-              { n:'01', i:'📡', t:'Scan RSS feeds',   d:'Every morning we pull fresh stories from 7+ top AI sources — TechCrunch, HackerNews, DeepMind, arXiv, and more.' },
-              { n:'02', i:'🧠', t:'AI summarises',    d:"Groq's Llama 3.3 70B picks the best 5 stories and writes plain English summaries with a sharp TL;DR for each." },
-              { n:'03', i:'✉️', t:'Hits your inbox',  d:'A clean digest lands in your inbox every morning at 9am IST via Brevo — reliable delivery, beautiful formatting.' },
-              { n:'04', i:'🎓', t:'You stay sharp',   d:'Drop real AI news in interviews, seminars, and projects. Be the person in the room who actually knows what\'s happening.' },
+              { n:'01', i:'📡', t:'Scan RSS feeds',   d:'Every Friday morning we pull the week\'s top stories from 7+ AI sources — TechCrunch, HackerNews, DeepMind, arXiv, and more.' },
+              { n:'02', i:'🧠', t:'AI summarises',    d:"Groq's Llama 3.3 70B picks the best 15 stories of the week and writes plain English summaries with a sharp TL;DR for each." },
+              { n:'03', i:'✉️', t:'Hits your inbox',  d:'Every Friday at 9am IST, a clean digest lands in your inbox via Brevo — reliable delivery, beautiful formatting.' },
+              { n:'04', i:'🎓', t:'You stay sharp',   d:"Drop real AI news in interviews, seminars, and projects. Be the person in the room who actually knows what's happening." },
             ].map(s => (
               <div className="step" key={s.n}>
                 <span className="step-num">{s.n} —</span>
@@ -181,7 +174,7 @@ export default function App() {
             <div className="why-accent">"</div>
             <div className="why-body">
               <h3>Why Neural Brief exists</h3>
-              <p>AI moves insanely fast — new models, new tools, new research, every single day. Most students don't have time to track all of it. So Neural Brief does it for you. We read everything, cut the hype, and send you only the 5 stories actually worth your attention. Free, daily, plain English.</p>
+              <p>AI moves insanely fast — new models, new tools, new research, every single day. Most students don't have time to track all of it. So Neural Brief does it for you. We read everything, cut the hype, and send you the 15 stories actually worth your attention. Free, every Friday, plain English.</p>
             </div>
           </div>
         </div>
@@ -196,18 +189,18 @@ export default function App() {
               <span className="inside-label">Neural Brief</span>
               <div className="inside-meta">
                 <span>Issue #42</span>
-                <span>5 stories</span>
-                <span>~3 min read</span>
-                <span style={{ marginTop: '12px', color: 'var(--accent)' }}>Today in AI</span>
+                <span>15 stories</span>
+                <span>~15 min read</span>
+                <span style={{ marginTop: '12px', color: 'var(--accent)' }}>This week in AI</span>
               </div>
             </div>
             <div>
               {[
-                { n:'01', tag:'t-model',    label:'New Model',  title:'Google drops Gemini 2.5 with 2M token context window',          desc:'Biggest context window yet — can process entire codebases in one shot. Strong reasoning gains over 2.0.',        tldr:'→ TL;DR: Longer memory, smarter answers.' },
-                { n:'02', tag:'t-research', label:'Research',   title:'MIT: LLMs can plan 10-step tasks without fine-tuning',           desc:'Zero-shot prompting beats fine-tuning for complex multi-step real-world tasks, new MIT paper shows.',              tldr:'→ TL;DR: Prompting beats training. Big for AI agents.' },
-                { n:'03', tag:'t-industry', label:'Industry',   title:'OpenAI reportedly acquiring Windsurf for $3B',                  desc:'The AI code editor wars heat up — OpenAI wants a direct IDE-level product to challenge Cursor and Copilot.',       tldr:'→ TL;DR: Code editors are the new AI battlefield.' },
-                { n:'04', tag:'t-tool',     label:'Tool Drop',  title:'Notion AI gets real-time web search built in',                  desc:'Live web search in every Notion AI query puts it in direct competition with Perplexity.',                          tldr:"→ TL;DR: Notion just became Perplexity for your notes." },
-                { n:'05', tag:'t-opinion',  label:'Opinion',    title:'Why every AI company is racing to own your code editor',        desc:'A sharp take on why the IDE is the most strategic surface in AI — and what it means for developers.',               tldr:'→ TL;DR: Whoever owns your editor owns your workflow.' },
+                { n:'01', tag:'t-model',    label:'New Model',  title:'Google drops Gemini 2.5 with 2M token context window',       desc:'Biggest context window yet — can process entire codebases in one shot. Strong reasoning gains over 2.0.',        tldr:'→ TL;DR: Longer memory, smarter answers.' },
+                { n:'02', tag:'t-research', label:'Research',   title:'MIT: LLMs can plan 10-step tasks without fine-tuning',        desc:'Zero-shot prompting beats fine-tuning for complex multi-step real-world tasks, new MIT paper shows.',              tldr:'→ TL;DR: Prompting beats training. Big for AI agents.' },
+                { n:'03', tag:'t-industry', label:'Industry',   title:'OpenAI reportedly acquiring Windsurf for $3B',               desc:'The AI code editor wars heat up — OpenAI wants a direct IDE-level product to challenge Cursor and Copilot.',       tldr:'→ TL;DR: Code editors are the new AI battlefield.' },
+                { n:'04', tag:'t-tool',     label:'Tool Drop',  title:'Notion AI gets real-time web search built in',               desc:'Live web search in every Notion AI query puts it in direct competition with Perplexity.',                          tldr:"→ TL;DR: Notion just became Perplexity for your notes." },
+                { n:'05', tag:'t-opinion',  label:'Opinion',    title:'Why every AI company is racing to own your code editor',     desc:'A sharp take on why the IDE is the most strategic surface in AI — and what it means for developers.',               tldr:'→ TL;DR: Whoever owns your editor owns your workflow.' },
               ].map(s => (
                 <div className="inside-story" key={s.n}>
                   <span className="story-num">{s.n}</span>
@@ -231,16 +224,16 @@ export default function App() {
           <div className="email-mock">
             <div className="email-bar">
               <div className="wdots"><div className="wd wd-r"></div><div className="wd wd-y"></div><div className="wd wd-g"></div></div>
-              <span className="email-url">From: digest@neuralbriefai.in · Neural Brief #42 — Today in AI 🧠</span>
+              <span className="email-url">From: neuralbrief18@gmail.com · Neural Brief #42 — This week in AI 🧠</span>
             </div>
             <div className="email-body">
               <div className="em-head">
                 <div className="em-brand">Neural <span>Brief</span></div>
-                <span className="em-tag">TODAY IN AI · ISSUE #42 · DAILY DIGEST</span>
+                <span className="em-tag">THIS WEEK IN AI · ISSUE #42 · FRIDAY DIGEST</span>
               </div>
               <div className="em-meta">
                 <span>Friday, 20 March 2026</span>
-                <span>5 stories · ~3 min read</span>
+                <span>15 stories · ~15 min read</span>
                 <span>neuralbriefai.in</span>
               </div>
               {[
@@ -269,7 +262,7 @@ export default function App() {
           <div className="cta-form">
             <SubscribeForm id="subscribe-bottom" />
             <div className="trust-badges" style={{ justifyContent: 'center', marginTop: '16px' }}>
-              {['No spam','Curated daily','Free forever','Plain English'].map(b => (
+              {['No spam','Every Friday','Free forever','Plain English'].map(b => (
                 <span className="badge" key={b}><span className="badge-dot"></span>{b}</span>
               ))}
             </div>
@@ -279,7 +272,7 @@ export default function App() {
 
       {/* FOOTER */}
       <footer>
-        <strong>Neural Brief</strong> · Daily AI news for students · Est. 2025<br />
+        <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2025<br />
         Powered by Groq API · Sent via Brevo · Subscribers on Supabase<br />
         <a href="#">Unsubscribe</a> &nbsp;·&nbsp; <a href="#">Website</a> &nbsp;·&nbsp; <a href="#">WhatsApp Channel</a><br /><br />
         <span style={{ opacity: 0.4 }}>© 2025 Neural Brief · Made with ☕ somewhere in India 🇮🇳</span>
