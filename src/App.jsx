@@ -81,7 +81,7 @@ export default function App() {
             Vol. 1, No. 1 &nbsp;·&nbsp; Est. 2025<br />
             Weekly AI digest for students<br />
             Plain English · Free forever<br />
-            <strong style={{ color: 'var(--accent)' }}>neuralbriefai.in</strong>
+            <strong style={{ color: 'var(--accent)' }}>neural-brief-eight.vercel.app</strong>
           </div>
         </div>
         <div className="masthead-rule">
@@ -234,7 +234,7 @@ export default function App() {
               <div className="em-meta">
                 <span>Friday, 20 March 2026</span>
                 <span>15 stories · ~15 min read</span>
-                <span>neuralbriefai.in</span>
+                <span>neural-brief-eight.vercel.app</span>
               </div>
               {[
                 { tag:'t-model',    label:'New Model',  title:'Google drops Gemini 2.5 with 2M token context window',      body:"Google DeepMind's latest model can process entire codebases in a single prompt. Early benchmarks show strong reasoning improvements over 2.0.", tldr:'→ TL;DR: Longer memory, smarter answers. Think reading a whole textbook at once.' },

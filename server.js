@@ -28,37 +28,90 @@ const transporter = nodemailer.createTransport({
   },
 })
 
+const WEBSITE = 'https://neural-brief-eight.vercel.app'
+
 function buildWelcomeEmail() {
   return `<!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f4f1ea;font-family:'Helvetica Neue',sans-serif;">
 <div style="max-width:600px;margin:32px auto;background:#fff;border:1px solid #d6d0c2;">
+
   <div style="text-align:center;padding:32px 40px 20px;border-bottom:3px double #d6d0c2;">
-    <div style="font-family:Georgia,serif;font-size:38px;font-weight:bold;color:#18160f;">
+    <div style="font-family:Georgia,serif;font-size:38px;font-weight:bold;color:#18160f;letter-spacing:-.02em;line-height:1;">
       Neural <span style="color:#c13d18;">Brief</span>
     </div>
     <div style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;letter-spacing:.1em;text-transform:uppercase;margin-top:5px;">
       WELCOME TO THE BRIEF
     </div>
   </div>
+
   <div style="padding:36px 40px;">
-    <h2 style="font-family:Georgia,serif;font-size:24px;color:#18160f;margin:0 0 16px;">You're officially in. 🎉</h2>
-    <p style="font-size:15px;color:#6b6560;line-height:1.8;margin:0 0 20px;">
-      Welcome to <strong style="color:#18160f;">Neural Brief</strong> — your daily dose of AI news, summarised in plain English.
+    <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:bold;color:#18160f;margin:0 0 16px;">
+      You're officially in. 🎉
+    </h2>
+    <p style="font-size:15px;color:#5a5550;line-height:1.8;margin:0 0 20px;">
+      Welcome to <strong style="color:#18160f;">Neural Brief</strong> — your weekly dose of AI news,
+      summarised in plain English. No jargon, no hype, just the 15 stories worth knowing.
     </p>
+
     <div style="background:#18160f;border-radius:3px;padding:24px 28px;margin:0 0 24px;">
-      <p style="font-family:'Courier New',monospace;font-size:9px;color:rgba(255,255,255,.35);letter-spacing:.14em;text-transform:uppercase;margin:0 0 16px;">WHAT TO EXPECT</p>
-      <div style="margin-bottom:12px;color:#fff;font-size:13px;">📡 Real AI news — fetched fresh every day from 7+ sources</div>
-      <div style="margin-bottom:12px;color:#fff;font-size:13px;">🧠 AI summarised — plain English, no jargon</div>
-      <div style="margin-bottom:12px;color:#fff;font-size:13px;">⏰ Daily at 9am IST — every morning</div>
-      <div style="color:#fff;font-size:13px;">₹0 — Free forever, no catch</div>
+      <p style="font-family:'Courier New',monospace;font-size:9px;color:rgba(255,255,255,.35);letter-spacing:.14em;text-transform:uppercase;margin:0 0 16px;">
+        WHAT TO EXPECT
+      </p>
+      <div style="display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;">
+        <span style="font-size:18px;flex-shrink:0;">📡</span>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:3px;">Real AI news</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.6;">Fetched fresh every Friday from 7+ top sources</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;">
+        <span style="font-size:18px;flex-shrink:0;">🧠</span>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:3px;">AI summarised</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.6;">Groq's Llama 3.3 70B picks the best 15 stories of the week and writes plain English summaries</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;">
+        <span style="font-size:18px;flex-shrink:0;">⏰</span>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:3px;">Every Friday at 9am IST</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.6;">Lands in your inbox every Friday morning — start your weekend informed</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:flex-start;">
+        <span style="font-size:18px;flex-shrink:0;">₹</span>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:3px;">Free forever</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.6;">No credit card, no trial, no catch. Always free.</div>
+        </div>
+      </div>
     </div>
-    <p style="font-size:14px;color:#6b6560;font-style:italic;">Your first digest arrives tomorrow at 9am IST!</p>
+
+    <p style="font-size:14px;color:#5a5550;line-height:1.8;margin:0 0 8px;font-style:italic;">
+      Your first digest arrives this Friday at 9am IST. Until then, tell a friend!
+    </p>
+
+    <a href="${WEBSITE}"
+      style="display:inline-block;margin-top:16px;background:#c13d18;color:#fff;
+      font-family:'Helvetica Neue',sans-serif;font-size:13px;font-weight:500;
+      padding:11px 22px;border-radius:3px;text-decoration:none;">
+      Share Neural Brief →
+    </a>
   </div>
+
   <div style="background:#18160f;padding:24px 40px;text-align:center;font-family:'Courier New',monospace;font-size:10px;color:rgba(255,255,255,.3);line-height:1.9;">
-    Neural <span style="color:#c13d18;">Brief</span> · Daily AI news for students · Free forever
+    <div style="color:rgba(255,255,255,.65);font-family:Georgia,serif;font-size:13px;margin-bottom:6px;">
+      Neural <span style="color:#c13d18;">Brief</span>
+    </div>
+    Weekly AI news for students · Free forever · Every Friday<br>
+    You're receiving this because you subscribed at Neural Brief.<br>
+    <a href="#" style="color:rgba(255,255,255,.25);text-decoration:none;">Unsubscribe</a>
+    &nbsp;·&nbsp;
+    <a href="${WEBSITE}" style="color:rgba(255,255,255,.25);text-decoration:none;">Website</a>
   </div>
+
 </div>
 </body></html>`
 }
@@ -88,7 +141,7 @@ app.post('/api/subscribe', async (req, res) => {
     await transporter.sendMail({
       from: `Neural Brief <neuralbrief18@gmail.com>`,
       to: email,
-      replyTo: process.env.BREVO_SMTP_LOGIN,
+      replyTo: 'neuralbrief18@gmail.com',
       subject: "Welcome to Neural Brief 🧠 — You're in!",
       html: buildWelcomeEmail(),
     })

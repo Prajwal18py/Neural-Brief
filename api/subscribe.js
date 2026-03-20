@@ -68,9 +68,9 @@ function buildWelcomeEmail() {
         WHAT TO EXPECT
       </p>
       ${[
-        ['📡', 'Real AI news', 'Fetched fresh every day from 7+ top sources'],
+        ['📡', 'Real AI news', 'Fetched fresh every Friday from 7+ top sources'],
         ['🧠', 'AI summarised', 'Groq\'s Llama 3.3 70B picks the best 5 and writes plain English summaries'],
-        ['⏰', 'Daily at 9am IST', 'Lands in your inbox every morning before you start your day'],
+        ['⏰', 'Every Friday at 9am IST', 'Lands in your inbox every Friday morning — start your weekend informed'],
         ['₹0', 'Free forever', 'No credit card, no trial, no catch'],
       ].map(([icon, title, desc]) => `
       <div style="display:flex;gap:14px;margin-bottom:16px;align-items:flex-start;">
@@ -86,7 +86,7 @@ function buildWelcomeEmail() {
       Your first digest arrives tomorrow morning at 9am IST. Until then, tell a friend about Neural Brief 👇
     </p>
 
-    <a href="https://neural-brief.vercel.app" 
+    <a href="https://neural-brief-eight.vercel.app" 
       style="display:inline-block;margin-top:16px;background:#c13d18;color:#fff;
       font-family:'Helvetica Neue',sans-serif;font-size:13px;font-weight:500;
       padding:11px 22px;border-radius:3px;text-decoration:none;">
@@ -100,11 +100,11 @@ function buildWelcomeEmail() {
     <div style="color:rgba(255,255,255,.65);font-family:Georgia,serif;font-size:13px;margin-bottom:6px;">
       Neural <span style="color:#c13d18;">Brief</span>
     </div>
-    Daily AI news for students · Free forever<br>
+    Weekly AI news for students · Free forever<br>
     You're receiving this because you subscribed at Neural Brief.<br>
     <a href="#" style="color:rgba(255,255,255,.25);text-decoration:none;">Unsubscribe</a>
     &nbsp;·&nbsp;
-    <a href="https://neural-brief.vercel.app" style="color:rgba(255,255,255,.25);text-decoration:none;">Website</a>
+    <a href="https://neural-brief-eight.vercel.app" style="color:rgba(255,255,255,.25);text-decoration:none;">Website</a>
   </div>
 
 </div>
@@ -140,7 +140,7 @@ export default async function handler(req, res) {
 
     // ── 2. Send welcome email via Brevo ─────────────────
     await transporter.sendMail({
-      from: `Neural Brief <${process.env.BREVO_FROM_EMAIL}>`,
+      from: `Neural Brief <${process.env.BREVO_SMTP_LOGIN}>`,
       to: email,
       replyTo: process.env.BREVO_SMTP_LOGIN,
       subject: 'Welcome to Neural Brief 🧠 — You\'re in!',
