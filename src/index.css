@@ -472,3 +472,61 @@ footer a:hover { color: rgba(255,255,255,0.5); }
   .accordion-body { padding: 4px 14px 16px; }
   .accordion-title { font-size: 14px; }
 }
+
+/* ── TRUST STRIP ─────────────────────────────────────────── */
+.trust-strip {
+  display: flex; gap: 20px; flex-wrap: wrap;
+  margin-top: 20px; padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.trust-item {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.trust-icon { font-size: 13px; }
+
+/* ── WHAT MAKES IT DIFFERENT ─────────────────────────────── */
+.diff-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 0; border: 1px solid var(--border);
+}
+.diff-card {
+  padding: 28px 22px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.18s; position: relative; overflow: hidden;
+}
+.diff-card:nth-child(3n) { border-right: none; }
+.diff-card:nth-last-child(-n+3) { border-bottom: none; }
+.diff-card:hover { background: var(--bg2); }
+.diff-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--accent); transform: scaleX(0); transform-origin: left;
+  transition: transform 0.3s ease;
+}
+.diff-card:hover::before { transform: scaleX(1); }
+.diff-icon { font-size: 20px; margin-bottom: 12px; display: block; }
+.diff-title { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.diff-desc { font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+/* ── BTN LARGE ───────────────────────────────────────────── */
+.btn-large { padding: 13px 28px; font-size: 14px; }
+
+/* ── FINAL CTA SECTION ───────────────────────────────────── */
+.final-cta-section {
+  padding: 80px 0;
+  border-top: 3px double var(--border2);
+  text-align: center;
+}
+.final-cta-inner { max-width: 600px; margin: 0 auto; }
+.final-cta-eyebrow {
+  font-family: var(--mono); font-size: 10px; color: var(--muted2);
+  letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px; display: block;
+}
+
+@media (max-width: 700px) {
+  .diff-grid { grid-template-columns: 1fr; }
+  .diff-card { border-right: none; }
+  .trust-strip { gap: 12px; }
+}
