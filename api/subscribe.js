@@ -102,7 +102,7 @@ function buildWelcomeEmail() {
     </div>
     Weekly AI news for students · Free forever<br>
     You're receiving this because you subscribed at Neural Brief.<br>
-    <a href="#" style="color:rgba(255,255,255,.25);text-decoration:none;">Unsubscribe</a>
+    <a href="https://neural-brief-eight.vercel.app/api/unsubscribe?email=${email}" style="color:rgba(255,255,255,.25);text-decoration:none;">Unsubscribe</a>
     &nbsp;·&nbsp;
     <a href="https://neural-brief-eight.vercel.app" style="color:rgba(255,255,255,.25);text-decoration:none;">Website</a>
   </div>
@@ -140,9 +140,9 @@ export default async function handler(req, res) {
 
     // ── 2. Send welcome email via Brevo ─────────────────
     await transporter.sendMail({
-      from: `Neural Brief <${process.env.BREVO_FROM_EMAIL}>`,
+      from: `Neural Brief <${process.env.BREVO_SMTP_LOGIN}>`,
       to: email,
-      replyTo: process.env.BREVO_FROM_EMAIL,
+      replyTo: process.env.BREVO_SMTP_LOGIN,
       subject: 'Welcome to Neural Brief 🧠 — You\'re in!',
       html: buildWelcomeEmail(),
     })

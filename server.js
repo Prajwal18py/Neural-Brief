@@ -107,7 +107,7 @@ function buildWelcomeEmail() {
     </div>
     Weekly AI news for students · Free forever · Every Friday<br>
     You're receiving this because you subscribed at Neural Brief.<br>
-    <a href="#" style="color:rgba(255,255,255,.25);text-decoration:none;">Unsubscribe</a>
+    <a href="https://neural-brief-eight.vercel.app/api/unsubscribe?email=${email}" style="color:rgba(255,255,255,.25);text-decoration:none;">Unsubscribe</a>
     &nbsp;·&nbsp;
     <a href="${WEBSITE}" style="color:rgba(255,255,255,.25);text-decoration:none;">Website</a>
   </div>

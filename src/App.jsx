@@ -1,5 +1,23 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import logo from './assets/logo.jpg'
+
+const TAG_CLASS = {
+  'New Model': 't-model', 'Research': 't-research',
+  'Industry': 't-industry', 'Tool Drop': 't-tool',
+  'Policy': 't-opinion', 'Opinion': 't-opinion',
+}
+
+const SOURCE_LABELS = {
+  'Google DeepMind':       'Official',
+  'OpenAI Blog':           'Official',
+  'TechCrunch AI':         'Media',
+  'MIT Technology Review': 'Research',
+  'VentureBeat AI':        'Media',
+  'The Verge AI':          'Media',
+  'HackerNews AI':         'Community',
+  'Wired AI':              'Media',
+  'arXiv CS.AI':           'Research',
+}
 
 function SubscribeForm({ id }) {
   const [email, setEmail]   = useState('')
@@ -7,24 +25,17 @@ function SubscribeForm({ id }) {
 
   const handleSubmit = async () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setStatus('error')
-      setTimeout(() => setStatus('idle'), 2200)
-      return
+      setStatus('error'); setTimeout(() => setStatus('idle'), 2200); return
     }
     setStatus('loading')
     try {
       const res = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       })
-      if (res.ok) { setStatus('success') }
+      if (res.ok) setStatus('success')
       else { setStatus('idle'); alert('Something went wrong. Please try again.') }
-    } catch (err) {
-      console.error(err)
-      setStatus('idle')
-      alert('Something went wrong. Please try again.')
-    }
+    } catch { setStatus('idle'); alert('Something went wrong. Please try again.') }
   }
 
   return (
@@ -33,15 +44,11 @@ function SubscribeForm({ id }) {
       {status !== 'success' ? (
         <>
           <div className="form-row">
-            <input
-              type="email"
+            <input type="email"
               placeholder={status === 'error' ? 'Enter a valid email ↑' : 'your@email.com'}
               style={{ color: status === 'error' ? '#c13d18' : '' }}
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-              autoComplete="email"
-            />
+              value={email} onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSubmit()} autoComplete="email" />
             <button className="btn-sub" onClick={handleSubmit} disabled={status === 'loading'}>
               {status === 'loading' ? 'Joining...' : 'Subscribe →'}
             </button>
@@ -58,10 +65,132 @@ function SubscribeForm({ id }) {
   )
 }
 
+function LiveDigest() {
+  const [data, setData]     = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError]   = useState(false)
+  const [expanded, setExpanded] = useState({})
+
+  useEffect(() => {
+    fetch('/api/get-digest')
+      .then(r => r.json())
+      .then(d => { if (d.stories) setData(d); else setError(true) })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return (
+    <div style={{ padding: '48px 0', textAlign: 'center' }}>
+      <div style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted2)', letterSpacing: '0.1em' }}>
+        LOADING THIS WEEK'S STORIES...
+      </div>
+    </div>
+  )
+
+  if (error || !data) return (
+    <div style={{ padding: '32px 0', textAlign: 'center' }}>
+      <p style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted2)' }}>
+        Could not load stories. Please try again later.
+      </p>
+    </div>
+  )
+
+  const { stories, biggest_move, jargon_of_week } = data
+
+  return (
+    <div>
+      {/* Biggest Move */}
+      {biggest_move && (
+        <div className="biggest-move">
+          <span className="biggest-move-label">★ Biggest move this week</span>
+          <a href={biggest_move.link} target="_blank" rel="noopener noreferrer" className="biggest-move-title">
+            {biggest_move.title}
+          </a>
+          <p className="biggest-move-reason">{biggest_move.reason}</p>
+        </div>
+      )}
+
+      {/* Stories */}
+      <div className="live-digest">
+        {stories.map((story, i) => {
+          const srcLabel = SOURCE_LABELS[story.source]
+          const isExpanded = expanded[i]
+          return (
+            <div className="live-story" key={i}>
+              <div className="live-story-left">
+                <span className="live-num">{String(i + 1).padStart(2, '0')}</span>
+              </div>
+              <div className="live-story-body">
+                <div className="live-story-meta">
+                  <span className={`stag ${TAG_CLASS[story.tag] || 't-research'}`}>{story.tag}</span>
+                  {srcLabel && <span className={`src-label src-${srcLabel.toLowerCase()}`}>{srcLabel}</span>}
+                  <span className="live-source">via {story.source}</span>
+                </div>
+                <a href={story.link} target="_blank" rel="noopener noreferrer" className="live-title">
+                  {story.title}
+                </a>
+                <p className="live-summary">{story.summary}</p>
+                <p className="live-tldr">{story.tldr}</p>
+
+                {/* Why it matters */}
+                {story.why_it_matters && (
+                  <div className="why-matters">
+                    <span className="why-matters-label">Why it matters → </span>
+                    <span className="why-matters-text">{story.why_it_matters}</span>
+                  </div>
+                )}
+
+                {/* Expand for tweet */}
+                {story.tweet && (
+                  <button className="expand-btn" onClick={() => setExpanded(e => ({ ...e, [i]: !e[i] }))}>
+                    {isExpanded ? 'Hide share ↑' : 'Share this story ↓'}
+                  </button>
+                )}
+                {isExpanded && story.tweet && (
+                  <div className="tweet-box">
+                    <p className="tweet-text">{story.tweet}</p>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(story.tweet)}`}
+                        target="_blank" rel="noopener noreferrer" className="share-btn share-x">
+                        Post on X →
+                      </a>
+                      <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(story.link)}`}
+                        target="_blank" rel="noopener noreferrer" className="share-btn share-li">
+                        Post on LinkedIn →
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Jargon of the week */}
+      {jargon_of_week && (
+        <div className="jargon-box">
+          <span className="jargon-label">📖 Jargon of the week</span>
+          <span className="jargon-term">{jargon_of_week.term}</span>
+          <p className="jargon-exp">{jargon_of_week.explanation}</p>
+        </div>
+      )}
+
+      {/* Subscribe CTA */}
+      <div className="digest-cta">
+        <div>
+          <p className="digest-cta-title">Get this in your inbox every Friday.</p>
+          <p className="digest-cta-sub">Free · No spam · Unsubscribe anytime</p>
+        </div>
+        <a className="btn-primary" href="#subscribe">Subscribe Free →</a>
+      </div>
+    </div>
+  )
+}
+
 export default function App() {
   return (
     <>
-      {/* NAV */}
       <nav>
         <a className="logo" href="#">
           <img src={logo} alt="NB" />
@@ -73,7 +202,6 @@ export default function App() {
         </div>
       </nav>
 
-      {/* MASTHEAD */}
       <div className="masthead fi">
         <div className="masthead-inner">
           <div className="masthead-name">Neural<br /><em>Brief</em></div>
@@ -91,7 +219,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* HERO */}
       <div className="wrap">
         <div className="hero-grid">
           <div className="hero-main fi">
@@ -101,14 +228,11 @@ export default function App() {
             <h1>Stop missing the AI<br />stories that matter.</h1>
             <p className="hero-deck">Every Friday, Neural Brief lands in your inbox with the top 15 AI stories of the week — summarised in plain English. No jargon. No hype. Just signal.</p>
             <p className="why-line">AI moves fast. Most people don't have time to track everything. Neural Brief filters the noise and gives you only the stories worth knowing.</p>
-
             <div className="cta-group">
               <a className="btn-primary" href="#subscribe">Subscribe Free →</a>
-              <a className="btn-secondary" href="#sample">Read Sample Issue</a>
+              <a className="btn-secondary" href="#this-week">Read This Week's Issue</a>
             </div>
-
             <SubscribeForm id="subscribe" />
-
             <div className="trust-badges">
               {['No spam','Free forever','Plain English','Unsubscribe anytime','Every Friday'].map(b => (
                 <span className="badge" key={b}><span className="badge-dot"></span>{b}</span>
@@ -119,13 +243,7 @@ export default function App() {
           <div className="hero-sidebar fi">
             <div className="sb-section">
               <span className="sb-label">By the numbers</span>
-              {[
-                ['Top stories per issue','15'],
-                ['Read time','~15 min'],
-                ['Delivery','Every Friday'],
-                ['Language','Plain English'],
-                ['Cost','₹0'],
-              ].map(([k,v]) => (
+              {[['Top stories per issue','15'],['Read time','~15 min'],['Delivery','Every Friday'],['Language','Plain English'],['Cost','₹0']].map(([k,v]) => (
                 <div className="stat-row" key={k}><span className="stat-key">{k}</span><span className="stat-val">{v}</span></div>
               ))}
             </div>
@@ -145,16 +263,32 @@ export default function App() {
         </div>
       </div>
 
+      {/* THIS WEEK IN AI */}
+      <div className="wrap" id="this-week">
+        <div className="section fi">
+          <div className="section-hd">
+            <span className="section-sym">§</span>
+            <div>
+              <h2>This week in AI</h2>
+              <p style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--muted2)', marginTop: '4px' }}>
+                Live · Updated weekly · Powered by Groq
+              </p>
+            </div>
+          </div>
+          <LiveDigest />
+        </div>
+      </div>
+
       {/* HOW IT WORKS */}
       <div className="wrap">
         <div className="section fi">
           <div className="section-hd"><span className="section-sym">§</span><h2>How it works</h2></div>
           <div className="steps">
             {[
-              { n:'01', i:'📡', t:'Scan RSS feeds',   d:'Every Friday morning we pull the week\'s top stories from 7+ AI sources — TechCrunch, HackerNews, DeepMind, arXiv, and more.' },
-              { n:'02', i:'🧠', t:'AI summarises',    d:"Groq's Llama 3.3 70B picks the best 15 stories of the week and writes plain English summaries with a sharp TL;DR for each." },
-              { n:'03', i:'✉️', t:'Hits your inbox',  d:'Every Friday at 9am IST, a clean digest lands in your inbox via Brevo — reliable delivery, beautiful formatting.' },
-              { n:'04', i:'🎓', t:'You stay sharp',   d:"Drop real AI news in interviews, seminars, and projects. Be the person in the room who actually knows what's happening." },
+              { n:'01', i:'📡', t:'Scan RSS feeds',  d:"Every Friday morning we pull the week's top stories from 7+ AI sources — TechCrunch, HackerNews, DeepMind, arXiv, and more." },
+              { n:'02', i:'🧠', t:'AI summarises',   d:"Groq's Llama 3.3 70B picks the best 15 stories and writes plain English summaries, TL;DRs, and why-it-matters for each." },
+              { n:'03', i:'✉️', t:'Hits your inbox', d:'Every Friday at 9am IST, a clean digest lands in your inbox via Brevo — reliable delivery, beautiful formatting.' },
+              { n:'04', i:'🎓', t:'You stay sharp',  d:"Drop real AI news in interviews, seminars, and projects. Be the person in the room who actually knows what's happening." },
             ].map(s => (
               <div className="step" key={s.n}>
                 <span className="step-num">{s.n} —</span>
@@ -167,7 +301,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* WHY NEURAL BRIEF */}
+      {/* WHY */}
       <div className="wrap">
         <div className="why-section fi">
           <div className="why-card">
@@ -191,21 +325,21 @@ export default function App() {
                 <span>Issue #42</span>
                 <span>15 stories</span>
                 <span>~15 min read</span>
-                <span style={{ marginTop: '12px', color: 'var(--accent)' }}>This week in AI</span>
+                <span style={{ marginTop: "12px", color: "var(--accent)" }}>This week in AI</span>
               </div>
             </div>
             <div>
               {[
-                { n:'01', tag:'t-model',    label:'New Model',  title:'Google drops Gemini 2.5 with 2M token context window',       desc:'Biggest context window yet — can process entire codebases in one shot. Strong reasoning gains over 2.0.',        tldr:'→ TL;DR: Longer memory, smarter answers.' },
-                { n:'02', tag:'t-research', label:'Research',   title:'MIT: LLMs can plan 10-step tasks without fine-tuning',        desc:'Zero-shot prompting beats fine-tuning for complex multi-step real-world tasks, new MIT paper shows.',              tldr:'→ TL;DR: Prompting beats training. Big for AI agents.' },
-                { n:'03', tag:'t-industry', label:'Industry',   title:'OpenAI reportedly acquiring Windsurf for $3B',               desc:'The AI code editor wars heat up — OpenAI wants a direct IDE-level product to challenge Cursor and Copilot.',       tldr:'→ TL;DR: Code editors are the new AI battlefield.' },
-                { n:'04', tag:'t-tool',     label:'Tool Drop',  title:'Notion AI gets real-time web search built in',               desc:'Live web search in every Notion AI query puts it in direct competition with Perplexity.',                          tldr:"→ TL;DR: Notion just became Perplexity for your notes." },
-                { n:'05', tag:'t-opinion',  label:'Opinion',    title:'Why every AI company is racing to own your code editor',     desc:'A sharp take on why the IDE is the most strategic surface in AI — and what it means for developers.',               tldr:'→ TL;DR: Whoever owns your editor owns your workflow.' },
+                { n:"01", tag:"t-model",    label:"New Model",  title:"Google drops Gemini 2.5 with 2M token context window",       desc:"Biggest context window yet — processes entire codebases in one shot.",       tldr:"→ TL;DR: Longer memory, smarter answers." },
+                { n:"02", tag:"t-research", label:"Research",   title:"MIT: LLMs can plan 10-step tasks without fine-tuning",        desc:"Zero-shot prompting beats fine-tuning for complex multi-step tasks.",         tldr:"→ TL;DR: Prompting beats training. Big for AI agents." },
+                { n:"03", tag:"t-industry", label:"Industry",   title:"OpenAI reportedly acquiring Windsurf for B",               desc:"The AI code editor wars heat up — OpenAI challenges Cursor and Copilot.",    tldr:"→ TL;DR: Code editors are the new AI battlefield." },
+                { n:"04", tag:"t-tool",     label:"Tool Drop",  title:"Notion AI gets real-time web search built in",               desc:"Live web search in every Notion AI query — direct competition with Perplexity.", tldr:"→ TL;DR: Notion just became Perplexity for your notes." },
+                { n:"05", tag:"t-opinion",  label:"Opinion",    title:"Why every AI company is racing to own your code editor",     desc:"A sharp take on why the IDE is the most strategic surface in AI.",           tldr:"→ TL;DR: Whoever owns your editor owns your workflow." },
               ].map(s => (
                 <div className="inside-story" key={s.n}>
                   <span className="story-num">{s.n}</span>
                   <div className="story-body">
-                    <span className={`stag ${s.tag}`}>{s.label}</span>
+                    <span className={"stag " + s.tag}>{s.label}</span>
                     <p className="story-title">{s.title}</p>
                     <p className="story-desc">{s.desc}</p>
                     <p className="story-tldr">{s.tldr}</p>
@@ -232,17 +366,17 @@ export default function App() {
                 <span className="em-tag">THIS WEEK IN AI · ISSUE #42 · FRIDAY DIGEST</span>
               </div>
               <div className="em-meta">
-                <span>Friday, 20 March 2026</span>
+                <span>Friday, 21 March 2026</span>
                 <span>15 stories · ~15 min read</span>
                 <span>neural-brief-eight.vercel.app</span>
               </div>
               {[
-                { tag:'t-model',    label:'New Model',  title:'Google drops Gemini 2.5 with 2M token context window',      body:"Google DeepMind's latest model can process entire codebases in a single prompt. Early benchmarks show strong reasoning improvements over 2.0.", tldr:'→ TL;DR: Longer memory, smarter answers. Think reading a whole textbook at once.' },
-                { tag:'t-research', label:'Research',   title:'MIT shows LLMs can plan complex tasks without fine-tuning',  body:'A new MIT paper proves base language models can reliably execute 10+ step real-world tasks through structured prompting alone — no training required.', tldr:'→ TL;DR: Prompting beats fine-tuning. Huge for AI agents.' },
-                { tag:'t-industry', label:'Industry',   title:'OpenAI in talks to acquire Windsurf for $3B',               body:"After Microsoft Copilot and Anthropic's Cursor integration, OpenAI is acquiring Windsurf for a direct IDE-level product.", tldr:'→ TL;DR: Code editors are the new AI battlefield.' },
+                { tag:"t-model",    label:"New Model",  title:"Google drops Gemini 2.5 with 2M token context window",     body:"Google DeepMind latest model processes entire codebases in a single prompt. Strong reasoning improvements over 2.0.", tldr:"→ TL;DR: Longer memory, smarter answers." },
+                { tag:"t-research", label:"Research",   title:"MIT shows LLMs can plan complex tasks without fine-tuning", body:"Base models reliably execute 10+ step real-world tasks through structured prompting alone — no training required.", tldr:"→ TL;DR: Prompting beats fine-tuning. Huge for AI agents." },
+                { tag:"t-industry", label:"Industry",   title:"OpenAI in talks to acquire Windsurf for B",              body:"OpenAI acquiring Windsurf for a direct IDE-level product to compete with Cursor and Copilot.", tldr:"→ TL;DR: Code editors are the new AI battlefield." },
               ].map(s => (
                 <div className="em-story" key={s.title}>
-                  <span className={`stag ${s.tag}`}>{s.label}</span>
+                  <span className={"stag " + s.tag}>{s.label}</span>
                   <p className="em-title">{s.title}</p>
                   <p className="em-body">{s.body}</p>
                   <p className="em-tldr">{s.tldr}</p>
@@ -270,11 +404,10 @@ export default function App() {
         </div>
       </div>
 
-      {/* FOOTER */}
       <footer>
         <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2025<br />
         Powered by Groq API · Sent via Brevo · Subscribers on Supabase<br />
-        <a href="#">Unsubscribe</a> &nbsp;·&nbsp; <a href="#">Website</a> &nbsp;·&nbsp; <a href="#">WhatsApp Channel</a><br /><br />
+        <a href="#">Unsubscribe</a> &nbsp;·&nbsp; <a href="https://neural-brief-eight.vercel.app">Website</a> &nbsp;·&nbsp; <a href="#">WhatsApp Channel</a><br /><br />
         <span style={{ opacity: 0.4 }}>© 2025 Neural Brief · Made with ☕ somewhere in India 🇮🇳</span>
       </footer>
     </>
