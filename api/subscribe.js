@@ -118,7 +118,7 @@ function buildWelcomeEmail(email) {
 }
 
 // ── Build digest email from cached stories ────────────────
-function buildDigestEmail(data, issueNum, email) {
+function buildDigestEmail(data, briefNum, email) {
   const { stories, biggest_move, jargon_of_week } = data
   const dateStr = new Date().toLocaleDateString('en-IN', {
     weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
@@ -186,7 +186,7 @@ function buildDigestEmail(data, issueNum, email) {
       Neural <span style="color:#c13d18;">Brief</span>
     </div>
     <div style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;letter-spacing:.1em;text-transform:uppercase;margin-top:6px;">
-      THIS WEEK IN AI &middot; ISSUE #${issueNum} &middot; ${dateStr}
+      THIS WEEK IN AI &middot; BRIEF #${briefNum} &middot; ${dateStr}
     </div>
   </div>
 
@@ -215,6 +215,8 @@ function buildDigestEmail(data, issueNum, email) {
 }
 
 // ── Get cached digest from Supabase ───────────────────────
+// Returns cached digest only if it is less than 3 days old
+// If older than 3 days — subscriber will just wait for next Friday
 async function getCachedDigest() {
   try {
     const { data } = await supabase
@@ -224,6 +226,15 @@ async function getCachedDigest() {
       .limit(1)
 
     if (data && data.length > 0 && data[0].data) {
+      const ageMs  = Date.now() - new Date(data[0].created_at).getTime()
+      const ageDays = ageMs / (1000 * 60 * 60 * 24)
+
+      if (ageDays > 3) {
+        console.log(`⚠️ Cache is ${ageDays.toFixed(1)} days old — too stale, skipping digest send`)
+        return null
+      }
+
+      console.log(`✅ Cache is ${ageDays.toFixed(1)} days old — fresh enough, sending digest`)
       return data[0].data
     }
     return null
@@ -233,10 +244,10 @@ async function getCachedDigest() {
   }
 }
 
-// ── Get latest issue number ───────────────────────────────
+// ── Get latest brief number ───────────────────────────────
 async function getIssueNum() {
   try {
-    const { data } = await supabase.from('config').select('value').eq('key', 'issue_number')
+    const { data } = await supabase.from('config').select('value').eq('key', 'brief_number')
     if (data && data.length > 0) return parseInt(data[0].value)
     return 1
   } catch { return 1 }
@@ -248,7 +259,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { email } = req.body
+  const { email, persona } = req.body
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Invalid email' })
@@ -258,7 +269,7 @@ export default async function handler(req, res) {
     // 1. Save to Supabase
     const { error: dbError } = await supabase
       .from('subscribers')
-      .insert([{ email, confirmed: true }])
+      .insert([{ email, confirmed: true, persona: persona || null }])
 
     if (dbError && dbError.code !== '23505') {
       throw new Error(dbError.message)
@@ -282,13 +293,13 @@ export default async function handler(req, res) {
         return
       }
       try {
-        const issueNum = await getIssueNum()
-        const html     = buildDigestEmail(cached, issueNum, email)
+        const briefNum = await getIssueNum()
+        const html     = buildDigestEmail(cached, briefNum, email)
         await transporter.sendMail({
           from:    FROM_EMAIL,
           to:      email,
           replyTo: REPLY_TO,
-          subject: `Neural Brief #${issueNum} — This week in AI 🧠 (Your welcome issue)`,
+          subject: `Neural Brief #${briefNum} — This week in AI 🧠 (Your welcome issue)`,
           html,
         })
         console.log('✅ Welcome digest sent to:', email)

@@ -159,7 +159,7 @@ Return ONLY valid JSON, no markdown backticks:
 
 
 # ── Step 4: Build HTML email ─────────────────────────────────
-def build_html(result, issue_num, email):
+def build_html(result, brief_num, email):
     stories      = result.get("stories", [])
     biggest_move = result.get("biggest_move")
     jargon       = result.get("jargon_of_week")
@@ -254,7 +254,7 @@ def build_html(result, issue_num, email):
     return f"""<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Neural Brief #{issue_num}</title></head>
+<title>Neural Brief #{brief_num}</title></head>
 <body style="margin:0;padding:0;background:#f4f1ea;font-family:'Helvetica Neue',Helvetica,sans-serif;">
 <div style="max-width:620px;margin:32px auto;background:#fff;border:1px solid #d6d0c2;">
 
@@ -263,7 +263,7 @@ def build_html(result, issue_num, email):
       Neural <span style="color:#c13d18;">Brief</span>
     </div>
     <div style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;letter-spacing:.1em;text-transform:uppercase;margin-top:6px;">
-      THIS WEEK IN AI &middot; ISSUE #{issue_num} &middot; {date_str}
+      THIS WEEK IN AI &middot; BRIEF #{brief_num} &middot; {date_str}
     </div>
   </div>
 
@@ -303,7 +303,7 @@ def get_subscribers():
 
 
 # ── Step 6: Send via Brevo SMTP ──────────────────────────────
-def send_emails(subscribers, result, subject, issue_num):
+def send_emails(subscribers, result, subject, brief_num):
     sent = failed = 0
     try:
         server = smtplib.SMTP(BREVO_SMTP_HOST, BREVO_SMTP_PORT)
@@ -311,7 +311,7 @@ def send_emails(subscribers, result, subject, issue_num):
         server.login(BREVO_SMTP_LOGIN, BREVO_SMTP_KEY)
         for email in subscribers:
             try:
-                html = build_html(result, issue_num, email)
+                html = build_html(result, brief_num, email)
                 msg  = MIMEMultipart("alternative")
                 msg["Subject"]  = subject
                 msg["From"]     = FROM_EMAIL
@@ -334,12 +334,12 @@ def send_emails(subscribers, result, subject, issue_num):
 # ── Issue number ─────────────────────────────────────────────
 def next_issue():
     try:
-        r = supabase.table("config").select("value").eq("key", "issue_number").execute()
+        r = supabase.table("config").select("value").eq("key", "brief_number").execute()
         if r.data:
             n = int(r.data[0]["value"]) + 1
-            supabase.table("config").update({"value": str(n)}).eq("key", "issue_number").execute()
+            supabase.table("config").update({"value": str(n)}).eq("key", "brief_number").execute()
             return n
-        supabase.table("config").insert({"key": "issue_number", "value": "1"}).execute()
+        supabase.table("config").insert({"key": "brief_number", "value": "1"}).execute()
         return 1
     except Exception:
         return 1
@@ -361,11 +361,11 @@ def run():
     result = select_and_summarise(fresh if len(fresh) >= STORIES_COUNT else stories)
 
     print("\n[4/5] Building email + fetching subscribers...")
-    issue_num = next_issue()
-    subject   = f"Neural Brief #{issue_num} — This week in AI 🧠"
+    brief_num = next_issue()
+    subject   = f"Neural Brief #{brief_num} — This week in AI 🧠"
 
     # Save preview
-    preview_html = build_html(result, issue_num, "preview@example.com")
+    preview_html = build_html(result, brief_num, "preview@example.com")
     with open("preview_email.html", "w", encoding="utf-8") as f:
         f.write(preview_html)
     print(f"  💾 Saved preview_email.html — open in browser to check!")
@@ -375,10 +375,22 @@ def run():
         print("  ⚠️  No subscribers yet."); return
 
     print(f"\n[5/5] Sending via Brevo SMTP...")
-    send_emails(subscribers, result, subject, issue_num)
+    send_emails(subscribers, result, subject, brief_num)
 
     print("\n[6/6] Marking stories as sent...")
     mark_sent(result["stories"])
+
+    print("\n[7/7] Saving to digest_cache (for new subscribers)...")
+    try:
+        # Clear old cache first
+        supabase.table("digest_cache").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
+        # Save fresh cache
+        supabase.table("digest_cache").insert({
+            "data": result,
+        }).execute()
+        print("  ✅ Saved to digest_cache!")
+    except Exception as e:
+        print(f"  ⚠️  Cache save failed (non-critical): {e}")
 
     print("\n✅ Done! Neural Brief weekly digest delivered.\n")
 

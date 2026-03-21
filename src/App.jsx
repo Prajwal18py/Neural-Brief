@@ -16,8 +16,11 @@ const SOURCE_LABELS = {
 
 // ── Subscribe Form ────────────────────────────────────────
 function SubscribeForm({ id, ctaText = 'Get the next brief →' }) {
-  const [email, setEmail]   = useState('')
-  const [status, setStatus] = useState('idle')
+  const [email, setEmail]     = useState('')
+  const [status, setStatus]   = useState('idle')
+  const [persona, setPersona] = useState('')
+
+  const PERSONAS = ['Student', 'Developer', 'Founder', 'Creator']
 
   const handleSubmit = async () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -27,7 +30,7 @@ function SubscribeForm({ id, ctaText = 'Get the next brief →' }) {
     try {
       const res = await fetch('/api/subscribe', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, persona }),
       })
       if (res.ok) setStatus('success')
       else { setStatus('idle'); alert('Something went wrong. Please try again.') }
@@ -39,6 +42,19 @@ function SubscribeForm({ id, ctaText = 'Get the next brief →' }) {
       <span className="sub-label">Drop your email — it's free</span>
       {status !== 'success' ? (
         <>
+          {/* Persona selector */}
+          <div className="persona-wrap">
+            <span className="persona-label">I am a →</span>
+            <div className="persona-options">
+              {PERSONAS.map(p => (
+                <button key={p}
+                  className={'persona-btn' + (persona === p ? ' selected' : '')}
+                  onClick={() => setPersona(persona === p ? '' : p)}>
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="form-row">
             <input type="email"
               placeholder={status === 'error' ? 'Enter a valid email ↑' : 'your@email.com'}
@@ -54,8 +70,8 @@ function SubscribeForm({ id, ctaText = 'Get the next brief →' }) {
         </>
       ) : (
         <div className="success-box">
-          <span className="success-title">✦ You're in!</span>
-          <span className="success-sub">Check inbox to confirm · Brief arrives this Friday 9am IST</span>
+          <span className="success-title">✦ You're in{persona ? ', ' + persona : ''}!</span>
+          <span className="success-sub">Check inbox · Brief arrives this Friday 9am IST{persona ? ' · Curated for ' + persona + 's' : ''}</span>
         </div>
       )}
     </div>
@@ -69,11 +85,23 @@ function LiveDigest() {
   const [error, setError]       = useState(false)
   const [expanded, setExpanded] = useState({})
 
+  const FALLBACK = {
+    biggest_move: { title: 'OpenAI releases GPT-5 with major reasoning upgrades', reason: 'Biggest model leap in 2 years — faster, cheaper, and better at complex tasks.', link: 'https://openai.com' },
+    jargon_of_week: { term: 'RAG (Retrieval Augmented Generation)', explanation: 'A technique where an AI looks up real information before answering — like giving it a search engine + brain combo.' },
+    stories: [
+      { tag: 'New Model',  title: 'Google drops Gemini 2.5 with 2M token context',        summary: 'Biggest context window yet — can process entire codebases in one shot. Strong reasoning gains over 2.0.',                         tldr: '-> TL;DR: Longer memory, smarter answers.',              why_it_matters: 'Developers can now build apps that understand entire codebases at once.',          source: 'Google DeepMind',       link: 'https://deepmind.google' },
+      { tag: 'Research',   title: 'MIT: LLMs plan 10-step tasks without fine-tuning',      summary: 'Zero-shot prompting beats fine-tuning for complex multi-step real-world tasks, new MIT paper shows.',                              tldr: '-> TL;DR: Prompting beats training. Big for AI agents.', why_it_matters: 'Less compute, more power — great for student AI projects.',                       source: 'MIT Technology Review',  link: 'https://technologyreview.com' },
+      { tag: 'Industry',   title: 'OpenAI reportedly acquiring Windsurf for B',          summary: 'The AI code editor wars heat up — OpenAI wants a direct IDE-level product to challenge Cursor and Copilot.',                        tldr: '-> TL;DR: Code editors are the new AI battlefield.',    why_it_matters: "Every major AI lab wants to own your IDE — here's why it matters.",              source: 'TechCrunch AI',          link: 'https://techcrunch.com' },
+      { tag: 'Tool Drop',  title: 'Notion AI gets real-time web search built in',          summary: 'Live web search in every Notion AI query puts it in direct competition with Perplexity.',                                           tldr: '-> TL;DR: Notion just became Perplexity for your notes.', why_it_matters: 'Your notes can now answer questions using live web data.',                      source: 'The Verge AI',           link: 'https://theverge.com' },
+      { tag: 'Research',   title: 'Anthropic publishes new AI safety framework',           summary: 'Anthropic released a detailed framework for evaluating AI safety at scale, covering robustness and alignment.',                      tldr: '-> TL;DR: AI safety is getting more structured.',        why_it_matters: 'Understanding safety frameworks helps you build more responsible AI projects.',  source: 'HackerNews AI',          link: 'https://news.ycombinator.com' },
+    ]
+  }
+
   useEffect(() => {
     fetch('/api/get-digest')
       .then(r => r.json())
-      .then(d => { if (d.stories) setData(d); else setError(true) })
-      .catch(() => setError(true))
+      .then(d => { if (d.stories) setData(d); else setData(FALLBACK) })
+      .catch(() => setData(FALLBACK))
       .finally(() => setLoading(false))
   }, [])
 
@@ -84,14 +112,6 @@ function LiveDigest() {
       <div style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted2)', letterSpacing: '0.1em' }}>
         LOADING THIS WEEK'S STORIES...
       </div>
-    </div>
-  )
-
-  if (error || !data) return (
-    <div style={{ padding: '32px 0', textAlign: 'center' }}>
-      <p style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted2)' }}>
-        Could not load stories. Please try again later.
-      </p>
     </div>
   )
 
@@ -174,10 +194,152 @@ function LiveDigest() {
   )
 }
 
+
+// ── Archive Component ─────────────────────────────────────
+function ArchivePage({ onClose }) {
+  const [briefs, setBriefs]   = useState([])
+  const [loading, setLoading] = useState(true)
+  const [selected, setSelected] = useState(null)
+  const [detail, setDetail]   = useState(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/get-archive')
+      .then(r => r.json())
+      .then(d => setBriefs(d.briefs || []))
+      .catch(() => setBriefs([]))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const openBrief = async (brief) => {
+    setSelected(brief)
+    setDetailLoading(true)
+    try {
+      const res  = await fetch(`/api/get-archive?id=${brief.id}`)
+      const data = await res.json()
+      setDetail(data)
+    } catch { setDetail(null) }
+    finally { setDetailLoading(false) }
+  }
+
+  const formatDate = (d) => new Date(d).toLocaleDateString('en-IN', {
+    day: '2-digit', month: 'long', year: 'numeric'
+  })
+
+  return (
+    <div className="archive-overlay">
+      <div className="archive-panel">
+        <div className="archive-header">
+          <div>
+            <span className="archive-header-label">Past Briefs</span>
+            <h2 style={{ margin: 0, fontSize: '22px' }}>Neural Brief Archive</h2>
+          </div>
+          <button className="archive-close" onClick={onClose}>✕ Close</button>
+        </div>
+
+        {!selected ? (
+          // List view
+          <div className="archive-list">
+            {loading && (
+              <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted2)' }}>
+                LOADING ARCHIVE...
+              </div>
+            )}
+            {!loading && briefs.length === 0 && (
+              <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted2)' }}>
+                No past briefs yet. Check back after the first Friday!
+              </div>
+            )}
+            {briefs.map((brief) => (
+              <div className="archive-item" key={brief.id} onClick={() => openBrief(brief)}>
+                <div className="archive-item-left">
+                  <span className="archive-brief-num">Brief #{brief.brief_num}</span>
+                  <span className="archive-brief-date">{formatDate(brief.created_at)}</span>
+                </div>
+                <div className="archive-item-right">
+                  {brief.biggest_move && (
+                    <p className="archive-brief-title">{brief.biggest_move.title}</p>
+                  )}
+                  {brief.jargon && (
+                    <span className="archive-jargon-tag">📖 {brief.jargon.term}</span>
+                  )}
+                </div>
+                <span className="archive-arrow">→</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          // Detail view
+          <div className="archive-detail">
+            <button className="archive-back" onClick={() => { setSelected(null); setDetail(null) }}>
+              ← Back to archive
+            </button>
+            {detailLoading && (
+              <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted2)' }}>
+                LOADING BRIEF...
+              </div>
+            )}
+            {!detailLoading && detail && (
+              <div>
+                <div className="archive-detail-header">
+                  <span className="archive-brief-num">Brief #{detail.brief_num}</span>
+                  <span className="archive-brief-date">{formatDate(detail.created_at)}</span>
+                </div>
+
+                {detail.biggest_move && (
+                  <div className="biggest-move" style={{ margin: '20px 0 0' }}>
+                    <span className="biggest-move-label">🔥 Biggest move this week</span>
+                    <a href={detail.biggest_move.link} target="_blank" rel="noopener noreferrer" className="biggest-move-title">
+                      {detail.biggest_move.title}
+                    </a>
+                    <p className="biggest-move-reason">{detail.biggest_move.reason}</p>
+                  </div>
+                )}
+
+                <div className="archive-stories">
+                  {(detail.stories || []).map((story, i) => (
+                    <div className="archive-story" key={i}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted2)' }}>#{String(i+1).padStart(2,'0')}</span>
+                        <span className={`stag ${TAG_CLASS[story.tag] || 't-research'}`}>{story.tag}</span>
+                      </div>
+                      <a href={story.link} target="_blank" rel="noopener noreferrer" className="live-title">{story.title}</a>
+                      <p className="live-summary">{story.summary}</p>
+                      <p className="live-tldr">{story.tldr}</p>
+                      {story.why_it_matters && (
+                        <div className="why-matters">
+                          <span className="why-matters-label">Why it matters → </span>
+                          <span className="why-matters-text">{story.why_it_matters}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {detail.jargon && (
+                  <div className="jargon-box">
+                    <span className="jargon-label">📖 Jargon of the week</span>
+                    <span className="jargon-term">{detail.jargon.term}</span>
+                    <p className="jargon-exp">{detail.jargon.explanation}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Main App ──────────────────────────────────────────────
 export default function App() {
+  const [showArchive, setShowArchive] = useState(false)
   return (
     <>
+      {/* ARCHIVE OVERLAY */}
+      {showArchive && <ArchivePage onClose={() => setShowArchive(false)} />}
+
       {/* NAV */}
       <nav>
         <a className="logo" href="#">
@@ -186,6 +348,7 @@ export default function App() {
         </a>
         <div className="nav-right">
           <span className="nav-chip">Every Friday · Free</span>
+          <button className="nav-archive-btn" onClick={() => setShowArchive(true)}>Past Briefs</button>
           <a className="nav-cta" href="#subscribe">Get the next brief →</a>
         </div>
       </nav>
@@ -349,7 +512,7 @@ export default function App() {
             <div className="inside-sidebar">
               <span className="inside-label">Neural Brief</span>
               <div className="inside-meta">
-                <span>Issue #42</span>
+                <span>Brief #42</span>
                 <span>15 stories</span>
                 <span>~3 min read</span>
                 <span style={{ marginTop: '12px', color: 'var(--accent)' }}>This week in AI</span>
@@ -392,7 +555,7 @@ export default function App() {
             <div className="email-body">
               <div className="em-head">
                 <div className="em-brand">Neural <span>Brief</span></div>
-                <span className="em-tag">THIS WEEK IN AI · ISSUE #42 · FRIDAY DIGEST</span>
+                <span className="em-tag">THIS WEEK IN AI · BRIEF #42 · FRIDAY DIGEST</span>
               </div>
               <div className="em-meta">
                 <span>Friday, 21 March 2026</span>
@@ -486,7 +649,7 @@ export default function App() {
         <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2025<br />
         Powered by Groq API · Sent via Brevo · Subscribers on Supabase<br />
         Sources: TechCrunch · MIT Tech Review · HackerNews · DeepMind · The Verge · Wired<br />
-        Built by <strong>PRAJWAL.A</strong> — an AIML student who got tired of AI noise 🇮🇳<br /><br />
+        Built by <strong>Prajwal A</strong> · Sem 4 AIML · Bengaluru 🇮🇳<br /><br />
         <a href="#">Unsubscribe</a> &nbsp;·&nbsp;
         <a href="https://neural-brief-eight.vercel.app">Website</a> &nbsp;·&nbsp;
         <a href="https://github.com/Prajwal18py/Neural-Brief">GitHub</a> &nbsp;·&nbsp;

@@ -152,7 +152,7 @@ Return ONLY valid JSON, no markdown backticks:
 }
 
 // ── Build HTML email ──────────────────────────────────────
-function buildHtml(result, issueNum, email) {
+function buildHtml(result, briefNum, email) {
   const { stories, biggest_move, jargon_of_week } = result
   const dateStr = new Date().toLocaleDateString('en-IN', {
     weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
@@ -243,7 +243,7 @@ function buildHtml(result, issueNum, email) {
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Neural Brief #${issueNum}</title></head>
+<title>Neural Brief #${briefNum}</title></head>
 <body style="margin:0;padding:0;background:#f4f1ea;font-family:'Helvetica Neue',Helvetica,sans-serif;">
 <div style="max-width:620px;margin:32px auto;background:#fff;border:1px solid #d6d0c2;">
 
@@ -253,7 +253,7 @@ function buildHtml(result, issueNum, email) {
       Neural <span style="color:#c13d18;">Brief</span>
     </div>
     <div style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;letter-spacing:.1em;text-transform:uppercase;margin-top:6px;">
-      THIS WEEK IN AI &middot; ISSUE #${issueNum} &middot; ${dateStr}
+      THIS WEEK IN AI &middot; BRIEF #${briefNum} &middot; ${dateStr}
     </div>
   </div>
 
@@ -299,13 +299,13 @@ async function getSubscribers() {
 // ── Issue number ──────────────────────────────────────────
 async function nextIssue() {
   try {
-    const { data } = await supabase.from('config').select('value').eq('key', 'issue_number')
+    const { data } = await supabase.from('config').select('value').eq('key', 'brief_number')
     if (data && data.length > 0) {
       const n = parseInt(data[0].value) + 1
-      await supabase.from('config').update({ value: String(n) }).eq('key', 'issue_number')
+      await supabase.from('config').update({ value: String(n) }).eq('key', 'brief_number')
       return n
     }
-    await supabase.from('config').insert({ key: 'issue_number', value: '1' })
+    await supabase.from('config').insert({ key: 'brief_number', value: '1' })
     return 1
   } catch { return 1 }
 }
@@ -326,27 +326,34 @@ export default async function handler(req, res) {
     const fresh    = await filterSeen(stories)
     const result   = await selectAndSummarise(fresh.length >= STORIES_COUNT ? fresh : stories)
 
-    const issueNum = await nextIssue()
-    const subject  = `Neural Brief #${issueNum} — This week in AI 🧠`
+    const briefNum = await nextIssue()
+    const subject  = `Neural Brief #${briefNum} — This week in AI 🧠`
 
     const subscribers = await getSubscribers()
     if (!subscribers.length) return res.status(200).json({ message: 'No subscribers yet' })
 
-    // Save to archive in Supabase
+    // Save to archive
     try {
       await supabase.from('digest_archive').insert({
-        issue_num:   issueNum,
-        stories:     result.stories,
+        brief_num:    briefNum,
+        stories:      result.stories,
         biggest_move: result.biggest_move,
-        jargon:      result.jargon_of_week,
-        created_at:  new Date().toISOString(),
+        jargon:       result.jargon_of_week,
+        created_at:   new Date().toISOString(),
       })
     } catch (e) { console.log('⚠️ Archive save skipped:', e.message) }
+
+    // Save to digest_cache (for new subscribers + website)
+    try {
+      await supabase.from('digest_cache').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('digest_cache').insert({ data: result })
+      console.log('✅ Saved to digest_cache')
+    } catch (e) { console.log('⚠️ Cache save skipped:', e.message) }
 
     let sent = 0, failed = 0
     for (const email of subscribers) {
       try {
-        const html = buildHtml(result, issueNum, email)
+        const html = buildHtml(result, briefNum, email)
         await transporter.sendMail({ from: FROM_EMAIL, to: email, replyTo: REPLY_TO, subject, html })
         sent++
       } catch (e) { failed++; console.log(`❌ ${email}: ${e.message}`) }
@@ -355,7 +362,7 @@ export default async function handler(req, res) {
     await markSent(result.stories)
 
     console.log(`✅ Done! Sent: ${sent} | Failed: ${failed}`)
-    return res.status(200).json({ success: true, sent, failed, issue: issueNum })
+    return res.status(200).json({ success: true, sent, failed, issue: briefNum })
 
   } catch (err) {
     console.error('❌ Digest error:', err)
