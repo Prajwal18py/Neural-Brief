@@ -66,9 +66,9 @@ function SubscribeForm({ id }) {
 }
 
 function LiveDigest() {
-  const [data, setData]     = useState(null)
+  const [data, setData]       = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError]   = useState(false)
+  const [error, setError]     = useState(false)
   const [expanded, setExpanded] = useState({})
 
   useEffect(() => {
@@ -78,6 +78,8 @@ function LiveDigest() {
       .catch(() => setError(true))
       .finally(() => setLoading(false))
   }, [])
+
+  const toggle = (i) => setExpanded(e => ({ ...e, [i]: !e[i] }))
 
   if (loading) return (
     <div style={{ padding: '48px 0', textAlign: 'center' }}>
@@ -110,58 +112,64 @@ function LiveDigest() {
         </div>
       )}
 
-      {/* Stories */}
-      <div className="live-digest">
+      {/* Accordion Stories */}
+      <div className="accordion">
         {stories.map((story, i) => {
-          const srcLabel = SOURCE_LABELS[story.source]
-          const isExpanded = expanded[i]
+          const srcLabel  = SOURCE_LABELS[story.source]
+          const isOpen    = expanded[i]
           return (
-            <div className="live-story" key={i}>
-              <div className="live-story-left">
-                <span className="live-num">{String(i + 1).padStart(2, '0')}</span>
-              </div>
-              <div className="live-story-body">
-                <div className="live-story-meta">
-                  <span className={`stag ${TAG_CLASS[story.tag] || 't-research'}`}>{story.tag}</span>
-                  {srcLabel && <span className={`src-label src-${srcLabel.toLowerCase()}`}>{srcLabel}</span>}
-                  <span className="live-source">via {story.source}</span>
-                </div>
-                <a href={story.link} target="_blank" rel="noopener noreferrer" className="live-title">
-                  {story.title}
-                </a>
-                <p className="live-summary">{story.summary}</p>
-                <p className="live-tldr">{story.tldr}</p>
+            <div className={'accordion-item' + (isOpen ? ' open' : '')} key={i}>
 
-                {/* Why it matters */}
-                {story.why_it_matters && (
-                  <div className="why-matters">
-                    <span className="why-matters-label">Why it matters → </span>
-                    <span className="why-matters-text">{story.why_it_matters}</span>
-                  </div>
-                )}
-
-                {/* Expand for tweet */}
-                {story.tweet && (
-                  <button className="expand-btn" onClick={() => setExpanded(e => ({ ...e, [i]: !e[i] }))}>
-                    {isExpanded ? 'Hide share ↑' : 'Share this story ↓'}
-                  </button>
-                )}
-                {isExpanded && story.tweet && (
-                  <div className="tweet-box">
-                    <p className="tweet-text">{story.tweet}</p>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(story.tweet)}`}
-                        target="_blank" rel="noopener noreferrer" className="share-btn share-x">
-                        Post on X →
-                      </a>
-                      <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(story.link)}`}
-                        target="_blank" rel="noopener noreferrer" className="share-btn share-li">
-                        Post on LinkedIn →
-                      </a>
+              {/* Header — always visible, click to toggle */}
+              <button className="accordion-header" onClick={() => toggle(i)}>
+                <div className="accordion-left">
+                  <span className="live-num">{String(i + 1).padStart(2, '0')}</span>
+                  <div className="accordion-meta">
+                    <div className="accordion-tags">
+                      <span className={'stag ' + (TAG_CLASS[story.tag] || 't-research')}>{story.tag}</span>
+                      {srcLabel && <span className={'src-label src-' + srcLabel.toLowerCase()}>{srcLabel}</span>}
                     </div>
+                    <span className="accordion-title">{story.title}</span>
                   </div>
-                )}
-              </div>
+                </div>
+                <span className="accordion-chevron">{isOpen ? '−' : '+'}</span>
+              </button>
+
+              {/* Body — only shown when expanded */}
+              {isOpen && (
+                <div className="accordion-body">
+                  <p className="live-summary">{story.summary}</p>
+                  <p className="live-tldr">{story.tldr}</p>
+
+                  {story.why_it_matters && (
+                    <div className="why-matters">
+                      <span className="why-matters-label">Why it matters → </span>
+                      <span className="why-matters-text">{story.why_it_matters}</span>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
+                    <a href={story.link} target="_blank" rel="noopener noreferrer" className="share-btn share-x">
+                      Read full story →
+                    </a>
+                    {story.tweet && (
+                      <>
+                        <a href={'https://twitter.com/intent/tweet?text=' + encodeURIComponent(story.tweet)}
+                          target="_blank" rel="noopener noreferrer" className="share-btn share-x">
+                          Post on X →
+                        </a>
+                        <a href={'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(story.link)}
+                          target="_blank" rel="noopener noreferrer" className="share-btn share-li">
+                          LinkedIn →
+                        </a>
+                      </>
+                    )}
+                  </div>
+                  <p style={{ fontSize: '10px', fontFamily: 'var(--mono)', color: 'var(--muted2)', marginTop: '8px' }}>
+                    via {story.source}
+                  </p>
+                </div>
+              )}
             </div>
           )
         })}
