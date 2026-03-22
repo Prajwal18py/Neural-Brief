@@ -156,7 +156,7 @@ function LiveFeed() {
       ))}
       <div className="live-feed-footer">
         <span>Updated {lastUpdated || 'recently'}</span>
-        <a href="#this-week" className="live-feed-cta">Covered in detail below ↓</a>
+        <a href="#this-week" className="live-feed-cta">See deeper insights in this week's brief ↓</a>
       </div>
     </div>
   )
@@ -687,7 +687,7 @@ export default function App() {
             <div>
               <h2>Today's Top 3</h2>
               <p style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--muted2)', marginTop: '4px' }}>
-                Live · Updated every 6 hours
+                Live · Updated every 3 hours
               </p>
             </div>
           </div>
