@@ -121,8 +121,16 @@ For each of the ${STORIES_COUNT} stories write:
 - title: clean headline, max 12 words
 - summary: 2-3 sentences, plain English, zero jargon, for students
 - tldr: one punchy sentence starting with "-> TL;DR:"
-- why_it_matters: one sentence — why should an Indian student/developer care about this specifically?
-- tweet: ready-to-post Twitter/LinkedIn post, punchy, end with 2-3 hashtags. Max 280 chars.
+- why_student: one sentence — why should an Indian STUDENT care?
+- why_developer: one sentence — why should an Indian DEVELOPER care?
+- why_founder: one sentence — why should an Indian FOUNDER/entrepreneur care?
+- signal_score: a number from 1-10 rating how important this story is. 9-10 = major breakthrough, 7-8 = significant, 5-6 = interesting, below 5 = minor
+- signal_label: one of ["Major", "Important", "Interesting", "Minor"]
+- tweet: ready-to-post Twitter post, punchy, end with 2-3 hashtags. Max 280 chars.
+- linkedin: a polished 3-sentence thought-leader style LinkedIn post about this story. Professional tone. End with 2-3 hashtags.
+- eli15: explain this story in 1-2 sentences like the reader is 15 years old. Use simple analogies, zero jargon.
+- hype: one sentence — what media/company claims (exaggerated/marketing spin)
+- reality: one sentence — what it actually means in plain honest truth
 - source: source name
 - link: original link exactly
 
@@ -130,7 +138,7 @@ Return ONLY valid JSON, no markdown backticks:
 {
   "biggest_move": {"title":"...","reason":"one sentence why this is the biggest move of the week","link":"..."},
   "jargon_of_week": {"term":"...","explanation":"..."},
-  "stories": [{"tag":"...","title":"...","summary":"...","tldr":"...","why_it_matters":"...","tweet":"...","source":"...","link":"..."}]
+  "stories": [{"tag":"...","title":"...","summary":"...","tldr":"...","why_student":"...","why_developer":"...","why_founder":"...","signal_score":8.5,"signal_label":"Important","tweet":"...","linkedin":"...","eli15":"...","hype":"...","reality":"...","source":"...","link":"..."}]
 }`
 
   const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -152,7 +160,7 @@ Return ONLY valid JSON, no markdown backticks:
 }
 
 // ── Build HTML email ──────────────────────────────────────
-function buildHtml(result, briefNum, email) {
+function buildHtml(result, briefNum, email, persona = "") {
   const { stories, biggest_move, jargon_of_week } = result
   const dateStr = new Date().toLocaleDateString('en-IN', {
     weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
@@ -171,11 +179,23 @@ function buildHtml(result, briefNum, email) {
 </div>
 <div style="height:1px;background:#d6d0c2;margin:20px 40px 0;"></div>` : ''
 
+  // Signal score colors
+  const SIGNAL_COLORS = {
+    'Major':       { bg: '#fef0ec', color: '#c13d18', border: '#f5cec4', emoji: '🔥' },
+    'Important':   { bg: '#fdf5e8', color: '#7a5018', border: '#e8d3a0', emoji: '⚡' },
+    'Interesting': { bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec', emoji: '💡' },
+    'Minor':       { bg: '#f4f4f4', color: '#888',    border: '#ddd',    emoji: '💤' },
+  }
+
   // Story blocks
   const storyBlocks = stories.map((story, i) => {
     const tag      = story.tag || 'Research'
     const colors   = TAG_COLORS[tag] || TAG_COLORS['Research']
     const srcLabel = SOURCE_LABELS[story.source]
+    const signal   = SIGNAL_COLORS[story.signal_label] || SIGNAL_COLORS['Interesting']
+    const whyKey   = persona === 'Developer' ? 'why_developer' : persona === 'Founder' ? 'why_founder' : 'why_student'
+    const whyText  = story[whyKey] || story.why_student || story.why_developer || ''
+    const whyLabel = persona === 'Developer' ? 'Why devs care →' : persona === 'Founder' ? 'Why founders care →' : 'Why students care →'
 
     return `
 <div style="padding:20px 0;border-bottom:1px solid #e8e3db;">
@@ -189,6 +209,9 @@ function buildHtml(result, briefNum, email) {
     ${srcLabel ? `<span style="font-size:9px;font-family:'Courier New',monospace;padding:2px 8px;border-radius:1px;
       text-transform:uppercase;letter-spacing:.08em;font-weight:500;
       background:${srcLabel.bg};color:${srcLabel.color};border:1px solid ${srcLabel.border};">${srcLabel.label}</span>` : ''}
+    ${story.signal_score ? `<span style="font-size:9px;font-family:'Courier New',monospace;padding:2px 8px;border-radius:1px;
+      font-weight:500;background:${signal.bg};color:${signal.color};border:1px solid ${signal.border};">
+      ${signal.emoji} ${story.signal_score}/10 · ${story.signal_label}</span>` : ''}
   </div>
 
   <!-- Title -->
@@ -202,17 +225,17 @@ function buildHtml(result, briefNum, email) {
   <!-- TL;DR -->
   <p style="font-size:11px;font-family:'Courier New',monospace;color:#c13d18;margin:0 0 8px;">${story.tldr}</p>
 
-  <!-- Why it matters -->
-  ${story.why_it_matters ? `
+  <!-- Personalized why it matters -->
+  ${whyText ? `
   <div style="background:#f4f1ea;border-left:3px solid #c13d18;padding:8px 12px;margin-bottom:8px;">
-    <span style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;text-transform:uppercase;letter-spacing:.1em;">Why it matters → </span>
-    <span style="font-size:12px;color:#5a5550;line-height:1.6;">${story.why_it_matters}</span>
+    <span style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;text-transform:uppercase;letter-spacing:.1em;">${whyLabel} </span>
+    <span style="font-size:12px;color:#5a5550;line-height:1.6;">${whyText}</span>
   </div>` : ''}
 
   <!-- Source -->
   <p style="font-size:10px;color:#bfb9aa;margin:0 0 8px;">via ${story.source || 'Neural Brief'}</p>
 
-  <!-- Tweet share -->
+  <!-- Share -->
   ${story.tweet ? `
   <div style="background:#fafaf8;border:1px solid #e8e3db;border-radius:3px;padding:12px 14px;">
     <div style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Share this story</div>
@@ -223,7 +246,7 @@ function buildHtml(result, briefNum, email) {
     </a>
     <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(story.link)}"
       style="display:inline-block;font-size:10px;font-family:'Courier New',monospace;color:#27438a;text-decoration:none;border:1px solid #bcc9ec;padding:3px 10px;border-radius:2px;">
-      Post on LinkedIn →
+      Share on LinkedIn →
     </a>
   </div>` : ''}
 
@@ -291,9 +314,9 @@ function buildHtml(result, briefNum, email) {
 
 // ── Get subscribers ───────────────────────────────────────
 async function getSubscribers() {
-  const { data } = await supabase.from('subscribers').select('email').eq('confirmed', true)
+  const { data } = await supabase.from('subscribers').select('email, persona').eq('confirmed', true)
   console.log(`📬 ${data.length} subscribers`)
-  return data.map(r => r.email)
+  return data
 }
 
 // ── Issue number ──────────────────────────────────────────
@@ -312,8 +335,12 @@ async function nextIssue() {
 
 // ── Main handler ──────────────────────────────────────────
 export default async function handler(req, res) {
-  const authHeader = req.headers['authorization']
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const authHeader  = req.headers['authorization']
+  const cronHeader  = req.headers['x-vercel-cron']
+  const isVercelCron = cronHeader === '1'
+  const isManual     = authHeader === `Bearer ${process.env.CRON_SECRET}`
+
+  if (!isVercelCron && !isManual) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
@@ -353,7 +380,7 @@ export default async function handler(req, res) {
     let sent = 0, failed = 0
     for (const email of subscribers) {
       try {
-        const html = buildHtml(result, briefNum, email)
+        const html = buildHtml(result, briefNum, email, sub.persona || "")
         await transporter.sendMail({ from: FROM_EMAIL, to: email, replyTo: REPLY_TO, subject, html })
         sent++
       } catch (e) { failed++; console.log(`❌ ${email}: ${e.message}`) }

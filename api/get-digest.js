@@ -61,8 +61,16 @@ For each of the 15 stories write:
 - title: clean headline, max 12 words
 - summary: 2 sentences, plain English, zero jargon
 - tldr: one punchy sentence starting with "-> TL;DR:"
-- why_it_matters: one sentence — why should an Indian student/developer care?
-- tweet: ready-to-post Twitter/LinkedIn post, punchy, end with 2-3 hashtags. Max 280 chars.
+- why_student: one sentence — why should an Indian STUDENT care?
+- why_developer: one sentence — why should an Indian DEVELOPER care?
+- why_founder: one sentence — why should an Indian FOUNDER/entrepreneur care?
+- signal_score: number 1-10 rating importance. 9-10=major, 7-8=significant, 5-6=interesting, below 5=minor
+- signal_label: one of ["Major", "Important", "Interesting", "Minor"]
+- tweet: ready-to-post Twitter post, punchy, end with 2-3 hashtags. Max 280 chars.
+- linkedin: polished 3-sentence thought-leader LinkedIn post. Professional tone. End with 2-3 hashtags.
+- eli15: explain in 1-2 sentences like reader is 15. Simple analogies, zero jargon.
+- hype: one sentence — what media/company claims (exaggerated/marketing spin)
+- reality: one sentence — what it actually means in plain honest truth
 - source: source name
 - link: original link exactly
 
@@ -70,7 +78,7 @@ Return ONLY valid JSON, no backticks:
 {
   "biggest_move": {"title":"...","reason":"...","link":"..."},
   "jargon_of_week": {"term":"...","explanation":"..."},
-  "stories": [{"tag":"...","title":"...","summary":"...","tldr":"...","why_it_matters":"...","tweet":"...","source":"...","link":"..."}]
+  "stories": [{"tag":"...","title":"...","summary":"...","tldr":"...","why_student":"...","why_developer":"...","why_founder":"...","signal_score":8.5,"signal_label":"Important","tweet":"...","linkedin":"...","eli15":"...","hype":"...","reality":"...","source":"...","link":"..."}]
 }`
 
   const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
