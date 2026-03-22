@@ -643,7 +643,7 @@ export default function App() {
             </div>
             <div className="sb-section">
               <span className="sb-label">Sources we track</span>
-              {['HackerNews AI','TechCrunch AI','Google DeepMind','OpenAI Blog','arXiv CS.AI','MIT Tech Review','The Verge AI'].map(s => (
+              {['Google DeepMind','Anthropic Blog','Google AI Blog','MIT Tech Review','TechCrunch AI','The Verge AI','VentureBeat AI','& many more'].map(s => (
                 <div className="src-item" key={s}><span className="src-dot"></span>{s}</div>
               ))}
             </div>
@@ -816,7 +816,7 @@ export default function App() {
       <footer>
         <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2025<br />
         AI-powered summaries · Sent via Brevo · Subscribers on Supabase<br />
-        Sources: TechCrunch · MIT Tech Review · HackerNews · DeepMind · The Verge · Wired<br />
+        Sources: DeepMind · Anthropic · Google AI · MIT Tech Review · TechCrunch · The Verge · VentureBeat & more<br />
         Built by <strong>PRAJWAL.A</strong> — an AIML student who got tired of AI noise<br /><br />
         <a href="#">Unsubscribe</a> &nbsp;·&nbsp;
         <a href="https://neural-brief-eight.vercel.app">Website</a> &nbsp;·&nbsp;

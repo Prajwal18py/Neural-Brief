@@ -57,11 +57,15 @@ TAG_COLORS = {
 
 RSS_FEEDS = [
     {"name": "TechCrunch AI",         "url": "https://techcrunch.com/category/artificial-intelligence/feed/"},
+    {"name": "The Verge AI",          "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"},
     {"name": "HackerNews AI",         "url": "https://hnrss.org/frontpage?q=AI+OR+LLM+OR+machine+learning"},
     {"name": "MIT Technology Review", "url": "https://www.technologyreview.com/feed/"},
     {"name": "VentureBeat AI",        "url": "https://venturebeat.com/category/ai/feed/"},
-    {"name": "The Verge AI",          "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"},
     {"name": "Google DeepMind",       "url": "https://deepmind.google/blog/rss.xml"},
+    {"name": "Anthropic Blog",        "url": "https://www.anthropic.com/rss.xml"},
+    {"name": "Google AI Blog",        "url": "https://blog.google/technology/ai/rss/"},
+    {"name": "Hugging Face",          "url": "https://huggingface.co/blog/feed.xml"},
+    {"name": "The Batch",             "url": "https://www.deeplearning.ai/the-batch/feed/"},
     {"name": "Wired AI",              "url": "https://www.wired.com/feed/tag/artificial-intelligence/latest/rss"},
 ]
 
