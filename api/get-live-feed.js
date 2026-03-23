@@ -60,8 +60,8 @@ const AI_KEYWORDS = [
 
 // Check if title is AI relevant
 function isAIRelevant(title) {
-  const t = title.toLowerCase()
-  return AI_KEYWORDS.some(kw => t.includes(kw))
+  const t = ' ' + title.toLowerCase() + ' '
+  return AI_KEYWORDS.some(kw => t.includes(' ' + kw + ' ') || t.includes(' ' + kw + ',') || t.includes(' ' + kw + ':'))
 }
 
 // Only stories from last 48 hours
