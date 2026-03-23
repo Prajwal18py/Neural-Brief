@@ -18,50 +18,38 @@ const RSS_FEEDS = [
   { name: 'Anthropic Blog',        url: 'https://www.anthropic.com/rss.xml' },
   { name: 'Google AI Blog',        url: 'https://blog.google/technology/ai/rss/' },
   { name: 'Hugging Face',          url: 'https://huggingface.co/blog/feed.xml' },
-  { name: 'The Batch',             url: 'https://www.deeplearning.ai/the-batch/feed/' },
   { name: 'Wired AI',              url: 'https://www.wired.com/feed/tag/ai/latest/rss' },
   { name: 'Google DeepMind',       url: 'https://deepmind.google/blog/rss.xml' },
 ]
 
 // AI / ML / DS / Robotics / Company keywords
 const AI_KEYWORDS = [
-  // Core AI/ML
-  'ai', 'artificial intelligence', 'machine learning', 'deep learning',
+  'artificial intelligence', 'machine learning', 'deep learning',
   'neural network', 'llm', 'large language model', 'generative ai',
   'foundation model', 'transformer', 'diffusion', 'reinforcement learning',
-
-  // Models and products
   'gpt', 'chatgpt', 'gemini', 'claude', 'llama', 'mistral', 'grok',
   'copilot', 'midjourney', 'stable diffusion', 'dall-e', 'sora',
   'whisper', 'runway', 'perplexity', 'cursor', 'windsurf',
-
-  // Companies
   'openai', 'anthropic', 'deepmind', 'google ai', 'meta ai',
   'microsoft ai', 'nvidia', 'hugging face', 'cohere', 'mistral ai',
   'stability ai', 'inflection', 'xai', 'groq', 'together ai',
   'replicate', 'scale ai', 'databricks',
-
-  // Data Science
   'data science', 'dataset', 'benchmark', 'training data',
   'fine-tuning', 'fine tuning', 'rag', 'retrieval', 'embedding',
   'vector database', 'inference', 'token', 'context window',
-
-  // Robotics and hardware
-  'robotics', 'robot', 'autonomous', 'self-driving',
-  'gpu', 'tpu', 'semiconductor', 'compute', 'inference chip',
-
-  // Applications
+  'robotics', 'autonomous', 'self-driving',
+  'gpu', 'tpu', 'semiconductor', 'compute',
   'ai agent', 'agentic', 'chatbot', 'voice ai',
   'computer vision', 'image generation', 'text to image',
   'multimodal', 'reasoning model', 'coding ai', 'ai safety',
-  'alignment', 'hallucination', 'prompt', 'ai regulation',
+  'alignment', 'hallucination', 'ai regulation',
   'ai policy', 'ai funding', 'ai startup', 'ai tool',
 ]
 
 // Check if title is AI relevant
 function isAIRelevant(title) {
   const t = ' ' + title.toLowerCase() + ' '
-  return AI_KEYWORDS.some(kw => t.includes(' ' + kw + ' ') || t.includes(' ' + kw + ',') || t.includes(' ' + kw + ':'))
+  return AI_KEYWORDS.some(kw => t.includes(' ' + kw + ' ') || t.includes(' ' + kw + ',') || t.includes(' ' + kw + ':') || t.includes(' ' + kw + '.'))
 }
 
 // Only stories from last 48 hours
@@ -97,26 +85,23 @@ async function fetchLatest() {
   // Sort by newest first
   all.sort((a, b) => b.published - a.published)
 
-  // Filter: AI relevant + recent (last 48h)
+  // Filter: AI relevant + recent
   const aiRecent = all.filter(s => isAIRelevant(s.title) && isRecent(s.published))
+  const aiOnly   = all.filter(s => isAIRelevant(s.title))
+  const pool     = aiRecent.length >= 3 ? aiRecent : aiOnly.length >= 3 ? aiOnly : all
 
-  // Fallback: AI relevant only if not enough recent
-  const aiOnly = all.filter(s => isAIRelevant(s.title))
+  console.log(`Total stories: ${all.length}, AI+recent: ${aiRecent.length}, AI only: ${aiOnly.length}`)
 
-  // Pick best pool
-  const pool = aiRecent.length >= 3 ? aiRecent : aiOnly.length >= 3 ? aiOnly : all
-
-  // Deduplicate by similar title
-  const seen = new Set()
+  // Deduplicate
+  const seen   = new Set()
   const unique = []
   for (const s of pool) {
     const key = s.title.toLowerCase().slice(0, 50)
-    if (!seen.has(key)) {
-      seen.add(key)
-      unique.push(s)
-    }
+    if (!seen.has(key)) { seen.add(key); unique.push(s) }
     if (unique.length >= 3) break
   }
+
+  console.log('Selected:', unique.map(s => s.title).join(' | '))
 
   return unique.map(s => ({
     title:     s.title,
@@ -132,24 +117,32 @@ export default async function handler(req, res) {
   res.setHeader('Pragma', 'no-cache')
 
   try {
-    // Check cache
     const { data: cache } = await supabase
       .from('live_feed_cache')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(1)
 
+    const cacheAge = cache && cache.length > 0
+      ? (Date.now() - new Date(cache[0].created_at).getTime()) / 60000
+      : null
+
+    console.log(`Cache age: ${cacheAge !== null ? cacheAge.toFixed(1) + ' min' : 'empty'}`)
+
     if (cache && cache.length > 0 && isFresh(cache[0].created_at)) {
+      console.log('Serving from Supabase cache')
       return res.status(200).json({ stories: cache[0].stories, cached: true })
     }
 
-    // Fetch fresh
+    console.log('Fetching fresh from RSS...')
     const stories = await fetchLatest()
 
     if (stories.length > 0) {
-      // Clear old cache + insert fresh
       await supabase.from('live_feed_cache').delete().neq('id', '00000000-0000-0000-0000-000000000000')
       await supabase.from('live_feed_cache').insert({ stories })
+      console.log('Saved to Supabase cache')
+    } else {
+      console.log('No AI stories found!')
     }
 
     return res.status(200).json({ stories, cached: false })
