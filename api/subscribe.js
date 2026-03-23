@@ -157,7 +157,7 @@ function buildDigestEmail(data, briefNum, email) {
   </a>
   <p style="font-size:13px;color:#5a5550;margin:0 0 6px;line-height:1.75;">${story.summary}</p>
   <p style="font-size:11px;font-family:'Courier New',monospace;color:#c13d18;margin:0 0 8px;">${story.tldr}</p>
-  ${story.why_it_matters ? `
+  ${(story.why_student || story.why_it_matters) ? `
   <div style="background:#f4f1ea;border-left:3px solid #c13d18;padding:8px 12px;margin-bottom:8px;">
     <span style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;text-transform:uppercase;letter-spacing:.1em;">Why it matters → </span>
     <span style="font-size:12px;color:#5a5550;line-height:1.6;">${story.why_it_matters}</span>

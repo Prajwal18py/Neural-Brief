@@ -161,7 +161,7 @@ Return ONLY valid JSON, no markdown backticks:
         model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.35,
-        max_tokens=6000,
+        max_tokens=8000,
     )
 
     raw    = resp.choices[0].message.content.strip().replace("```json", "").replace("```", "").strip()
