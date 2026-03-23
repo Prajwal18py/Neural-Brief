@@ -88,7 +88,7 @@ async function fetchLatest() {
   // Filter: AI relevant + recent
   const aiRecent = all.filter(s => isAIRelevant(s.title) && isRecent(s.published))
   const aiOnly   = all.filter(s => isAIRelevant(s.title))
-  const pool     = aiRecent.length >= 3 ? aiRecent : aiOnly.length >= 3 ? aiOnly : all
+  const pool = aiRecent.length >= 5 ? aiRecent : aiOnly.length >= 5 ? aiOnly : all
 
   console.log(`Total stories: ${all.length}, AI+recent: ${aiRecent.length}, AI only: ${aiOnly.length}`)
 
@@ -98,7 +98,7 @@ async function fetchLatest() {
   for (const s of pool) {
     const key = s.title.toLowerCase().slice(0, 50)
     if (!seen.has(key)) { seen.add(key); unique.push(s) }
-    if (unique.length >= 3) break
+    if (unique.length >= 5) break
   }
 
   console.log('Selected:', unique.map(s => s.title).join(' | '))

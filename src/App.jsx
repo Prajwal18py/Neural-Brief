@@ -685,9 +685,9 @@ export default function App() {
           <div className="section-hd">
             <span className="section-sym">§</span>
             <div>
-              <h2>Today's Top 3</h2>
+              <h2>Today's Top 5</h2>
               <p style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--muted2)', marginTop: '4px' }}>
-                Live · Updated every 3 hours
+                Live · Updated daily
               </p>
             </div>
           </div>
