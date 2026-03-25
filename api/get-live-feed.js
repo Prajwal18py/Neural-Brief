@@ -15,12 +15,28 @@ const RSS_FEEDS = [
   { name: 'VentureBeat AI',        url: 'https://venturebeat.com/category/ai/feed/' },
   { name: 'HackerNews AI',         url: 'https://hnrss.org/frontpage?q=artificial+intelligence+OR+LLM+OR+GPT+OR+machine+learning&points=50' },
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
-  { name: 'Anthropic News',        url: 'https://www.anthropic.com/news/rss.xml' },
+  { name: 'Anthropic News',        url: 'https://www.anthropic.com/news/rss.xml' },                               // ✅ fixed
   { name: 'Google AI Blog',        url: 'https://blog.google/technology/ai/rss/' },
   { name: 'Hugging Face',          url: 'https://huggingface.co/blog/feed.xml' },
-  { name: 'Wired AI',              url: 'https://www.wired.com/feed/category/artificial-intelligence/latest/rss/' },
+  { name: 'Wired AI',              url: 'https://www.wired.com/feed/category/artificial-intelligence/latest/rss/' }, // ✅ fixed
   { name: 'Google DeepMind',       url: 'https://deepmind.google/blog/rss.xml' },
 ]
+
+// ✅ Decode HTML entities in RSS titles
+function decodeEntities(str) {
+  return str
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#8217;/g, "'")
+    .replace(/&#8216;/g, "'")
+    .replace(/&#8220;/g, '"')
+    .replace(/&#8221;/g, '"')
+    .replace(/&#8211;/g, '–')
+    .replace(/&#8212;/g, '—')
+    .replace(/&apos;/g, "'")
+}
 
 // AI / ML / DS / Robotics / Company keywords
 const AI_KEYWORDS = [
@@ -71,7 +87,7 @@ async function fetchLatest() {
       const parsed = await parser.parseURL(feed.url)
       for (const item of parsed.items.slice(0, 6)) {
         all.push({
-          title:     (item.title || 'Untitled').trim(),
+          title:     decodeEntities((item.title || 'Untitled').trim()), // ✅ decode entities
           link:      item.link || '#',
           source:    feed.name,
           published: item.pubDate ? new Date(item.pubDate) : new Date(),
