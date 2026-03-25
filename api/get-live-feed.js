@@ -15,10 +15,10 @@ const RSS_FEEDS = [
   { name: 'VentureBeat AI',        url: 'https://venturebeat.com/category/ai/feed/' },
   { name: 'HackerNews AI',         url: 'https://hnrss.org/frontpage?q=artificial+intelligence+OR+LLM+OR+GPT+OR+machine+learning&points=50' },
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
-  { name: 'Anthropic Blog',        url: 'https://www.anthropic.com/rss.xml' },
+  { name: 'Anthropic News',        url: 'https://www.anthropic.com/news/rss.xml' },
   { name: 'Google AI Blog',        url: 'https://blog.google/technology/ai/rss/' },
   { name: 'Hugging Face',          url: 'https://huggingface.co/blog/feed.xml' },
-  { name: 'Wired AI',              url: 'https://www.wired.com/feed/tag/ai/latest/rss' },
+  { name: 'Wired AI',              url: 'https://www.wired.com/feed/category/artificial-intelligence/latest/rss/' },
   { name: 'Google DeepMind',       url: 'https://deepmind.google/blog/rss.xml' },
 ]
 
