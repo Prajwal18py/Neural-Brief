@@ -15,11 +15,11 @@ const RSS_FEEDS = [
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
   { name: 'VentureBeat AI',        url: 'https://venturebeat.com/category/ai/feed/' },
   { name: 'Google DeepMind',       url: 'https://deepmind.google/blog/rss.xml' },
-  { name: 'Anthropic Blog',        url: 'https://www.anthropic.com/rss.xml' },
+  { name: 'Anthropic News',        url: 'https://www.anthropic.com/news/rss.xml' },           
   { name: 'Google AI Blog',        url: 'https://blog.google/technology/ai/rss/' },
   { name: 'Hugging Face',          url: 'https://huggingface.co/blog/feed.xml' },
-  { name: 'The Batch',             url: 'https://www.deeplearning.ai/the-batch/feed/' },
-  { name: 'Wired AI',              url: 'https://www.wired.com/feed/tag/artificial-intelligence/latest/rss' },
+  { name: 'The Batch',             url: 'https://www.deeplearning.ai/the-batch/tag/the-batch/feed/' }, 
+  { name: 'Wired AI',              url: 'https://www.wired.com/feed/category/artificial-intelligence/latest/rss/' }, 
 ]
 
 function isFresh(cachedAt) {
@@ -35,7 +35,7 @@ async function fetchStories() {
         all.push({
           source:      feed.name,
           title:       item.title || 'Untitled',
-          description: (item.contentSnippet || item.summary || '').slice(0, 800),
+          description: (item.contentSnippet || item.summary || '').slice(0, 150), // ✅ trimmed from 800 → 150
           link:        item.link || '',
         })
       }
@@ -45,13 +45,14 @@ async function fetchStories() {
 }
 
 async function summarise(stories) {
-  const text = stories.map((s, i) =>
-    `[${i+1}] SOURCE: ${s.source}\nTITLE: ${s.title}\nDESC: ${s.description.slice(0, 300)}\nLINK: ${s.link}`
+  // ✅ Cap at 60 stories to keep prompt size manageable
+  const text = stories.slice(0, 60).map((s, i) =>
+    `[${i+1}] SOURCE: ${s.source}\nTITLE: ${s.title}\nDESC: ${s.description}\nLINK: ${s.link}`
   ).join('\n\n')
 
   const prompt = `You are the editor of Neural Brief, a weekly AI news digest for Indian college students.
 
-Here are ${stories.length} recent AI stories:
+Here are ${Math.min(stories.length, 60)} recent AI stories:
 ${text}
 
 Pick the 15 most important, interesting, and varied stories. Cover different categories.
@@ -92,13 +93,23 @@ Return ONLY valid JSON, no backticks:
       model: 'llama-3.3-70b-versatile',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.35,
-      max_tokens: 6000,
+      max_tokens: 8000, 
     }),
   })
 
-  const data   = await resp.json()
-  const raw    = data.choices[0].message.content.trim().replace(/```json|```/g, '').trim()
-  return JSON.parse(raw)
+  const data = await resp.json()
+  const raw  = data.choices[0].message.content.trim().replace(/```json|```/g, '').trim()
+
+  // Safe JSON parse with helpful error
+  let parsed
+  try {
+    parsed = JSON.parse(raw)
+  } catch (e) {
+    console.error('❌ JSON parse failed — likely truncated. Tail:', raw.slice(-200))
+    throw new Error('Groq response was truncated. Reduce input size or increase max_tokens.')
+  }
+
+  return parsed
 }
 
 export default async function handler(req, res) {
