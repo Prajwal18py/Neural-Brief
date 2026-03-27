@@ -47,15 +47,14 @@ const TAG_COLORS = {
 const RSS_FEEDS = [
   { name: 'TechCrunch AI',         url: 'https://techcrunch.com/category/artificial-intelligence/feed/' },
   { name: 'The Verge AI',          url: 'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml' },
-  { name: 'HackerNews AI',         url: 'https://hnrss.org/frontpage?q=AI+OR+LLM+OR+machine+learning' },
+  { name: 'HackerNews AI',         url: 'https://hnrss.org/frontpage?q=AI+OR+LLM+OR+machine+learning&points=50' },
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
   { name: 'VentureBeat AI',        url: 'https://venturebeat.com/category/ai/feed/' },
   { name: 'Google DeepMind',       url: 'https://deepmind.google/blog/rss.xml' },
-  { name: 'Anthropic Blog',        url: 'https://www.anthropic.com/rss.xml' },
+  { name: 'Anthropic News',        url: 'https://www.anthropic.com/news/rss.xml' },
   { name: 'Google AI Blog',        url: 'https://blog.google/technology/ai/rss/' },
   { name: 'Hugging Face',          url: 'https://huggingface.co/blog/feed.xml' },
-  { name: 'The Batch',             url: 'https://www.deeplearning.ai/the-batch/feed/' },
-  { name: 'Wired AI',              url: 'https://www.wired.com/feed/tag/artificial-intelligence/latest/rss' },
+  { name: 'Wired AI',              url: 'https://www.wired.com/feed/category/artificial-intelligence/latest/rss/' },
 ]
 
 // ── Fetch RSS ─────────────────────────────────────────────
@@ -68,7 +67,7 @@ async function fetchStories(maxPerFeed = 10) {
         all.push({
           source:      feed.name,
           title:       item.title || 'Untitled',
-          description: (item.contentSnippet || item.summary || '').slice(0, 800),
+          description: (item.contentSnippet || item.summary || '').slice(0, 150),
           link:        item.link || '',
         })
       }
@@ -152,7 +151,7 @@ Return ONLY valid JSON, no markdown backticks:
       model: 'llama-3.3-70b-versatile',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.35,
-      max_tokens: 6000,
+      max_tokens: 8000,
     }),
   })
 
