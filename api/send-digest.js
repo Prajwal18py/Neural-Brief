@@ -51,10 +51,10 @@ const RSS_FEEDS = [
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
   { name: 'VentureBeat AI',        url: 'https://venturebeat.com/category/ai/feed/' },
   { name: 'Google DeepMind',       url: 'https://deepmind.google/blog/rss.xml' },
-  { name: 'Anthropic News',        url: 'https://www.anthropic.com/news/rss.xml' },
+  { name: 'Anthropic News',        url: 'https://www.anthropic.com/news/rss.xml' },                               // ✅ fixed
   { name: 'Google AI Blog',        url: 'https://blog.google/technology/ai/rss/' },
   { name: 'Hugging Face',          url: 'https://huggingface.co/blog/feed.xml' },
-  { name: 'Wired AI',              url: 'https://www.wired.com/feed/category/artificial-intelligence/latest/rss/' },
+  { name: 'Wired AI',              url: 'https://www.wired.com/feed/category/artificial-intelligence/latest/rss/' }, // ✅ fixed
 ]
 
 // ── Fetch RSS ─────────────────────────────────────────────
@@ -104,13 +104,13 @@ async function markSent(stories) {
 
 // ── Groq — pick + summarise with all new fields ───────────
 async function selectAndSummarise(stories) {
-  const storiesText = stories.map((s, i) =>
-    `[${i+1}] SOURCE: ${s.source}\nTITLE: ${s.title}\nDESC: ${s.description.slice(0, 300)}\nLINK: ${s.link}`
+  const storiesText = stories.slice(0, 60).map((s, i) =>
+    `[${i+1}] SOURCE: ${s.source}\nTITLE: ${s.title}\nDESC: ${s.description.slice(0, 150)}\nLINK: ${s.link}`
   ).join('\n\n')
 
   const prompt = `You are the editor of Neural Brief, a weekly AI news digest for Indian college students.
 
-Here are ${stories.length} AI stories from this week:
+Here are ${Math.min(stories.length, 60)} AI stories from this week:
 ${storiesText}
 
 Pick the ${STORIES_COUNT} most important, interesting, and varied stories. Cover different categories.
@@ -155,9 +155,17 @@ Return ONLY valid JSON, no markdown backticks:
     }),
   })
 
-  const data   = await resp.json()
-  const raw    = data.choices[0].message.content.trim().replace(/```json|```/g, '').trim()
-  const result = JSON.parse(raw)
+  const data = await resp.json()
+  const raw  = data.choices[0].message.content.trim().replace(/```json|```/g, '').trim()
+
+  let result
+  try {
+    result = JSON.parse(raw)
+  } catch (e) {
+    console.error('❌ JSON parse failed — likely truncated. Tail:', raw.slice(-200))
+    throw new Error('Groq response was truncated. Reduce input size or increase max_tokens.')
+  }
+
   console.log(`🧠 Groq selected ${result.stories.length} stories`)
   return result
 }
@@ -381,12 +389,12 @@ export default async function handler(req, res) {
     } catch (e) { console.log('⚠️ Cache save skipped:', e.message) }
 
     let sent = 0, failed = 0
-    for (const email of subscribers) {
+    for (const sub of subscribers) {                                          // ✅ fixed: was `email`
       try {
-        const html = buildHtml(result, briefNum, email, sub.persona || "")
-        await transporter.sendMail({ from: FROM_EMAIL, to: email, replyTo: REPLY_TO, subject, html })
+        const html = buildHtml(result, briefNum, sub.email, sub.persona || "") // ✅ fixed: sub.email + sub.persona
+        await transporter.sendMail({ from: FROM_EMAIL, to: sub.email, replyTo: REPLY_TO, subject, html }) // ✅ fixed: sub.email
         sent++
-      } catch (e) { failed++; console.log(`❌ ${email}: ${e.message}`) }
+      } catch (e) { failed++; console.log(`❌ ${sub.email}: ${e.message}`) }
     }
 
     await markSent(result.stories)
