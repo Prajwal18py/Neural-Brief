@@ -38,12 +38,16 @@ const TAG_COLORS = {
 const SOURCE_LABELS = {
   'Google DeepMind':       { label: 'Official',  bg: '#edf5eb', color: '#357025', border: '#bdd9b7' },
   'OpenAI Blog':           { label: 'Official',  bg: '#edf5eb', color: '#357025', border: '#bdd9b7' },
+  'Anthropic News':        { label: 'Official',  bg: '#edf5eb', color: '#357025', border: '#bdd9b7' },
   'TechCrunch AI':         { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
   'MIT Technology Review': { label: 'Research',  bg: '#f3f0fb', color: '#4f2fa8', border: '#cfc6f0' },
   'VentureBeat AI':        { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
   'The Verge AI':          { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
   'HackerNews AI':         { label: 'Community', bg: '#fdf5e8', color: '#7a5018', border: '#e8d3a0' },
   'Wired AI':              { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
+  'Import AI':             { label: 'Research',  bg: '#f3f0fb', color: '#4f2fa8', border: '#cfc6f0' },
+  'Analytics India':       { label: 'India',     bg: '#fff3e0', color: '#e65100', border: '#ffcc80' },
+  'Reuters Tech':          { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
 }
 
 // ── Welcome email ─────────────────────────────────────────
@@ -118,7 +122,7 @@ function buildWelcomeEmail(email) {
 }
 
 // ── Build digest email from cached stories ────────────────
-function buildDigestEmail(data, briefNum, email) {
+function buildDigestEmail(data, briefNum, email, persona = '') {
   const { stories, biggest_move, jargon_of_week } = data
   const dateStr = new Date().toLocaleDateString('en-IN', {
     weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
@@ -141,6 +145,10 @@ function buildDigestEmail(data, briefNum, email) {
     const colors   = TAG_COLORS[tag] || TAG_COLORS['Research']
     const srcLabel = SOURCE_LABELS[story.source]
 
+    const whyKey   = persona === 'Developer' ? 'why_developer' : persona === 'Founder' ? 'why_founder' : 'why_student'
+    const whyText  = story[whyKey] || story.why_student || story.why_developer || ''
+    const whyLabel = persona === 'Developer' ? 'Why devs care →' : persona === 'Founder' ? 'Why founders care →' : 'Why students care →'
+
     return `
 <div style="padding:20px 0;border-bottom:1px solid #e8e3db;">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
@@ -157,10 +165,10 @@ function buildDigestEmail(data, briefNum, email) {
   </a>
   <p style="font-size:13px;color:#5a5550;margin:0 0 6px;line-height:1.75;">${story.summary}</p>
   <p style="font-size:11px;font-family:'Courier New',monospace;color:#c13d18;margin:0 0 8px;">${story.tldr}</p>
-  ${(story.why_student || story.why_it_matters) ? `
+  ${whyText ? `
   <div style="background:#f4f1ea;border-left:3px solid #c13d18;padding:8px 12px;margin-bottom:8px;">
-    <span style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;text-transform:uppercase;letter-spacing:.1em;">Why it matters → </span>
-    <span style="font-size:12px;color:#5a5550;line-height:1.6;">${story.why_it_matters}</span>
+    <span style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;text-transform:uppercase;letter-spacing:.1em;">${whyLabel} </span>
+    <span style="font-size:12px;color:#5a5550;line-height:1.6;">${whyText}</span>
   </div>` : ''}
   <p style="font-size:10px;color:#bfb9aa;margin:0;">via ${story.source || 'Neural Brief'}</p>
 </div>`
@@ -294,7 +302,7 @@ export default async function handler(req, res) {
       }
       try {
         const briefNum = await getIssueNum()
-        const html     = buildDigestEmail(cached, briefNum, email)
+        const html     = buildDigestEmail(cached, briefNum, email, persona || '')
         await transporter.sendMail({
           from:    FROM_EMAIL,
           to:      email,

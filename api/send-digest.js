@@ -26,6 +26,7 @@ const STORIES_COUNT = 15
 const SOURCE_LABELS = {
   'Google DeepMind':       { label: 'Official',  bg: '#edf5eb', color: '#357025', border: '#bdd9b7' },
   'OpenAI Blog':           { label: 'Official',  bg: '#edf5eb', color: '#357025', border: '#bdd9b7' },
+  'Anthropic News':        { label: 'Official',  bg: '#edf5eb', color: '#357025', border: '#bdd9b7' },
   'TechCrunch AI':         { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
   'MIT Technology Review': { label: 'Research',  bg: '#f3f0fb', color: '#4f2fa8', border: '#cfc6f0' },
   'VentureBeat AI':        { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
@@ -33,6 +34,9 @@ const SOURCE_LABELS = {
   'HackerNews AI':         { label: 'Community', bg: '#fdf5e8', color: '#7a5018', border: '#e8d3a0' },
   'Wired AI':              { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
   'arXiv CS.AI':           { label: 'Research',  bg: '#f3f0fb', color: '#4f2fa8', border: '#cfc6f0' },
+  'Import AI':             { label: 'Research',  bg: '#f3f0fb', color: '#4f2fa8', border: '#cfc6f0' },
+  'Analytics India':       { label: 'India',     bg: '#fff3e0', color: '#e65100', border: '#ffcc80' },
+  'Reuters Tech':          { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
 }
 
 const TAG_COLORS = {
@@ -51,10 +55,14 @@ const RSS_FEEDS = [
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
   { name: 'VentureBeat AI',        url: 'https://venturebeat.com/category/ai/feed/' },
   { name: 'Google DeepMind',       url: 'https://deepmind.google/blog/rss.xml' },
-  { name: 'Anthropic News',        url: 'https://www.anthropic.com/news/rss.xml' },                               // ✅ fixed
+  { name: 'Anthropic News',        url: 'https://www.anthropic.com/news/rss.xml' },
+  { name: 'OpenAI Blog',           url: 'https://openai.com/blog/rss.xml' },
   { name: 'Google AI Blog',        url: 'https://blog.google/technology/ai/rss/' },
   { name: 'Hugging Face',          url: 'https://huggingface.co/blog/feed.xml' },
-  { name: 'Wired AI',              url: 'https://www.wired.com/feed/category/artificial-intelligence/latest/rss/' }, // ✅ fixed
+  { name: 'Wired AI',              url: 'https://www.wired.com/feed/category/artificial-intelligence/latest/rss/' },
+  { name: 'Import AI',             url: 'https://jack-clark.net/feed/' },
+  { name: 'Analytics India',       url: 'https://analyticsindiamag.com/feed/' },
+  { name: 'Reuters Tech',          url: 'https://feeds.reuters.com/reuters/technologyNews' },
 ]
 
 // ── Fetch RSS ─────────────────────────────────────────────
@@ -323,6 +331,29 @@ function buildHtml(result, briefNum, email, persona = "") {
 </html>`
 }
 
+// ── Try digest_cache before calling Groq ─────────────────
+async function getCachedResult() {
+  try {
+    const { data } = await supabase
+      .from('digest_cache')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    if (data && data.length > 0 && data[0].data) {
+      const ageHrs = (Date.now() - new Date(data[0].created_at).getTime()) / (1000 * 60 * 60)
+      if (ageHrs < 6) {
+        console.log(`📦 Using digest_cache (${ageHrs.toFixed(1)}h old) — skipping Groq`)
+        return data[0].data
+      }
+      console.log(`🔄 Cache is ${ageHrs.toFixed(1)}h old — regenerating`)
+    }
+  } catch (e) {
+    console.log('⚠️ Cache read failed:', e.message)
+  }
+  return null
+}
+
 // ── Get subscribers ───────────────────────────────────────
 async function getSubscribers() {
   const { data } = await supabase.from('subscribers').select('email, persona').eq('confirmed', true)
@@ -358,11 +389,17 @@ export default async function handler(req, res) {
   console.log('🧠 Neural Brief — Weekly digest starting')
 
   try {
-    const stories  = await fetchStories(10)
-    if (!stories.length) return res.status(500).json({ error: 'No stories fetched' })
+    // Check digest_cache first — reuse if less than 6 hours old
+    let result = await getCachedResult()
+    let fromCache = !!result
 
-    const fresh    = await filterSeen(stories)
-    const result   = await selectAndSummarise(fresh.length >= STORIES_COUNT ? fresh : stories)
+    if (!result) {
+      const stories = await fetchStories(10)
+      if (!stories.length) return res.status(500).json({ error: 'No stories fetched' })
+
+      const fresh = await filterSeen(stories)
+      result = await selectAndSummarise(fresh.length >= STORIES_COUNT ? fresh : stories)
+    }
 
     const briefNum = await nextIssue()
     const subject  = `Neural Brief #${briefNum} — This week in AI 🧠`
@@ -370,23 +407,28 @@ export default async function handler(req, res) {
     const subscribers = await getSubscribers()
     if (!subscribers.length) return res.status(200).json({ message: 'No subscribers yet' })
 
-    // Save to archive
-    try {
-      await supabase.from('digest_archive').insert({
-        brief_num:    briefNum,
-        stories:      result.stories,
-        biggest_move: result.biggest_move,
-        jargon:       result.jargon_of_week,
-        created_at:   new Date().toISOString(),
-      })
-    } catch (e) { console.log('⚠️ Archive save skipped:', e.message) }
+    // Save to archive + update cache — only when freshly generated
+    if (!fromCache) {
+      try {
+        await supabase.from('digest_archive').insert({
+          brief_num:    briefNum,
+          stories:      result.stories,
+          biggest_move: result.biggest_move,
+          jargon:       result.jargon_of_week,
+          created_at:   new Date().toISOString(),
+        })
+      } catch (e) { console.log('⚠️ Archive save skipped:', e.message) }
 
-    // Save to digest_cache (for new subscribers + website)
-    try {
-      await supabase.from('digest_cache').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      await supabase.from('digest_cache').insert({ data: result })
-      console.log('✅ Saved to digest_cache')
-    } catch (e) { console.log('⚠️ Cache save skipped:', e.message) }
+      try {
+        await supabase.from('digest_cache').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+        await supabase.from('digest_cache').insert({ data: result })
+        console.log('✅ Saved to digest_cache')
+      } catch (e) { console.log('⚠️ Cache save skipped:', e.message) }
+
+      await markSent(result.stories)
+    } else {
+      console.log('📦 Skipped archive/cache save — used cached result')
+    }
 
     let sent = 0, failed = 0
     for (const sub of subscribers) {                                          // ✅ fixed: was `email`
@@ -397,9 +439,7 @@ export default async function handler(req, res) {
       } catch (e) { failed++; console.log(`❌ ${sub.email}: ${e.message}`) }
     }
 
-    await markSent(result.stories)
-
-    console.log(`✅ Done! Sent: ${sent} | Failed: ${failed}`)
+    console.log(`✅ Done! Sent: ${sent} | Failed: ${failed} | Source: ${fromCache ? 'cache' : 'fresh Groq'}`)
     return res.status(200).json({ success: true, sent, failed, issue: briefNum })
 
   } catch (err) {

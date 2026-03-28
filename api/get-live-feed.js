@@ -15,11 +15,15 @@ const RSS_FEEDS = [
   { name: 'VentureBeat AI',        url: 'https://venturebeat.com/category/ai/feed/' },
   { name: 'HackerNews AI',         url: 'https://hnrss.org/frontpage?q=artificial+intelligence+OR+LLM+OR+GPT+OR+machine+learning&points=50' },
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
-  { name: 'Anthropic News',        url: 'https://www.anthropic.com/news/rss.xml' },                               // ✅ fixed
+  { name: 'Anthropic News',        url: 'https://www.anthropic.com/news/rss.xml' },
+  { name: 'OpenAI Blog',           url: 'https://openai.com/blog/rss.xml' },
   { name: 'Google AI Blog',        url: 'https://blog.google/technology/ai/rss/' },
   { name: 'Hugging Face',          url: 'https://huggingface.co/blog/feed.xml' },
-  { name: 'Wired AI',              url: 'https://www.wired.com/feed/category/artificial-intelligence/latest/rss/' }, // ✅ fixed
+  { name: 'Wired AI',              url: 'https://www.wired.com/feed/category/artificial-intelligence/latest/rss/' },
   { name: 'Google DeepMind',       url: 'https://deepmind.google/blog/rss.xml' },
+  { name: 'Import AI',             url: 'https://jack-clark.net/feed/' },
+  { name: 'Analytics India',       url: 'https://analyticsindiamag.com/feed/' },
+  { name: 'Reuters Tech',          url: 'https://feeds.reuters.com/reuters/technologyNews' },
 ]
 
 // ✅ Decode HTML entities in RSS titles
@@ -64,8 +68,8 @@ const AI_KEYWORDS = [
 
 // Check if title is AI relevant
 function isAIRelevant(title) {
-  const t = ' ' + title.toLowerCase() + ' '
-  return AI_KEYWORDS.some(kw => t.includes(' ' + kw + ' ') || t.includes(' ' + kw + ',') || t.includes(' ' + kw + ':') || t.includes(' ' + kw + '.'))
+  const t = title.toLowerCase()
+  return AI_KEYWORDS.some(kw => t.includes(kw))
 }
 
 // Only stories from last 48 hours

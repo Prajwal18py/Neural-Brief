@@ -15,11 +15,15 @@ const RSS_FEEDS = [
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
   { name: 'VentureBeat AI',        url: 'https://venturebeat.com/category/ai/feed/' },
   { name: 'Google DeepMind',       url: 'https://deepmind.google/blog/rss.xml' },
-  { name: 'Anthropic News',        url: 'https://www.anthropic.com/news/rss.xml' },           
+  { name: 'Anthropic News',        url: 'https://www.anthropic.com/news/rss.xml' },
+  { name: 'OpenAI Blog',           url: 'https://openai.com/blog/rss.xml' },
   { name: 'Google AI Blog',        url: 'https://blog.google/technology/ai/rss/' },
   { name: 'Hugging Face',          url: 'https://huggingface.co/blog/feed.xml' },
-  { name: 'The Batch',             url: 'https://www.deeplearning.ai/the-batch/tag/the-batch/feed/' }, 
-  { name: 'Wired AI',              url: 'https://www.wired.com/feed/category/artificial-intelligence/latest/rss/' }, 
+  { name: 'The Batch',             url: 'https://www.deeplearning.ai/the-batch/tag/the-batch/feed/' },
+  { name: 'Wired AI',              url: 'https://www.wired.com/feed/category/artificial-intelligence/latest/rss/' },
+  { name: 'Import AI',             url: 'https://jack-clark.net/feed/' },
+  { name: 'Analytics India',       url: 'https://analyticsindiamag.com/feed/' },
+  { name: 'Reuters Tech',          url: 'https://feeds.reuters.com/reuters/technologyNews' },
 ]
 
 function isFresh(cachedAt) {
