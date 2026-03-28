@@ -10,8 +10,7 @@ const TAG_CLASS = {
 const SOURCE_LABELS = {
   'Google DeepMind': 'Official', 'OpenAI Blog': 'Official',
   'TechCrunch AI': 'Media', 'MIT Technology Review': 'Research',
-  'VentureBeat AI': 'Media', 'The Verge AI': 'Media',
-  'HackerNews AI': 'Community', 'Wired AI': 'Media', 'arXiv CS.AI': 'Research',
+  'VentureBeat AI': 'Media', 'Wired AI': 'Media', 'arXiv CS.AI': 'Research',
 }
 
 const SIGNAL_COLORS = {
@@ -125,7 +124,7 @@ function LiveFeed() {
 
   const FALLBACK = [
     { title: 'OpenAI releases new reasoning model with major upgrades', why: 'Better reasoning means smarter AI tools coming to developers soon.', link: 'https://openai.com', source: 'TechCrunch AI', published: new Date().toISOString() },
-    { title: 'Google cuts AI API pricing across all Gemini models', why: 'AI tools will get cheaper — good news for students and startups.', link: 'https://deepmind.google', source: 'The Verge AI', published: new Date().toISOString() },
+    { title: 'Google cuts AI API pricing across all Gemini models', why: 'AI tools will get cheaper — good news for students and startups.', link: 'https://deepmind.google', source: 'Google DeepMind', published: new Date().toISOString() },
     { title: 'Meta open sources new language model with strong benchmarks', why: 'More competition means more choice and lower costs for builders.', link: 'https://ai.meta.com', source: 'HackerNews AI', published: new Date().toISOString() },
     { title: 'Anthropic releases new Claude model with improved reasoning', why: 'Better AI assistants mean more powerful tools for building and learning.', link: 'https://anthropic.com', source: 'Anthropic News', published: new Date().toISOString() },
     { title: 'NVIDIA announces next-gen chips for AI inference', why: 'Faster, cheaper inference means more AI tools accessible to everyone.', link: 'https://nvidia.com', source: 'VentureBeat AI', published: new Date().toISOString() },
@@ -284,7 +283,7 @@ function LiveDigest() {
         why_developer: 'A major productivity tool just got significantly smarter at no extra cost.',
         why_founder: 'Shows how AI features are becoming table stakes in every product.',
         signal_score: 6.5, signal_label: 'Interesting',
-        source: 'The Verge AI', link: 'https://theverge.com',
+        source: 'VentureBeat AI', link: 'https://venturebeat.com',
         eli15: 'Imagine your notebook could search Google while you are writing in it.',
         tweet: 'Notion AI now has real-time web search. Your notes just got a brain upgrade. #Notion #AI #Productivity',
         linkedin: 'Notion just added real-time web search to Notion AI. This puts Notion in direct competition with Perplexity and signals that AI-powered search is becoming a standard feature. #Notion #AI',
@@ -694,7 +693,7 @@ export default function App() {
             </div>
             <div className="sb-section">
               <span className="sb-label">Sources we track</span>
-              {['Google DeepMind','Anthropic Blog','Google AI Blog','MIT Tech Review','TechCrunch AI','The Verge AI','VentureBeat AI','& many more'].map(s => (
+              {['Google DeepMind','Anthropic Blog','Google AI Blog','MIT Tech Review','TechCrunch AI','VentureBeat AI','Wired AI','& many more'].map(s => (
                 <div className="src-item" key={s}><span className="src-dot"></span>{s}</div>
               ))}
             </div>
@@ -867,7 +866,7 @@ export default function App() {
       <footer>
         <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2025<br />
         AI-powered summaries · Sent via Brevo · Subscribers on Supabase<br />
-        Sources: DeepMind · Anthropic · Google AI · MIT Tech Review · TechCrunch · The Verge · VentureBeat & more<br />
+        Sources: DeepMind · Anthropic · Google AI · MIT Tech Review · TechCrunch · VentureBeat & more<br />
         Built by <strong>PRAJWAL.A</strong> — an AIML student who got tired of AI noise<br /><br />
         <a href="#">Unsubscribe</a> &nbsp;·&nbsp;
         <a href="https://neural-brief-eight.vercel.app">Website</a> &nbsp;·&nbsp;

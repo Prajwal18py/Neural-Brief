@@ -11,7 +11,6 @@ const parser   = new Parser({ timeout: 8000 })
 
 const RSS_FEEDS = [
   { name: 'TechCrunch AI',         url: 'https://techcrunch.com/category/artificial-intelligence/feed/' },
-  { name: 'The Verge AI',          url: 'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml' },
   { name: 'VentureBeat AI',        url: 'https://venturebeat.com/category/ai/feed/' },
   { name: 'HackerNews AI',         url: 'https://hnrss.org/frontpage?q=artificial+intelligence+OR+LLM+OR+GPT+OR+machine+learning&points=50' },
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
@@ -112,12 +111,18 @@ async function fetchLatest() {
 
   console.log(`Total stories: ${all.length}, AI+recent: ${aiRecent.length}, AI only: ${aiOnly.length}`)
 
-  // Deduplicate
-  const seen   = new Set()
-  const unique = []
+  // Deduplicate + cap per source at 2 for diversity
+  const seen        = new Set()
+  const sourceCounts = {}
+  const unique      = []
   for (const s of pool) {
     const key = s.title.toLowerCase().slice(0, 50)
-    if (!seen.has(key)) { seen.add(key); unique.push(s) }
+    const sourceCount = sourceCounts[s.source] || 0
+    if (!seen.has(key) && sourceCount < 2) {
+      seen.add(key)
+      sourceCounts[s.source] = sourceCount + 1
+      unique.push(s)
+    }
     if (unique.length >= 5) break
   }
 

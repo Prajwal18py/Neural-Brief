@@ -10,7 +10,6 @@ const parser   = new Parser()
 
 const RSS_FEEDS = [
   { name: 'TechCrunch AI',         url: 'https://techcrunch.com/category/artificial-intelligence/feed/' },
-  { name: 'The Verge AI',          url: 'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml' },
   { name: 'HackerNews AI',         url: 'https://hnrss.org/frontpage?q=AI+OR+LLM+OR+machine+learning' },
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
   { name: 'VentureBeat AI',        url: 'https://venturebeat.com/category/ai/feed/' },

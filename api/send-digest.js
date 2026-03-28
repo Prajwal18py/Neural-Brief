@@ -30,7 +30,6 @@ const SOURCE_LABELS = {
   'TechCrunch AI':         { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
   'MIT Technology Review': { label: 'Research',  bg: '#f3f0fb', color: '#4f2fa8', border: '#cfc6f0' },
   'VentureBeat AI':        { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
-  'The Verge AI':          { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
   'HackerNews AI':         { label: 'Community', bg: '#fdf5e8', color: '#7a5018', border: '#e8d3a0' },
   'Wired AI':              { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
   'arXiv CS.AI':           { label: 'Research',  bg: '#f3f0fb', color: '#4f2fa8', border: '#cfc6f0' },
@@ -50,7 +49,6 @@ const TAG_COLORS = {
 
 const RSS_FEEDS = [
   { name: 'TechCrunch AI',         url: 'https://techcrunch.com/category/artificial-intelligence/feed/' },
-  { name: 'The Verge AI',          url: 'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml' },
   { name: 'HackerNews AI',         url: 'https://hnrss.org/frontpage?q=AI+OR+LLM+OR+machine+learning&points=50' },
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
   { name: 'VentureBeat AI',        url: 'https://venturebeat.com/category/ai/feed/' },
