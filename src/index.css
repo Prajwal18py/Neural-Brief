@@ -837,8 +837,12 @@ nav.scrolled {
   display: flex; align-items: center; gap: 0;
   border-bottom: 1px solid var(--border);
   transition: background 0.15s;
+  text-decoration: none;
+  cursor: pointer;
 }
 .live-feed-item:hover { background: var(--bg2); }
+.live-feed-item:hover .live-feed-title { color: var(--accent); }
+.live-feed-item:hover .live-feed-arrow { color: var(--accent); transform: translateX(3px); }
 
 .live-feed-left {
   padding: 16px 14px 16px 18px;
@@ -852,6 +856,38 @@ nav.scrolled {
   font-family: var(--mono); font-size: 11px; color: var(--muted2);
 }
 
+/* ── Favicon ─────────────────────────────────────────────── */
+.live-feed-favicon-wrap {
+  padding: 0 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+}
+
+.live-favicon {
+  width: 20px; height: 20px;
+  border-radius: 4px;
+  display: block;
+  object-fit: contain;
+  filter: grayscale(20%);
+  transition: filter 0.15s, transform 0.15s;
+}
+.live-feed-item:hover .live-favicon {
+  filter: grayscale(0%);
+  transform: scale(1.1);
+}
+
+.live-favicon-fallback {
+  width: 20px; height: 20px;
+  border-radius: 4px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  color: var(--muted2);
+  flex-shrink: 0;
+}
+
 .live-feed-body {
   padding: 14px 16px; flex: 1;
   display: flex; flex-direction: column; gap: 4px;
@@ -862,7 +898,6 @@ nav.scrolled {
   color: var(--text); text-decoration: none; line-height: 1.35;
   transition: color 0.15s;
 }
-.live-feed-title:hover { color: var(--accent); }
 
 .live-feed-source {
   font-family: var(--mono); font-size: 10px; color: var(--muted2);
@@ -872,9 +907,6 @@ nav.scrolled {
   padding: 16px 18px; font-size: 16px; color: var(--muted2);
   text-decoration: none; flex-shrink: 0;
   transition: color 0.15s, transform 0.15s;
-}
-.live-feed-item:hover .live-feed-arrow {
-  color: var(--accent); transform: translateX(3px);
 }
 
 .live-feed-footer {
@@ -888,6 +920,7 @@ nav.scrolled {
 @media (max-width: 600px) {
   .live-feed-left { min-width: 40px; padding: 14px 10px; }
   .live-feed-title { font-size: 14px; }
+  .live-feed-favicon-wrap { padding: 0 10px; }
 }
 
 

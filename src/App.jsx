@@ -85,16 +85,50 @@ function SubscribeForm({ id, ctaText = 'Get the next brief' }) {
   )
 }
 
-// Today's Top 3 Live Feed
+// Favicon helper
+function getFavicon(url) {
+  try {
+    const domain = new URL(url).hostname
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`
+  } catch {
+    return null
+  }
+}
+
+// Favicon image with fallback
+function FaviconImg({ url, source, size = 20 }) {
+  const [errored, setErrored] = useState(false)
+  const src = getFavicon(url)
+  if (!src || errored) {
+    return (
+      <div className="live-favicon-fallback" style={{ width: size, height: size, fontSize: size * 0.5 }}>
+        {source ? source.charAt(0).toUpperCase() : '?'}
+      </div>
+    )
+  }
+  return (
+    <img
+      src={src}
+      alt={source}
+      className="live-favicon"
+      style={{ width: size, height: size }}
+      onError={() => setErrored(true)}
+    />
+  )
+}
+
+// Today's Top 5 Live Feed
 function LiveFeed() {
-  const [stories, setStories]       = useState([])
-  const [loading, setLoading]       = useState(true)
+  const [stories, setStories]         = useState([])
+  const [loading, setLoading]         = useState(true)
   const [lastUpdated, setLastUpdated] = useState('')
 
   const FALLBACK = [
     { title: 'OpenAI releases new reasoning model with major upgrades', why: 'Better reasoning means smarter AI tools coming to developers soon.', link: 'https://openai.com', source: 'TechCrunch AI', published: new Date().toISOString() },
     { title: 'Google cuts AI API pricing across all Gemini models', why: 'AI tools will get cheaper — good news for students and startups.', link: 'https://deepmind.google', source: 'The Verge AI', published: new Date().toISOString() },
     { title: 'Meta open sources new language model with strong benchmarks', why: 'More competition means more choice and lower costs for builders.', link: 'https://ai.meta.com', source: 'HackerNews AI', published: new Date().toISOString() },
+    { title: 'Anthropic releases new Claude model with improved reasoning', why: 'Better AI assistants mean more powerful tools for building and learning.', link: 'https://anthropic.com', source: 'Anthropic News', published: new Date().toISOString() },
+    { title: 'NVIDIA announces next-gen chips for AI inference', why: 'Faster, cheaper inference means more AI tools accessible to everyone.', link: 'https://nvidia.com', source: 'VentureBeat AI', published: new Date().toISOString() },
   ]
 
   function getWhy(title) {
@@ -138,25 +172,39 @@ function LiveFeed() {
   return (
     <div className="live-feed">
       {stories.map((story, i) => (
-        <div className="live-feed-item" key={i}>
+        <a
+          key={i}
+          href={story.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="live-feed-item"
+        >
+          {/* Number */}
           <div className="live-feed-left">
             <span className="live-feed-num">{String(i + 1).padStart(2, '0')}</span>
           </div>
+
+          {/* Favicon */}
+          <div className="live-feed-favicon-wrap">
+            <FaviconImg url={story.link} source={story.source} />
+          </div>
+
+          {/* Text */}
           <div className="live-feed-body">
-            <a href={story.link} target="_blank" rel="noopener noreferrer" className="live-feed-title">
-              {story.title}
-            </a>
-            <span className="live-feed-why">
-              → {story.why || getWhy(story.title)}
-            </span>
+            <span className="live-feed-title">{story.title}</span>
+            <span className="live-feed-why">→ {story.why || getWhy(story.title)}</span>
             <span className="live-feed-source">via {story.source}</span>
           </div>
-          <a href={story.link} target="_blank" rel="noopener noreferrer" className="live-feed-arrow">→</a>
-        </div>
+
+          {/* Arrow */}
+          <div className="live-feed-arrow">→</div>
+        </a>
       ))}
       <div className="live-feed-footer">
         <span>Updated {lastUpdated || 'recently'}</span>
-        <a href="#this-week" className="live-feed-cta">See deeper insights in this week's brief ↓</a>
+        <a href="#this-week" className="live-feed-cta" onClick={e => e.stopPropagation()}>
+          See deeper insights in this week's brief ↓
+        </a>
       </div>
     </div>
   )
@@ -412,7 +460,10 @@ function LiveDigest() {
                       </button>
                     )}
                   </div>
-                  <p style={{ fontSize: '10px', fontFamily: 'var(--mono)', color: 'var(--muted2)', marginTop: '8px' }}>via {story.source}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
+                    <FaviconImg url={story.link} source={story.source} size={14} />
+                    <p style={{ fontSize: '10px', fontFamily: 'var(--mono)', color: 'var(--muted2)', margin: 0 }}>via {story.source}</p>
+                  </div>
                 </div>
               )}
             </div>
