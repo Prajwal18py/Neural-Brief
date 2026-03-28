@@ -47,6 +47,10 @@ const SOURCE_LABELS = {
   'Import AI':             { label: 'Research',  bg: '#f3f0fb', color: '#4f2fa8', border: '#cfc6f0' },
   'Analytics India':       { label: 'India',     bg: '#fff3e0', color: '#e65100', border: '#ffcc80' },
   'Reuters Tech':          { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
+  'Ars Technica AI':       { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
+  'ZDNet AI':              { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
+  'The Register AI':       { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
+  'Mashable Tech':         { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
 }
 
 // ── Welcome email ─────────────────────────────────────────

@@ -11,6 +11,7 @@ const SOURCE_LABELS = {
   'Google DeepMind': 'Official', 'OpenAI Blog': 'Official',
   'TechCrunch AI': 'Media', 'MIT Technology Review': 'Research',
   'VentureBeat AI': 'Media', 'Wired AI': 'Media', 'arXiv CS.AI': 'Research',
+  'Ars Technica AI': 'Media', 'ZDNet AI': 'Media', 'The Register AI': 'Media', 'Mashable Tech': 'Media',
 }
 
 const SIGNAL_COLORS = {
