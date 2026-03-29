@@ -207,8 +207,27 @@ export default async function handler(req, res) {
     ])
     const result = await summarise(raw)
 
-    // Attach GitHub trending repo
-    if (github_trending) result.github_trending = github_trending
+    // Attach GitHub trending repo + generate why line
+    if (github_trending) {
+      try {
+        const whyResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [{ role: 'user', content: `GitHub repo: ${github_trending.name}\nDescription: ${github_trending.desc}\n\nWrite ONE sharp sentence (max 12 words) — why should an Indian CS/AI student care about this repo? Be specific and actionable. No generic phrases. Return only the sentence, nothing else.` }],
+            temperature: 0.3,
+            max_tokens: 80,
+          }),
+        })
+        const whyData = await whyResp.json()
+        github_trending.why = whyData.choices[0].message.content.trim().replace(/^["']|["']$/g, '')
+      } catch (e) {
+        github_trending.why = ''
+        console.log('⚠️ GitHub why generation failed:', e.message)
+      }
+      result.github_trending = github_trending
+    }
 
     // Save to cache
     await supabase.from('digest_cache').insert({

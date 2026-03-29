@@ -528,6 +528,9 @@ function LiveDigest() {
             )}
           </div>
           <p className="extra-box-desc">{github_trending.desc}</p>
+          {github_trending.why && (
+            <p className="live-tldr" style={{ margin: '4px 0 10px' }}>→ {github_trending.why}</p>
+          )}
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', margin: '8px 0 12px' }}>
             {github_trending.lang && <span className="extra-tag extra-tag-blue">{github_trending.lang}</span>}
             <span className="extra-tag extra-tag-blue">Use case: Projects / Learning</span>

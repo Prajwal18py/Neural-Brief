@@ -283,7 +283,7 @@ function buildHtml(result, briefNum, email, persona = "") {
 
   // GitHub Trending Repo
   const githubBlock = github_trending ? `
-<div style="margin:0 40px 20px;padding:20px 24px;background:#f4f1ea;border:1px solid #d6d0c2;border-radius:3px;">
+<div style="margin:0 40px 20px;padding:20px 24px;background:#fff;border:1px solid #d6d0c2;border-top:3px solid #c13d18;border-radius:3px;">
   <div style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px;">
     🔥 Trending GitHub Repo
   </div>
@@ -292,7 +292,8 @@ function buildHtml(result, briefNum, email, persona = "") {
     ${github_trending.name}
   </a>
   ${github_trending.stars ? `<span style="font-family:'Courier New',monospace;font-size:10px;color:#9a938a;margin-left:8px;">⭐ ${github_trending.stars} stars this week</span>` : ''}
-  <p style="font-size:13px;color:#5a5550;margin:6px 0 8px;line-height:1.7;">${github_trending.desc}</p>
+  <p style="font-size:13px;color:#5a5550;margin:6px 0 6px;line-height:1.7;">${github_trending.desc}</p>
+  ${github_trending.why ? `<p style="font-size:11px;font-family:'Courier New',monospace;color:#c13d18;margin:0 0 10px;">→ ${github_trending.why}</p>` : ''}
   <div style="display:flex;gap:12px;flex-wrap:wrap;">
     ${github_trending.lang ? `<span style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;padding:2px 8px;border:1px solid #d6d0c2;border-radius:1px;">${github_trending.lang}</span>` : ''}
     <span style="font-family:'Courier New',monospace;font-size:9px;color:#27438a;padding:2px 8px;border:1px solid #bcc9ec;background:#ebf0f9;border-radius:1px;">Use case: Projects / Learning</span>
@@ -304,7 +305,7 @@ function buildHtml(result, briefNum, email, persona = "") {
 
   // Tool of the week
   const toolBlock = tool_of_week ? `
-<div style="margin:0 40px 20px;padding:20px 24px;background:#f4f1ea;border:1px solid #d6d0c2;border-radius:3px;">
+<div style="margin:0 40px 20px;padding:20px 24px;background:#fff;border:1px solid #d6d0c2;border-top:3px solid #c13d18;border-radius:3px;">
   <div style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px;">
     🛠 Tool of the Week
   </div>
