@@ -376,7 +376,7 @@ function LiveDigest() {
     </div>
   )
 
-  const { stories, biggest_move, jargon_of_week } = data
+  const { stories, biggest_move, jargon_of_week, tool_of_week, github_trending } = data
 
   return (
     <div>
@@ -513,6 +513,46 @@ function LiveDigest() {
           )
         })}
       </div>
+
+      {/* GitHub Trending Repo */}
+      {github_trending && (
+        <div className="extra-box">
+          <span className="extra-box-label">🔥 Trending GitHub Repo</span>
+          <div className="extra-box-rule" />
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap', marginBottom: '6px' }}>
+            <a href={github_trending.link} target="_blank" rel="noopener noreferrer" className="extra-box-title">
+              {github_trending.name}
+            </a>
+            {github_trending.stars && (
+              <span className="extra-box-meta">⭐ {github_trending.stars} stars this week</span>
+            )}
+          </div>
+          <p className="extra-box-desc">{github_trending.desc}</p>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', margin: '8px 0 12px' }}>
+            {github_trending.lang && <span className="extra-tag extra-tag-blue">{github_trending.lang}</span>}
+            <span className="extra-tag extra-tag-blue">Use case: Projects / Learning</span>
+          </div>
+          <a href={github_trending.link} target="_blank" rel="noopener noreferrer" className="extra-box-cta">View repo →</a>
+        </div>
+      )}
+
+      {/* Tool of the Week */}
+      {tool_of_week && (
+        <div className="extra-box">
+          <span className="extra-box-label">🛠 Tool of the Week</span>
+          <div className="extra-box-rule" />
+          <span className="extra-box-title" style={{ display: 'block', marginBottom: '6px' }}>{tool_of_week.name}</span>
+          <p className="extra-box-desc">{tool_of_week.what}</p>
+          <p className="live-tldr" style={{ margin: '4px 0 10px' }}>{tool_of_week.why}</p>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+            <span className="extra-tag extra-tag-green">{tool_of_week.pricing}</span>
+            <span className="extra-tag extra-tag-blue">Best for: {tool_of_week.best_for}</span>
+          </div>
+          {tool_of_week.link && (
+            <a href={tool_of_week.link} target="_blank" rel="noopener noreferrer" className="extra-box-cta">Try it →</a>
+          )}
+        </div>
+      )}
 
       {jargon_of_week && (
         <div className="jargon-box">

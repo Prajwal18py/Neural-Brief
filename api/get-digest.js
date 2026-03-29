@@ -49,6 +49,63 @@ async function fetchStories() {
   return all
 }
 
+// ── Fetch GitHub Trending AI/ML repos ────────────────────
+async function fetchGithubTrending() {
+  try {
+    const res  = await fetch('https://github.com/trending/python?since=weekly&spoken_language_code=en', {
+      headers: { 'Accept': 'text/html', 'User-Agent': 'Mozilla/5.0' }
+    })
+    const html = await res.text()
+
+    // Extract repo names + descriptions + stars
+    const repos = []
+    const repoRegex = /href="\/([^"]+\/[^"]+)"[^>]*>\s*<\/a>\s*<\/h2>/g
+    const descRegex = /<p class="col-9[^"]*"[^>]*>\s*([\s\S]*?)\s*<\/p>/g
+    const starsRegex = /trending-repo-stars-gained[^>]*>\s*([\d,]+)\s*stars this week/g
+
+    // Simpler: just scrape article tags
+    const articleMatches = [...html.matchAll(/<article[^>]*>([\s\S]*?)<\/article>/g)]
+    for (const match of articleMatches.slice(0, 25)) {
+      const block = match[1]
+      const nameMatch  = block.match(/href="\/([^"\/]+\/[^"\/]+)"/)
+      const descMatch  = block.match(/<p[^>]*col-9[^>]*>\s*([\s\S]*?)\s*<\/p>/)
+      const starsMatch = block.match(/([\d,]+)\s*stars this week/)
+      const langMatch  = block.match(/itemprop="programmingLanguage"[^>]*>\s*([^<]+)\s*</)
+
+      if (!nameMatch) continue
+      const name  = nameMatch[1].trim()
+      const desc  = descMatch  ? descMatch[1].replace(/\s+/g, ' ').trim() : ''
+      const stars = starsMatch ? starsMatch[1].trim() : '0'
+      const lang  = langMatch  ? langMatch[1].trim()  : ''
+
+      // Filter for AI/ML relevant repos
+      const combined = (name + ' ' + desc).toLowerCase()
+      const aiTerms  = ['ai', 'ml', 'llm', 'gpt', 'model', 'neural', 'deep', 'learn',
+                        'transformer', 'diffusion', 'agent', 'rag', 'embed', 'vector',
+                        'claude', 'openai', 'gemini', 'llama', 'vision', 'nlp', 'data']
+      if (aiTerms.some(t => combined.includes(t))) {
+        repos.push({ name, desc, stars, lang })
+      }
+      if (repos.length >= 5) break
+    }
+
+    if (repos.length === 0) return null
+
+    // Pick the top one
+    const top = repos[0]
+    return {
+      name:  top.name,
+      desc:  top.desc || 'Trending AI/ML repository',
+      stars: top.stars,
+      lang:  top.lang,
+      link:  `https://github.com/${top.name}`,
+    }
+  } catch (e) {
+    console.log('⚠️ GitHub trending fetch failed:', e.message)
+    return null
+  }
+}
+
 async function summarise(stories) {
   // ✅ Cap at 60 stories to keep prompt size manageable
   const text = stories.slice(0, 60).map((s, i) =>
@@ -65,6 +122,14 @@ Pick EXACTLY 15 most important, interesting, and varied stories. Cover different
 Also pick ONE "biggest_move" — the single most important AI story of the week.
 
 Also pick ONE "jargon_of_week" — one AI/ML term from this week's stories explained in plain English for students.
+
+Also pick ONE "tool_of_week" — one specific AI tool, product, or platform mentioned or implied in this week's stories that students or developers can actually use. Write:
+- name: tool name
+- what: one sentence — what it does
+- pricing: one of [Free, Freemium, Paid, Open Source]
+- best_for: one of [Students, Developers, Founders, Everyone]
+- why: one sharp sentence — why it matters this week specifically
+- link: official URL if known, otherwise leave empty string
 
 For each of the 15 stories write:
 - tag: one of [New Model, Research, Industry, Tool Drop, Policy, Opinion]
@@ -88,6 +153,7 @@ Return ONLY valid JSON, no backticks:
 {
   "biggest_move": {"title":"...","reason":"...","link":"..."},
   "jargon_of_week": {"term":"...","explanation":"..."},
+  "tool_of_week": {"name":"...","what":"...","pricing":"Freemium","best_for":"Students","why":"...","link":"..."},
   "stories": [{"tag":"...","title":"...","summary":"...","tldr":"...","why_student":"...","why_developer":"...","why_founder":"...","signal_score":8.5,"signal_label":"Important","tweet":"...","linkedin":"...","eli15":"...","hype":"...","reality":"...","source":"...","link":"..."}]
 }`
 
@@ -135,8 +201,14 @@ export default async function handler(req, res) {
 
     // Fetch fresh
     console.log('🔄 Fetching fresh stories...')
-    const raw    = await fetchStories()
+    const [raw, github_trending] = await Promise.all([
+      fetchStories(),
+      fetchGithubTrending(),
+    ])
     const result = await summarise(raw)
+
+    // Attach GitHub trending repo
+    if (github_trending) result.github_trending = github_trending
 
     // Save to cache
     await supabase.from('digest_cache').insert({

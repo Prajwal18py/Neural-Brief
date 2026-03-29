@@ -129,6 +129,14 @@ Also pick ONE "biggest_move" — the single most important AI story of the week 
 
 Also pick ONE "jargon_of_week" — one AI/ML term that appeared in this week's stories. Explain it in one plain English sentence a student would understand.
 
+Also pick ONE "tool_of_week" — one specific AI tool, product, or platform mentioned or implied in this week's stories that students or developers can actually use. Write:
+- name: tool name
+- what: one sentence — what it does
+- pricing: one of [Free, Freemium, Paid, Open Source]
+- best_for: one of [Students, Developers, Founders, Everyone]
+- why: one sharp sentence — why it matters this week specifically
+- link: official URL if known, otherwise leave empty string
+
 For each of the ${STORIES_COUNT} stories write:
 - tag: one of [New Model, Research, Industry, Tool Drop, Policy, Opinion]
 - title: clean headline, max 12 words
@@ -151,6 +159,7 @@ Return ONLY valid JSON, no markdown backticks:
 {
   "biggest_move": {"title":"...","reason":"one sentence why this is the biggest move of the week","link":"..."},
   "jargon_of_week": {"term":"...","explanation":"..."},
+  "tool_of_week": {"name":"...","what":"...","pricing":"Freemium","best_for":"Students","why":"...","link":"..."},
   "stories": [{"tag":"...","title":"...","summary":"...","tldr":"...","why_student":"...","why_developer":"...","why_founder":"...","signal_score":8.5,"signal_label":"Important","tweet":"...","linkedin":"...","eli15":"...","hype":"...","reality":"...","source":"...","link":"..."}]
 }`
 
@@ -182,7 +191,7 @@ Return ONLY valid JSON, no markdown backticks:
 
 // ── Build HTML email ──────────────────────────────────────
 function buildHtml(result, briefNum, email, persona = "") {
-  const { stories, biggest_move, jargon_of_week } = result
+  const { stories, biggest_move, jargon_of_week, tool_of_week, github_trending } = result
   const dateStr = new Date().toLocaleDateString('en-IN', {
     weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
   }).toUpperCase()
@@ -272,6 +281,44 @@ function buildHtml(result, briefNum, email, persona = "") {
 </div>`
   }).join('')
 
+  // GitHub Trending Repo
+  const githubBlock = github_trending ? `
+<div style="margin:0 40px 20px;padding:20px 24px;background:#f4f1ea;border:1px solid #d6d0c2;border-radius:3px;">
+  <div style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px;">
+    🔥 Trending GitHub Repo
+  </div>
+  <div style="height:1px;background:#d6d0c2;margin-bottom:12px;"></div>
+  <a href="${github_trending.link}" style="font-family:Georgia,serif;font-size:16px;font-weight:bold;color:#18160f;text-decoration:none;">
+    ${github_trending.name}
+  </a>
+  ${github_trending.stars ? `<span style="font-family:'Courier New',monospace;font-size:10px;color:#9a938a;margin-left:8px;">⭐ ${github_trending.stars} stars this week</span>` : ''}
+  <p style="font-size:13px;color:#5a5550;margin:6px 0 8px;line-height:1.7;">${github_trending.desc}</p>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;">
+    ${github_trending.lang ? `<span style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;padding:2px 8px;border:1px solid #d6d0c2;border-radius:1px;">${github_trending.lang}</span>` : ''}
+    <span style="font-family:'Courier New',monospace;font-size:9px;color:#27438a;padding:2px 8px;border:1px solid #bcc9ec;background:#ebf0f9;border-radius:1px;">Use case: Projects / Learning</span>
+  </div>
+  <a href="${github_trending.link}" style="display:inline-block;margin-top:12px;font-size:10px;font-family:'Courier New',monospace;color:#c13d18;text-decoration:none;border:1px solid #f5cec4;padding:3px 10px;border-radius:2px;">
+    View repo →
+  </a>
+</div>` : ''
+
+  // Tool of the week
+  const toolBlock = tool_of_week ? `
+<div style="margin:0 40px 20px;padding:20px 24px;background:#f4f1ea;border:1px solid #d6d0c2;border-radius:3px;">
+  <div style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px;">
+    🛠 Tool of the Week
+  </div>
+  <div style="height:1px;background:#d6d0c2;margin-bottom:12px;"></div>
+  <span style="font-family:Georgia,serif;font-size:16px;font-weight:bold;color:#18160f;">${tool_of_week.name}</span>
+  <p style="font-size:13px;color:#5a5550;margin:6px 0 8px;line-height:1.7;">${tool_of_week.what}</p>
+  <p style="font-size:12px;font-family:'Courier New',monospace;color:#c13d18;margin:0 0 10px;">${tool_of_week.why}</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+    <span style="font-family:'Courier New',monospace;font-size:9px;padding:2px 8px;border-radius:1px;background:#edf5eb;color:#357025;border:1px solid #bdd9b7;">${tool_of_week.pricing}</span>
+    <span style="font-family:'Courier New',monospace;font-size:9px;padding:2px 8px;border-radius:1px;background:#ebf0f9;color:#27438a;border:1px solid #bcc9ec;">Best for: ${tool_of_week.best_for}</span>
+  </div>
+  ${tool_of_week.link ? `<a href="${tool_of_week.link}" style="display:inline-block;font-size:10px;font-family:'Courier New',monospace;color:#c13d18;text-decoration:none;border:1px solid #f5cec4;padding:3px 10px;border-radius:2px;">Try it →</a>` : ''}
+</div>` : ''
+
   // Jargon of the week
   const jargonBlock = jargon_of_week ? `
 <div style="margin:0 40px;padding:20px 24px;background:#f4f1ea;border:1px solid #d6d0c2;border-radius:3px;">
@@ -311,6 +358,10 @@ function buildHtml(result, briefNum, email, persona = "") {
 
   <!-- Stories -->
   <div style="padding:8px 40px 28px;">${storyBlocks}</div>
+
+  <!-- GitHub Trending + Tool of Week -->
+  ${githubBlock}
+  ${toolBlock}
 
   <!-- Jargon of the week -->
   ${jargonBlock}
