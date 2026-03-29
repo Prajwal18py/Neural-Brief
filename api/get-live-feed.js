@@ -143,6 +143,45 @@ async function fetchLatest() {
 
   console.log('Selected:', unique.map(s => s.title).join(' | '))
 
+  // Enrich with AI-generated why + tag via Groq
+  try {
+    const storiesText = unique.map((s, i) =>
+      `[${i+1}] TITLE: ${s.title}\nSOURCE: ${s.source}`
+    ).join('\n\n')
+
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: `For each of these ${unique.length} AI news headlines, write:
+- why: one sharp, specific sentence (max 12 words) — concrete reason an Indian CS student should care. No generic phrases.
+- tag: one of [Model, Research, Industry, Security, Policy, Tool]
+
+Return ONLY valid JSON array, no backticks:
+[{"why":"...","tag":"..."}]
+
+Stories:
+${storiesText}` }],
+        temperature: 0.3,
+        max_tokens: 800,
+      }),
+    })
+    const data = await resp.json()
+    const raw  = data.choices[0].message.content.trim().replace(/```json|```/g, '').trim()
+    const enriched = JSON.parse(raw)
+    return unique.map((s, i) => ({
+      title:     s.title,
+      link:      s.link,
+      source:    s.source,
+      published: s.published.toISOString(),
+      why:       enriched[i]?.why || '',
+      tag:       enriched[i]?.tag || '',
+    }))
+  } catch (e) {
+    console.log('⚠️ Groq enrichment failed, returning without why/tag:', e.message)
+  }
+
   return unique.map(s => ({
     title:     s.title,
     link:      s.link,

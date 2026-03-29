@@ -127,7 +127,7 @@ async function selectAndSummarise(stories) {
 Here are ${Math.min(stories.length, 60)} AI stories from this week:
 ${storiesText}
 
-Pick the ${STORIES_COUNT} most important, interesting, and varied stories. Cover different categories.
+Pick EXACTLY ${STORIES_COUNT} most important, interesting, and varied stories. Cover different categories. Do NOT return more than ${STORIES_COUNT} stories.
 
 Also pick ONE "biggest_move" — the single most important AI story of the week (a major launch, acquisition, or breakthrough).
 
@@ -138,9 +138,9 @@ For each of the ${STORIES_COUNT} stories write:
 - title: clean headline, max 12 words
 - summary: 2-3 sentences, plain English, zero jargon, for students
 - tldr: one punchy sentence starting with "-> TL;DR:"
-- why_student: one sentence — why should an Indian STUDENT care?
-- why_developer: one sentence — why should an Indian DEVELOPER care?
-- why_founder: one sentence — why should an Indian FOUNDER/entrepreneur care?
+- why_student: one sharp, specific sentence — concrete impact on an Indian CS/AI student. NO generic phrases like "you should care because" or "this affects you". Give the actual reason. Example: "If you use Wikipedia for research assignments, AI-generated content bans mean your sources just got harder to fake."
+- why_developer: one sharp, specific sentence — concrete impact on an Indian developer or engineer building with AI tools.
+- why_founder: one sharp, specific sentence — concrete business or market impact for an Indian startup founder.
 - signal_score: a number from 1-10 rating how important this story is. 9-10 = major breakthrough, 7-8 = significant, 5-6 = interesting, below 5 = minor
 - signal_label: one of ["Major", "Important", "Interesting", "Minor"]
 - tweet: ready-to-post Twitter post, punchy, end with 2-3 hashtags. Max 280 chars.
@@ -262,9 +262,7 @@ function buildHtml(result, briefNum, email, persona = "") {
 
   <!-- Share -->
   ${story.tweet ? `
-  <div style="background:#fafaf8;border:1px solid #e8e3db;border-radius:3px;padding:12px 14px;">
-    <div style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Share this story</div>
-    <p style="font-size:12px;color:#18160f;line-height:1.6;margin:0 0 8px;">${story.tweet}</p>
+  <div style="margin-top:10px;">
     <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(story.tweet)}"
       style="display:inline-block;font-size:10px;font-family:'Courier New',monospace;color:#c13d18;text-decoration:none;border:1px solid #f5cec4;padding:3px 10px;border-radius:2px;margin-right:6px;">
       Post on X →

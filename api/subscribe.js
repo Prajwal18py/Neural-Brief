@@ -270,7 +270,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { email, persona } = req.body
+  const { email, persona, daily_optin } = req.body
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Invalid email' })
@@ -280,7 +280,7 @@ export default async function handler(req, res) {
     // 1. Save to Supabase
     const { error: dbError } = await supabase
       .from('subscribers')
-      .insert([{ email, confirmed: true, persona: persona || null }])
+      .insert([{ email, confirmed: true, persona: persona || null, daily_optin: daily_optin || false }])
 
     if (dbError && dbError.code !== '23505') {
       throw new Error(dbError.message)

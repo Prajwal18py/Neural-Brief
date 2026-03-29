@@ -98,6 +98,10 @@ h1 { font-family: var(--serif); font-size: clamp(28px, 3.5vw, 46px); font-weight
 .btn-sub:hover { background: var(--accent2); }
 .btn-sub:disabled { opacity: 0.55; pointer-events: none; }
 .form-note { font-size: 10px; font-family: var(--mono); color: rgba(255,255,255,0.25); line-height: 1.6; display: block; }
+.daily-optin-wrap { margin: 10px 0 6px; }
+.daily-optin-label { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; font-size: 12px; color: rgba(255,255,255,0.55); line-height: 1.5; }
+.daily-optin-label strong { color: rgba(255,255,255,0.85); }
+.daily-optin-check { margin-top: 2px; accent-color: var(--accent); flex-shrink: 0; cursor: pointer; }
 .success-box { background: rgba(200,255,87,0.07); border: 1px solid rgba(200,255,87,0.18); border-radius: 2px; padding: 14px 18px; text-align: center; }
 .success-title { color: #c8ff57; font-weight: 500; font-size: 14px; display: block; }
 .success-sub { color: rgba(255,255,255,0.35); font-size: 11px; margin-top: 3px; font-family: var(--mono); display: block; }
@@ -925,6 +929,24 @@ nav.scrolled {
 
 
 /* ── LIVE FEED WHY + CTA ─────────────────────────────────── */
+.live-feed-meta {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap;
+}
+.live-feed-tag {
+  font-size: 8px; font-family: var(--mono); padding: 2px 6px;
+  border-radius: 1px; text-transform: uppercase; letter-spacing: .08em;
+  font-weight: 600; flex-shrink: 0;
+}
+.live-feed-new {
+  font-size: 9px; font-family: var(--mono); color: var(--accent);
+  letter-spacing: .04em; font-weight: 500;
+}
+.live-feed-num {
+  font-family: var(--mono); font-size: 11px; color: #c4bdb0;
+}
+.live-feed-source {
+  font-family: var(--mono); font-size: 10px; color: #a09890;
+}
 .live-feed-why {
   font-family: var(--mono); font-size: 10px;
   color: var(--accent); line-height: 1.5;

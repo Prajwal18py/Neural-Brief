@@ -62,7 +62,7 @@ async function summarise(stories) {
 Here are ${Math.min(stories.length, 60)} recent AI stories:
 ${text}
 
-Pick the 15 most important, interesting, and varied stories. Cover different categories.
+Pick EXACTLY 15 most important, interesting, and varied stories. Cover different categories. Do NOT return more than 15 stories.
 
 Also pick ONE "biggest_move" — the single most important AI story of the week.
 
@@ -73,9 +73,9 @@ For each of the 15 stories write:
 - title: clean headline, max 12 words
 - summary: 2 sentences, plain English, zero jargon
 - tldr: one punchy sentence starting with "-> TL;DR:"
-- why_student: one sentence — why should an Indian STUDENT care?
-- why_developer: one sentence — why should an Indian DEVELOPER care?
-- why_founder: one sentence — why should an Indian FOUNDER/entrepreneur care?
+- why_student: one sharp, specific sentence — concrete impact on an Indian CS/AI student. NO generic phrases like "you should care because" or "this affects you". Give the actual reason. Example: "If you use Wikipedia for research assignments, AI-generated content bans mean your sources just got harder to fake."
+- why_developer: one sharp, specific sentence — concrete impact on an Indian developer or engineer building with AI tools.
+- why_founder: one sharp, specific sentence — concrete business or market impact for an Indian startup founder.
 - signal_score: number 1-10 rating importance. 9-10=major, 7-8=significant, 5-6=interesting, below 5=minor
 - signal_label: one of ["Major", "Important", "Interesting", "Minor"]
 - tweet: ready-to-post Twitter post, punchy, end with 2-3 hashtags. Max 280 chars.

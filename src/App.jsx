@@ -23,9 +23,10 @@ const SIGNAL_COLORS = {
 
 // Subscribe Form
 function SubscribeForm({ id, ctaText = 'Get the next brief' }) {
-  const [email, setEmail]     = useState('')
-  const [status, setStatus]   = useState('idle')
-  const [persona, setPersona] = useState('')
+  const [email, setEmail]       = useState('')
+  const [status, setStatus]     = useState('idle')
+  const [persona, setPersona]   = useState('')
+  const [dailyOptin, setDailyOptin] = useState(false)
   const PERSONAS = ['Student', 'Developer', 'Founder', 'Creator']
 
   const handleSubmit = async () => {
@@ -37,7 +38,7 @@ function SubscribeForm({ id, ctaText = 'Get the next brief' }) {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, persona }),
+        body: JSON.stringify({ email, persona, daily_optin: dailyOptin }),
       })
       if (res.ok) setStatus('success')
       else { setStatus('idle'); alert('Something went wrong. Please try again.') }
@@ -61,6 +62,17 @@ function SubscribeForm({ id, ctaText = 'Get the next brief' }) {
               ))}
             </div>
           </div>
+          <div className="daily-optin-wrap">
+            <label className="daily-optin-label">
+              <input
+                type="checkbox"
+                checked={dailyOptin}
+                onChange={e => setDailyOptin(e.target.checked)}
+                className="daily-optin-check"
+              />
+              <span>Also send me the <strong>Daily Top 5</strong> every morning at 9am IST</span>
+            </label>
+          </div>
           <div className="form-row">
             <input type="email"
               placeholder={status === 'error' ? 'Enter a valid email' : 'your@email.com'}
@@ -78,7 +90,11 @@ function SubscribeForm({ id, ctaText = 'Get the next brief' }) {
       ) : (
         <div className="success-box">
           <span className="success-title">You are in{persona ? ', ' + persona : ''}!</span>
-          <span className="success-sub">Check inbox · Brief arrives this Friday 9am IST{persona ? ' · Curated for ' + persona + 's' : ''}</span>
+          <span className="success-sub">
+            Weekly brief every Friday 9am IST
+            {dailyOptin ? ' · Daily Top 5 every morning' : ''}
+            {persona ? ' · Curated for ' + persona + 's' : ''}
+          </span>
         </div>
       )}
     </div>
@@ -169,41 +185,68 @@ function LiveFeed() {
     </div>
   )
 
+  const TAG_COLORS_LIVE = {
+    'Model':    { bg: '#fef0ec', color: '#c13d18', border: '#f5cec4' },
+    'Research': { bg: '#edf5eb', color: '#357025', border: '#bdd9b7' },
+    'Industry': { bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
+    'Security': { bg: '#fdf5e8', color: '#7a5018', border: '#e8d3a0' },
+    'Policy':   { bg: '#f3f0fb', color: '#4f2fa8', border: '#cfc6f0' },
+    'Tool':     { bg: '#fdf5e8', color: '#7a5018', border: '#e8d3a0' },
+  }
+
+  function isNew(published) {
+    if (!published) return false
+    return Date.now() - new Date(published).getTime() < 6 * 60 * 60 * 1000 // within 6 hours
+  }
+
   return (
     <div className="live-feed">
-      {stories.map((story, i) => (
-        <a
-          key={i}
-          href={story.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="live-feed-item"
-        >
-          {/* Number */}
-          <div className="live-feed-left">
-            <span className="live-feed-num">{String(i + 1).padStart(2, '0')}</span>
-          </div>
+      {stories.map((story, i) => {
+        const tagColors = story.tag ? (TAG_COLORS_LIVE[story.tag] || TAG_COLORS_LIVE['Industry']) : null
+        const fresh = isNew(story.published)
 
-          {/* Favicon */}
-          <div className="live-feed-favicon-wrap">
-            <FaviconImg url={story.link} source={story.source} />
-          </div>
+        return (
+          <a
+            key={i}
+            href={story.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="live-feed-item"
+          >
+            {/* Number */}
+            <div className="live-feed-left">
+              <span className="live-feed-num">{String(i + 1).padStart(2, '0')}</span>
+            </div>
 
-          {/* Text */}
-          <div className="live-feed-body">
-            <span className="live-feed-title">{story.title}</span>
-            <span className="live-feed-why">→ {story.why || getWhy(story.title)}</span>
-            <span className="live-feed-source">via {story.source}</span>
-          </div>
+            {/* Favicon */}
+            <div className="live-feed-favicon-wrap">
+              <FaviconImg url={story.link} source={story.source} />
+            </div>
 
-          {/* Arrow */}
-          <div className="live-feed-arrow">→</div>
-        </a>
-      ))}
+            {/* Text */}
+            <div className="live-feed-body">
+              <div className="live-feed-meta">
+                {tagColors && story.tag && (
+                  <span className="live-feed-tag" style={{ background: tagColors.bg, color: tagColors.color, border: `1px solid ${tagColors.border}` }}>
+                    {story.tag}
+                  </span>
+                )}
+                {fresh && <span className="live-feed-new">🔥 New</span>}
+              </div>
+              <span className="live-feed-title">{story.title}</span>
+              <span className="live-feed-why">→ {story.why || getWhy(story.title)}</span>
+              <span className="live-feed-source">via {story.source}</span>
+            </div>
+
+            {/* Arrow */}
+            <div className="live-feed-arrow">→</div>
+          </a>
+        )
+      })}
       <div className="live-feed-footer">
         <span>Updated {lastUpdated || 'recently'}</span>
         <a href="#this-week" className="live-feed-cta" onClick={e => e.stopPropagation()}>
-          See deeper insights in this week's brief ↓
+          Detailed breakdown in Weekly AI Brief ↓
         </a>
       </div>
     </div>
