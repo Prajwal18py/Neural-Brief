@@ -12,7 +12,6 @@ const RSS_FEEDS = [
   { name: 'TechCrunch AI',         url: 'https://techcrunch.com/category/artificial-intelligence/feed/' },
   { name: 'HackerNews AI',         url: 'https://hnrss.org/frontpage?q=AI+OR+LLM+OR+machine+learning' },
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
-  { name: 'VentureBeat AI',        url: 'https://venturebeat.com/category/ai/feed/' },
   { name: 'Google DeepMind',       url: 'https://deepmind.google/blog/rss.xml' },
   { name: 'Anthropic News',        url: 'https://www.anthropic.com/news/rss.xml' },
   { name: 'OpenAI Blog',           url: 'https://openai.com/blog/rss.xml' },
