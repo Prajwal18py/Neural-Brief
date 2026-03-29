@@ -129,13 +129,13 @@ Also pick ONE "biggest_move" — the single most important AI story of the week 
 
 Also pick ONE "jargon_of_week" — one AI/ML term that appeared in this week's stories. Explain it in one plain English sentence a student would understand.
 
-Also pick ONE "tool_of_week" — one specific AI tool, product, or platform mentioned or implied in this week's stories that students or developers can actually use. Write:
+Also pick ONE "tool_of_week" — one specific AI tool, product, or platform mentioned or implied in this week's stories that Indian students or developers can actually sign up for and use TODAY. Must be accessible online — no research papers, no enterprise-only products, no APIs that require approval. Prefer tools with a free tier. Write:
 - name: tool name
 - what: one sentence — what it does
 - pricing: one of [Free, Freemium, Paid, Open Source]
 - best_for: one of [Students, Developers, Founders, Everyone]
-- why: one sharp sentence — why it matters this week specifically
-- link: official URL if known, otherwise leave empty string
+- why: one sharp sentence — why a student should try it this week specifically
+- link: the tool's official homepage or signup page URL (NOT a news article or blog post about it — the actual tool website where users can sign up or try it)
 
 For each of the ${STORIES_COUNT} stories write:
 - tag: one of [New Model, Research, Industry, Tool Drop, Policy, Opinion]
