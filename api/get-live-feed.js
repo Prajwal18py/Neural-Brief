@@ -24,7 +24,6 @@ const RSS_FEEDS = [
   { name: 'Reuters Tech',          url: 'https://feeds.reuters.com/reuters/technologyNews' },
   { name: 'Ars Technica AI',       url: 'https://arstechnica.com/tag/ai/feed/' },
   { name: 'ZDNet AI',              url: 'https://www.zdnet.com/topic/artificial-intelligence/rss.xml' },
-  { name: 'The Register AI',       url: 'https://www.theregister.com/Tag/AI/feed.atom' },
   { name: 'Mashable Tech',         url: 'https://mashable.com/feeds/rss/tech' },
 ]
 

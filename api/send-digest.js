@@ -37,7 +37,6 @@ const SOURCE_LABELS = {
   'Reuters Tech':          { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
   'Ars Technica AI':       { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
   'ZDNet AI':              { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
-  'The Register AI':       { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
   'Mashable Tech':         { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
 }
 
@@ -65,7 +64,6 @@ const RSS_FEEDS = [
   { name: 'Reuters Tech',          url: 'https://feeds.reuters.com/reuters/technologyNews' },
   { name: 'Ars Technica AI',       url: 'https://arstechnica.com/tag/ai/feed/' },
   { name: 'ZDNet AI',              url: 'https://www.zdnet.com/topic/artificial-intelligence/rss.xml' },
-  { name: 'The Register AI',       url: 'https://www.theregister.com/Tag/AI/feed.atom' },
   { name: 'Mashable Tech',         url: 'https://mashable.com/feeds/rss/tech' },
 ]
 
@@ -163,7 +161,7 @@ Return ONLY valid JSON, no markdown backticks:
       model: 'llama-3.3-70b-versatile',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.35,
-      max_tokens: 8000,
+      max_tokens: 12000,
     }),
   })
 
