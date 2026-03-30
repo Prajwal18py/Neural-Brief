@@ -157,20 +157,32 @@ Return ONLY valid JSON, no backticks:
   "stories": [{"tag":"...","title":"...","summary":"...","tldr":"...","why_student":"...","why_developer":"...","why_founder":"...","signal_score":8.5,"signal_label":"Important","tweet":"...","linkedin":"...","eli15":"...","hype":"...","reality":"...","source":"...","link":"..."}]
 }`
 
-  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.35,
-      max_tokens: 12000,
-    }),
-  })
+  const sleep = ms => new Promise(r => setTimeout(r, ms))
 
-  const data = await resp.json()
+  let data, attempts = 0
+  while (attempts < 3) {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.35,
+        max_tokens: 12000,
+      }),
+    })
+    data = await resp.json()
+
+    if (data?.choices?.[0]?.message?.content) break
+
+    attempts++
+    const isRateLimit = data?.error?.type === 'rate_limit_exceeded' || resp.status === 429
+    console.log(`⚠️ Groq attempt ${attempts} failed. Rate limit: ${isRateLimit}. Error: ${JSON.stringify(data?.error)}`)
+    if (attempts < 3) await sleep(isRateLimit ? 30000 : 5000)
+  }
+
   if (!data?.choices?.[0]?.message?.content) {
-    console.error('❌ Groq returned no choices:', JSON.stringify(data))
+    console.error('❌ Groq returned no choices after retries:', JSON.stringify(data))
     throw new Error('Groq returned empty response. Check API key or rate limits.')
   }
   const raw  = data.choices[0].message.content.trim().replace(/```json|```/g, '').trim()
@@ -214,6 +226,7 @@ export default async function handler(req, res) {
     // Attach GitHub trending repo + generate why line
     if (github_trending) {
       try {
+        await new Promise(r => setTimeout(r, 5000)) // wait 5s after main Groq call
         const whyResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
