@@ -813,7 +813,7 @@ export default function App() {
             </div>
             <div className="sb-section">
               <span className="sb-label">Built with</span>
-              {['Groq · Llama 3.3 70B','Brevo · Email delivery','Supabase · Subscribers'].map(s => (
+              {['AI-powered intelligence','Automated pipeline','Seamless delivery'].map(s => (
                 <div className="src-item" key={s}><span className="src-dot"></span>{s}</div>
               ))}
             </div>
