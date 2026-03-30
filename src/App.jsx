@@ -259,6 +259,7 @@ function LiveDigest() {
   const [loading, setLoading]     = useState(true)
   const [expanded, setExpanded]   = useState({})
   const [eli15Open, setEli15Open] = useState({})
+  const [showAll, setShowAll]     = useState(false)
   const [persona, setPersona]     = useState(() => {
     try { return localStorage.getItem('nb_persona') || '' } catch { return '' }
   })
@@ -368,6 +369,102 @@ function LiveDigest() {
     try { localStorage.setItem('nb_persona', val) } catch {}
   }
 
+  const renderStory = (story, i) => {
+    const srcLabel = SOURCE_LABELS[story.source]
+    const isOpen   = expanded[i]
+    const signal   = story.signal_label ? (SIGNAL_COLORS[story.signal_label] || SIGNAL_COLORS['Interesting']) : null
+    const whyKey   = persona === 'Developer' ? 'why_developer' : persona === 'Founder' ? 'why_founder' : 'why_student'
+    const whyLabel = persona === 'Developer' ? 'Why devs care' : persona === 'Founder' ? 'Why founders care' : persona === 'Creator' ? 'Why creators care' : 'Why students care'
+    const whyText  = story[whyKey] || story.why_student || story.why_it_matters || ''
+
+    return (
+      <div className={'accordion-item' + (isOpen ? ' open' : '')} key={i}>
+        <button className="accordion-header" onClick={() => toggle(i)}>
+          <div className="accordion-left">
+            <span className="live-num">{String(i + 1).padStart(2, '0')}</span>
+            <div className="accordion-meta">
+              <div className="accordion-tags">
+                <span className={'stag ' + (TAG_CLASS[story.tag] || 't-research')}>{story.tag}</span>
+                {srcLabel && <span className={'src-label src-' + srcLabel.toLowerCase()}>{srcLabel}</span>}
+                {signal && story.signal_score && (
+                  <span className="signal-badge" style={{ background: signal.bg, color: signal.color, border: '1px solid ' + signal.border }}>
+                    {story.signal_score}/10 {story.signal_label}
+                  </span>
+                )}
+              </div>
+              <span className="accordion-title">{story.title}</span>
+            </div>
+          </div>
+          <span className="accordion-chevron">{isOpen ? '−' : '+'}</span>
+        </button>
+
+        {isOpen && (
+          <div className="accordion-body">
+            <p className="live-summary">{story.summary}</p>
+            <p className="live-tldr">{story.tldr}</p>
+
+            {whyText && (
+              <div className="why-matters">
+                <span className="why-matters-label">{whyLabel} </span>
+                <span className="why-matters-text">{whyText}</span>
+              </div>
+            )}
+
+            {story.eli15 && (
+              <div className="eli15-wrap">
+                <button className="eli15-btn" onClick={() => toggleEli15(i)}>
+                  {eli15Open[i] ? 'Collapse' : 'Break it down'}
+                </button>
+                {eli15Open[i] && (
+                  <div className="eli15-box">
+                    <span className="eli15-label">Simple version: </span>
+                    <span className="eli15-text">{story.eli15}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {(story.hype && story.reality) && (
+              <div className="hype-reality">
+                <div className="hype-row">
+                  <span className="hype-label">Hype</span>
+                  <span className="hype-text">{story.hype}</span>
+                </div>
+                <div className="reality-row">
+                  <span className="reality-label">Reality</span>
+                  <span className="reality-text">{story.reality}</span>
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
+              <a href={story.link} target="_blank" rel="noopener noreferrer" className="share-btn share-x">Read full story</a>
+              {story.tweet && (
+                <a href={'https://twitter.com/intent/tweet?text=' + encodeURIComponent(story.tweet)}
+                  target="_blank" rel="noopener noreferrer" className="share-btn share-x">
+                  Post on X
+                </a>
+              )}
+              {story.linkedin && (
+                <button className="share-btn share-li" onClick={() => {
+                  navigator.clipboard.writeText(story.linkedin + '\n\n' + story.link + '\n\nvia Neural Brief -> neural-brief-eight.vercel.app')
+                    .then(() => alert('LinkedIn post copied! Paste it on LinkedIn'))
+                    .catch(() => alert('Could not copy. Please copy manually.'))
+                }}>
+                  Copy LinkedIn post
+                </button>
+              )}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
+              <FaviconImg url={story.link} source={story.source} size={14} />
+              <p style={{ fontSize: '10px', fontFamily: 'var(--mono)', color: 'var(--muted2)', margin: 0 }}>via {story.source}</p>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   if (loading) return (
     <div style={{ padding: '48px 0', textAlign: 'center' }}>
       <div style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted2)', letterSpacing: '0.1em' }}>
@@ -416,102 +513,26 @@ function LiveDigest() {
 
       {/* Accordion */}
       <div className="accordion">
-        {stories.map((story, i) => {
-          const srcLabel = SOURCE_LABELS[story.source]
-          const isOpen   = expanded[i]
-          const signal   = story.signal_label ? (SIGNAL_COLORS[story.signal_label] || SIGNAL_COLORS['Interesting']) : null
-          const whyKey   = persona === 'Developer' ? 'why_developer' : persona === 'Founder' ? 'why_founder' : 'why_student'
-          const whyLabel = persona === 'Developer' ? 'Why devs care' : persona === 'Founder' ? 'Why founders care' : persona === 'Creator' ? 'Why creators care' : 'Why students care'
-          const whyText  = story[whyKey] || story.why_student || story.why_it_matters || ''
+        {/* Must Know — top 3 */}
+        <div className="must-know-label">
+          <span>⭐ Must Know</span>
+        </div>
+        {stories.slice(0, 3).map((story, i) => renderStory(story, i))}
 
-          return (
-            <div className={'accordion-item' + (isOpen ? ' open' : '')} key={i}>
-              <button className="accordion-header" onClick={() => toggle(i)}>
-                <div className="accordion-left">
-                  <span className="live-num">{String(i + 1).padStart(2, '0')}</span>
-                  <div className="accordion-meta">
-                    <div className="accordion-tags">
-                      <span className={'stag ' + (TAG_CLASS[story.tag] || 't-research')}>{story.tag}</span>
-                      {srcLabel && <span className={'src-label src-' + srcLabel.toLowerCase()}>{srcLabel}</span>}
-                      {signal && story.signal_score && (
-                        <span className="signal-badge" style={{ background: signal.bg, color: signal.color, border: '1px solid ' + signal.border }}>
-                          {story.signal_score}/10 {story.signal_label}
-                        </span>
-                      )}
-                    </div>
-                    <span className="accordion-title">{story.title}</span>
-                  </div>
-                </div>
-                <span className="accordion-chevron">{isOpen ? '-' : '+'}</span>
-              </button>
+        {/* Divider */}
+        <div className="more-stories-divider">
+          <span>Other important updates</span>
+        </div>
 
-              {isOpen && (
-                <div className="accordion-body">
-                  <p className="live-summary">{story.summary}</p>
-                  <p className="live-tldr">{story.tldr}</p>
+        {/* Rest — show/hide */}
+        {(showAll ? stories.slice(3) : stories.slice(3, 7)).map((story, i) => renderStory(story, i + 3))}
 
-                  {whyText && (
-                    <div className="why-matters">
-                      <span className="why-matters-label">{whyLabel} </span>
-                      <span className="why-matters-text">{whyText}</span>
-                    </div>
-                  )}
-
-                  {story.eli15 && (
-                    <div className="eli15-wrap">
-                      <button className="eli15-btn" onClick={() => toggleEli15(i)}>
-                        {eli15Open[i] ? 'Collapse' : 'Break it down'}
-                      </button>
-                      {eli15Open[i] && (
-                        <div className="eli15-box">
-                          <span className="eli15-label">Simple version: </span>
-                          <span className="eli15-text">{story.eli15}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* AI vs Reality */}
-                  {(story.hype && story.reality) && (
-                    <div className="hype-reality">
-                      <div className="hype-row">
-                        <span className="hype-label">Hype</span>
-                        <span className="hype-text">{story.hype}</span>
-                      </div>
-                      <div className="reality-row">
-                        <span className="reality-label">Reality</span>
-                        <span className="reality-text">{story.reality}</span>
-                      </div>
-                    </div>
-                  )}
-
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
-                    <a href={story.link} target="_blank" rel="noopener noreferrer" className="share-btn share-x">Read full story</a>
-                    {story.tweet && (
-                      <a href={'https://twitter.com/intent/tweet?text=' + encodeURIComponent(story.tweet)}
-                        target="_blank" rel="noopener noreferrer" className="share-btn share-x">
-                        Post on X
-                      </a>
-                    )}
-                    {story.linkedin && (
-                      <button className="share-btn share-li" onClick={() => {
-                        navigator.clipboard.writeText(story.linkedin + '\n\n' + story.link + '\n\nvia Neural Brief -> neural-brief-eight.vercel.app')
-                          .then(() => alert('LinkedIn post copied! Paste it on LinkedIn'))
-                          .catch(() => alert('Could not copy. Please copy manually.'))
-                      }}>
-                        Copy LinkedIn post
-                      </button>
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
-                    <FaviconImg url={story.link} source={story.source} size={14} />
-                    <p style={{ fontSize: '10px', fontFamily: 'var(--mono)', color: 'var(--muted2)', margin: 0 }}>via {story.source}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )
-        })}
+        {/* Show more toggle */}
+        {stories.length > 7 && (
+          <button className="show-more-btn" onClick={() => setShowAll(s => !s)}>
+            {showAll ? '− Show less' : `+ View all ${stories.length - 3} stories →`}
+          </button>
+        )}
       </div>
 
       {/* GitHub Trending Repo */}
@@ -720,7 +741,7 @@ export default function App() {
         <div className="nav-right">
           <span className="nav-chip">Every Friday · Free</span>
           <button className="nav-archive-btn" onClick={() => setShowArchive(true)}>Past Briefs</button>
-          <a className="nav-cta" href="#subscribe">Get the next brief</a>
+          <a className="nav-cta" href="#subscribe">Join the brief</a>
         </div>
       </nav>
 
@@ -749,18 +770,21 @@ export default function App() {
             </div>
             <h1>AI news,<br />filtered for <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>humans.</em></h1>
             <p className="hero-deck">
-              Stop wasting time scrolling. Get the <strong>15 AI stories that actually matter</strong>,
-              delivered every Friday in under <strong>3 minutes</strong>.
+              Cut through 100+ AI updates every week. Get only <strong>what actually matters</strong>,
+              explained in plain English — delivered every Friday at 9am IST.
             </p>
             <p className="why-line">
               No hype. No jargon. No noise. Just signal — with plain English summaries,
               source labels, why it matters, and a "Break it down" button for every story.
             </p>
+            <p style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--muted2)', letterSpacing: '.08em', marginBottom: '16px' }}>
+              ✦ Curated from 15+ AI sources daily
+            </p>
             <div className="cta-group">
-              <a className="btn-primary btn-large" href="#subscribe">Get the next brief</a>
+              <a className="btn-primary btn-large" href="#subscribe">Get AI insights every Friday</a>
               <a className="btn-secondary" href="#this-week">Read this week's issue</a>
             </div>
-            <SubscribeForm id="subscribe" ctaText="Get the next brief" />
+            <SubscribeForm id="subscribe" ctaText="Join the weekly AI brief" />
             <div className="trust-strip">
               {[['⏱', '~8 min read'], ['🚫', 'No jargon'], ['📡', 'Only signal'], ['₹0', 'Free forever'], ['🔕', 'No spam']].map(([icon, text]) => (
                 <span className="trust-item" key={text}>
@@ -822,9 +846,9 @@ export default function App() {
           <div className="section-hd">
             <span className="section-sym">§</span>
             <div>
-              <h2>Today's Top 5</h2>
-              <p style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--muted2)', marginTop: '4px' }}>
-                Live · Updated daily
+              <h2>Today's Top 5 <span style={{ fontSize: '13px', fontFamily: 'var(--mono)', color: 'var(--muted2)', fontWeight: 400 }}>(2 min read)</span></h2>
+                <p style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--muted2)', marginTop: '4px' }}>
+                  Live · Updated daily
               </p>
             </div>
           </div>
@@ -838,7 +862,7 @@ export default function App() {
           <div className="section-hd">
             <span className="section-sym">§</span>
             <div>
-              <h2>This week in AI</h2>
+              <h2>Weekly AI Intelligence</h2>
               <p style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--muted2)', marginTop: '4px' }}>
                 Live · Updated weekly · AI-powered
               </p>
@@ -936,7 +960,7 @@ export default function App() {
               ))}
             </div>
             <div style={{ maxWidth: '440px', margin: '32px auto 0' }}>
-              <SubscribeForm id="subscribe-bottom" ctaText="Get the next brief" />
+              <SubscribeForm id="subscribe-bottom" ctaText="Get AI insights every Friday" />
               <div className="trust-strip" style={{ justifyContent: 'center', marginTop: '20px' }}>
                 {[['⏱', '~8 min read'], ['🚫', 'No jargon'], ['₹0', 'Free forever'], ['🔕', 'No spam']].map(([icon, text]) => (
                   <span className="trust-item" key={text}>

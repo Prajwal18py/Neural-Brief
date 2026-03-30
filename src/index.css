@@ -384,7 +384,42 @@ footer a:hover { color: rgba(255,255,255,0.5); }
 }
 .jargon-exp { font-size: 13px; color: var(--muted); line-height: 1.7; margin: 0; }
 
-/* ── Extra boxes: GitHub Trending + Tool of Week ─────────── */
+/* ── Must Know + Show More ───────────────────────────────── */
+.must-know-label {
+  padding: 8px 18px; background: #fffbf5;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono); font-size: 10px;
+  color: #b8860b; letter-spacing: .1em; font-weight: 600;
+}
+.more-stories-divider {
+  padding: 8px 18px; background: var(--bg2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono); font-size: 10px;
+  color: var(--muted2); letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.show-more-btn {
+  width: 100%; padding: 12px 18px;
+  background: var(--bg2); border: none; border-top: 1px solid var(--border);
+  font-family: var(--mono); font-size: 11px; color: var(--accent);
+  cursor: pointer; text-align: left; letter-spacing: .04em;
+  transition: background 0.15s;
+}
+.show-more-btn:hover { background: #ece8df; }
+
+/* ── Accordion hover lift ────────────────────────────────── */
+.accordion-item {
+  border-bottom: 1px solid var(--border);
+  transition: box-shadow 0.15s, background 0.15s;
+}
+.accordion-item:hover {
+  background: #fafaf8;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  position: relative; z-index: 1;
+}
+
+
 .extra-box {
   background: #fff; border: 1px solid var(--border);
   border-top: 3px solid var(--accent);

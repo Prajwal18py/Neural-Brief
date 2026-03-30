@@ -36,7 +36,7 @@ async function fetchStories() {
   for (const feed of RSS_FEEDS) {
     try {
       const parsed = await parser.parseURL(feed.url)
-      for (const item of parsed.items.slice(0, 10)) {
+      for (const item of parsed.items.slice(0, 5)) {
         all.push({
           source:      feed.name,
           title:       item.title || 'Untitled',
@@ -136,9 +136,9 @@ For each of the 15 stories write:
 - title: clean headline, max 12 words
 - summary: 2 sentences, plain English, zero jargon
 - tldr: one punchy sentence starting with "-> TL;DR:"
-- why_student: one sharp, specific sentence — concrete impact on an Indian CS/AI student. NO generic phrases like "you should care because" or "this affects you". Give the actual reason. Example: "If you use Wikipedia for research assignments, AI-generated content bans mean your sources just got harder to fake."
-- why_developer: one sharp, specific sentence — concrete impact on an Indian developer or engineer building with AI tools.
-- why_founder: one sharp, specific sentence — concrete business or market impact for an Indian startup founder.
+- why_student: one sharp, specific sentence — concrete impact on an Indian CS/AI student. Include a specific outcome or number if possible. Example: "Wikipedia bans AI articles → your research citations just got harder to fake, verify everything you submit." NO generic phrases like "this affects you" or "you should care."
+- why_developer: one sharp, specific sentence with concrete outcome. Example: "Claude's API just got 40% cheaper → your side project's monthly bill drops significantly." NO generic phrases.
+- why_founder: one sharp, specific sentence with business impact. Example: "OpenAI acquiring Windsurf means IDE integrations are becoming table stakes — build AI-native dev tools or get left behind." NO generic phrases.
 - signal_score: number 1-10 rating importance. 9-10=major, 7-8=significant, 5-6=interesting, below 5=minor
 - signal_label: one of ["Major", "Important", "Interesting", "Minor"]
 - tweet: ready-to-post Twitter post, punchy, end with 2-3 hashtags. Max 280 chars.
@@ -169,6 +169,10 @@ Return ONLY valid JSON, no backticks:
   })
 
   const data = await resp.json()
+  if (!data?.choices?.[0]?.message?.content) {
+    console.error('❌ Groq returned no choices:', JSON.stringify(data))
+    throw new Error('Groq returned empty response. Check API key or rate limits.')
+  }
   const raw  = data.choices[0].message.content.trim().replace(/```json|```/g, '').trim()
 
   // Safe JSON parse with helpful error
@@ -221,7 +225,7 @@ export default async function handler(req, res) {
           }),
         })
         const whyData = await whyResp.json()
-        github_trending.why = whyData.choices[0].message.content.trim().replace(/^["']|["']$/g, '')
+        github_trending.why = whyData?.choices?.[0]?.message?.content?.trim().replace(/^["']|["']$/g, '') || ''
       } catch (e) {
         github_trending.why = ''
         console.log('⚠️ GitHub why generation failed:', e.message)
