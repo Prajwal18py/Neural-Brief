@@ -441,8 +441,8 @@ export default async function handler(req, res) {
   console.log('🧠 Neural Brief — Weekly digest starting')
 
   try {
-    // Check digest_cache first — reuse if less than 6 hours old
-    let result = await getCachedResult()
+    // Cron runs always regenerate fresh — cache-first only for manual triggers
+    let result = isVercelCron ? null : await getCachedResult()
     let fromCache = !!result
 
     if (!result) {
