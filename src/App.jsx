@@ -537,7 +537,9 @@ function LiveDigest() {
 
       {/* GitHub Trending Repo */}
       {github_trending && (
-        <div className="extra-box">
+        <div>
+          <div className="extra-box-section-divider" />
+          <div className="extra-box">
           <span className="extra-box-label">🔥 Trending GitHub Repo</span>
           <div className="extra-box-rule" />
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap', marginBottom: '6px' }}>
@@ -557,6 +559,7 @@ function LiveDigest() {
             <span className="extra-tag extra-tag-blue">Use case: Projects / Learning</span>
           </div>
           <a href={github_trending.link} target="_blank" rel="noopener noreferrer" className="extra-box-cta">View repo →</a>
+        </div>
         </div>
       )}
 
@@ -949,10 +952,10 @@ export default function App() {
         <div className="final-cta-section fi reveal">
           <div className="final-cta-inner">
             <p className="final-cta-eyebrow">Join Neural Brief</p>
-            <h2 style={{ marginBottom: '12px' }}>Stop missing the AI<br />stories that matter.</h2>
+            <h2 style={{ marginBottom: '12px' }}>Stay ahead in AI —<br />2 min every Friday.</h2>
             <p className="cta-sub">
-              Join Neural Brief and stay ahead — without the noise.<br />
-              <strong>Free. Takes 3 minutes. No spam.</strong>
+              No noise. No jargon. Just the 15 stories that actually moved the needle this week.<br />
+              <strong>Free. No spam. Unsubscribe anytime.</strong>
             </p>
             <div className="cta-feature-pills">
               {['Signal Score per story', 'Break it down', 'LinkedIn post generator', 'Jargon of the week', 'Why it matters for you', 'Source labels'].map(f => (
@@ -960,7 +963,7 @@ export default function App() {
               ))}
             </div>
             <div style={{ maxWidth: '440px', margin: '32px auto 0' }}>
-              <SubscribeForm id="subscribe-bottom" ctaText="Get AI insights every Friday" />
+              <SubscribeForm id="subscribe-bottom" ctaText="Get free AI brief" />
               <div className="trust-strip" style={{ justifyContent: 'center', marginTop: '20px' }}>
                 {[['⏱', '~8 min read'], ['🚫', 'No jargon'], ['₹0', 'Free forever'], ['🔕', 'No spam']].map(([icon, text]) => (
                   <span className="trust-item" key={text}>

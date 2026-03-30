@@ -408,6 +408,15 @@ footer a:hover { color: rgba(255,255,255,0.5); }
 }
 .show-more-btn:hover { background: #ece8df; }
 
+/* First Must Know story — stronger emphasis */
+.accordion-item:first-of-type .accordion-title {
+  font-size: 16px;
+}
+.accordion-item:first-of-type .accordion-header {
+  background: #fffdf9;
+  border-left: 3px solid var(--accent);
+}
+
 /* ── Accordion hover lift ────────────────────────────────── */
 .accordion-item {
   border-bottom: 1px solid var(--border);
@@ -417,6 +426,20 @@ footer a:hover { color: rgba(255,255,255,0.5); }
   background: #fafaf8;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   position: relative; z-index: 1;
+}
+
+/* NEW badge brighter */
+.live-feed-new {
+  font-size: 9px; font-family: var(--mono); color: #e65c00;
+  letter-spacing: .04em; font-weight: 700;
+  background: #fff3ec; padding: 1px 5px; border-radius: 2px;
+  border: 1px solid #fcd0b8;
+}
+
+/* Divider above GitHub + Tool sections */
+.extra-box-section-divider {
+  height: 1px; background: var(--border2);
+  margin: 20px 0 0;
 }
 
 
@@ -529,9 +552,10 @@ footer a:hover { color: rgba(255,255,255,0.5); }
 
 .accordion-title {
   font-family: var(--serif); font-size: 15px; font-weight: 700;
-  color: var(--text); line-height: 1.35;
+  color: var(--text); line-height: 1.45;
 }
 .accordion-item.open .accordion-title { color: var(--accent); }
+.live-summary { font-size: 13px; color: var(--muted); line-height: 1.85; margin-bottom: 6px; }
 
 .accordion-chevron {
   font-size: 18px; color: var(--muted2); flex-shrink: 0;
@@ -910,6 +934,7 @@ nav.scrolled {
 .live-feed {
   border: 1px solid var(--border);
   background: var(--surface);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .live-feed-item {
