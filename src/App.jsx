@@ -47,7 +47,7 @@ function SubscribeForm({ id, ctaText = 'Get the next brief' }) {
 
   return (
     <div className="subscribe-wrap" id={id}>
-      <span className="sub-label">Drop your email, it is free</span>
+      <span className="sub-label">Drop your email — takes 2 seconds, free forever</span>
       {status !== 'success' ? (
         <>
           <div className="persona-wrap">
@@ -530,7 +530,7 @@ function LiveDigest() {
         {/* Show more toggle */}
         {stories.length > 7 && (
           <button className="show-more-btn" onClick={() => setShowAll(s => !s)}>
-            {showAll ? '− Show less' : `+ View all ${stories.length - 3} stories →`}
+            {showAll ? '− Show less' : `View full weekly brief →`}
           </button>
         )}
       </div>
@@ -566,7 +566,7 @@ function LiveDigest() {
       {/* Tool of the Week */}
       {tool_of_week && (
         <div className="extra-box">
-          <span className="extra-box-label">🛠 Tool of the Week</span>
+          <span className="extra-box-label">🧰 Tool of the Week</span>
           <div className="extra-box-rule" />
           <span className="extra-box-title" style={{ display: 'block', marginBottom: '6px' }}>{tool_of_week.name}</span>
           <p className="extra-box-desc">{tool_of_week.what}</p>
@@ -849,9 +849,9 @@ export default function App() {
           <div className="section-hd">
             <span className="section-sym">§</span>
             <div>
-              <h2>Today's Top 5 <span style={{ fontSize: '13px', fontFamily: 'var(--mono)', color: 'var(--muted2)', fontWeight: 400 }}>(2 min read)</span></h2>
-                <p style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--muted2)', marginTop: '4px' }}>
-                  Live · Updated daily
+              <h2>Today's Top 5</h2>
+              <p style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--muted2)', marginTop: '4px' }}>
+                Live · Updated daily
               </p>
             </div>
           </div>
@@ -867,7 +867,7 @@ export default function App() {
             <div>
               <h2>Weekly AI Intelligence</h2>
               <p style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--muted2)', marginTop: '4px' }}>
-                Live · Updated weekly · AI-powered
+                The 15 most important AI updates this week · AI-powered
               </p>
             </div>
           </div>
@@ -952,7 +952,7 @@ export default function App() {
         <div className="final-cta-section fi reveal">
           <div className="final-cta-inner">
             <p className="final-cta-eyebrow">Join Neural Brief</p>
-            <h2 style={{ marginBottom: '12px' }}>Stay ahead in AI —<br />2 min every Friday.</h2>
+            <h2 style={{ marginBottom: '12px' }}>Stay ahead in AI —<br />2 min daily, 8 min on Fridays.</h2>
             <p className="cta-sub">
               No noise. No jargon. Just the 15 stories that actually moved the needle this week.<br />
               <strong>Free. No spam. Unsubscribe anytime.</strong>
@@ -963,7 +963,7 @@ export default function App() {
               ))}
             </div>
             <div style={{ maxWidth: '440px', margin: '32px auto 0' }}>
-              <SubscribeForm id="subscribe-bottom" ctaText="Get free AI brief" />
+              <SubscribeForm id="subscribe-bottom" ctaText="Get AI brief for free" />
               <div className="trust-strip" style={{ justifyContent: 'center', marginTop: '20px' }}>
                 {[['⏱', '~8 min read'], ['🚫', 'No jargon'], ['₹0', 'Free forever'], ['🔕', 'No spam']].map(([icon, text]) => (
                   <span className="trust-item" key={text}>
