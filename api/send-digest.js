@@ -67,6 +67,42 @@ const RSS_FEEDS = [
   { name: 'Mashable Tech',         url: 'https://mashable.com/feeds/rss/tech' },
 ]
 
+// ── Fetch GitHub Trending AI/ML repos ────────────────────
+async function fetchGithubTrending() {
+  try {
+    const res  = await fetch('https://github.com/trending/python?since=weekly&spoken_language_code=en', {
+      headers: { 'Accept': 'text/html', 'User-Agent': 'Mozilla/5.0' }
+    })
+    const html = await res.text()
+    const articleMatches = [...html.matchAll(/<article[^>]*>([\s\S]*?)<\/article>/g)]
+    const repos = []
+    for (const match of articleMatches.slice(0, 25)) {
+      const block = match[1]
+      const nameMatch  = block.match(/href="\/([^"\/]+\/[^"\/]+)"/)
+      const descMatch  = block.match(/<p[^>]*col-9[^>]*>\s*([\s\S]*?)\s*<\/p>/)
+      const starsMatch = block.match(/([\d,]+)\s*stars this week/)
+      const langMatch  = block.match(/itemprop="programmingLanguage"[^>]*>\s*([^<]+)\s*</)
+      if (!nameMatch) continue
+      const name = nameMatch[1].trim()
+      const desc = descMatch ? descMatch[1].replace(/\s+/g, ' ').trim() : ''
+      const combined = (name + ' ' + desc).toLowerCase()
+      const aiTerms = ['ai', 'ml', 'llm', 'gpt', 'model', 'neural', 'deep', 'learn',
+                       'transformer', 'diffusion', 'agent', 'rag', 'embed', 'vector',
+                       'claude', 'openai', 'gemini', 'llama', 'vision', 'nlp', 'data']
+      if (aiTerms.some(t => combined.includes(t))) {
+        repos.push({ name, desc, stars: starsMatch ? starsMatch[1].trim() : '0', lang: langMatch ? langMatch[1].trim() : '' })
+      }
+      if (repos.length >= 5) break
+    }
+    if (repos.length === 0) return null
+    const top = repos[0]
+    return { name: top.name, desc: top.desc || 'Trending AI/ML repository', stars: top.stars, lang: top.lang, link: `https://github.com/${top.name}` }
+  } catch (e) {
+    console.log('⚠️ GitHub trending fetch failed:', e.message)
+    return null
+  }
+}
+
 // ── Fetch RSS ─────────────────────────────────────────────
 async function fetchStories(maxPerFeed = 10) {
   const all = []
@@ -446,11 +482,36 @@ export default async function handler(req, res) {
     let fromCache = !!result
 
     if (!result) {
-      const stories = await fetchStories(10)
+      const [stories, github_trending] = await Promise.all([
+        fetchStories(10),
+        fetchGithubTrending(),
+      ])
       if (!stories.length) return res.status(500).json({ error: 'No stories fetched' })
 
       const fresh = await filterSeen(stories)
       result = await selectAndSummarise(fresh.length >= STORIES_COUNT ? fresh : stories)
+
+      // Add GitHub trending + generate why line
+      if (github_trending) {
+        try {
+          await new Promise(r => setTimeout(r, 5000))
+          const whyResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+            body: JSON.stringify({
+              model: 'llama-3.3-70b-versatile',
+              messages: [{ role: 'user', content: `GitHub repo: ${github_trending.name}\nDescription: ${github_trending.desc}\n\nWrite ONE sharp sentence (max 12 words) — why should an Indian CS/AI student care about this repo? Be specific and actionable. Return only the sentence.` }],
+              temperature: 0.3,
+              max_tokens: 80,
+            }),
+          })
+          const whyData = await whyResp.json()
+          github_trending.why = whyData?.choices?.[0]?.message?.content?.trim().replace(/^["']|["']$/g, '') || ''
+        } catch (e) {
+          github_trending.why = ''
+        }
+        result.github_trending = github_trending
+      }
     }
 
     const briefNum = await nextIssue()
@@ -483,10 +544,10 @@ export default async function handler(req, res) {
     }
 
     let sent = 0, failed = 0
-    for (const sub of subscribers) {                                          // ✅ fixed: was `email`
+    for (const sub of subscribers) {                                          
       try {
-        const html = buildHtml(result, briefNum, sub.email, sub.persona || "") // ✅ fixed: sub.email + sub.persona
-        await transporter.sendMail({ from: FROM_EMAIL, to: sub.email, replyTo: REPLY_TO, subject, html }) // ✅ fixed: sub.email
+        const html = buildHtml(result, briefNum, sub.email, sub.persona || "") 
+        await transporter.sendMail({ from: FROM_EMAIL, to: sub.email, replyTo: REPLY_TO, subject, html }) 
         sent++
       } catch (e) { failed++; console.log(`❌ ${sub.email}: ${e.message}`) }
     }

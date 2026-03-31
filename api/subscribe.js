@@ -51,8 +51,8 @@ const SOURCE_LABELS = {
   'Mashable Tech':         { label: 'Media',     bg: '#ebf0f9', color: '#27438a', border: '#bcc9ec' },
 }
 
-// ── Welcome email ─────────────────────────────────────────
-function buildWelcomeEmail(email) {
+// ── Already registered email ──────────────────────────────
+function buildAlreadyRegisteredEmail(email) {
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
@@ -64,47 +64,26 @@ function buildWelcomeEmail(email) {
       Neural <span style="color:#c13d18;">Brief</span>
     </div>
     <div style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;letter-spacing:.1em;text-transform:uppercase;margin-top:5px;">
-      WELCOME TO THE BRIEF
+      ALREADY SUBSCRIBED
     </div>
   </div>
 
   <div style="padding:36px 40px;">
     <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:bold;color:#18160f;margin:0 0 16px;">
-      You're officially in. 🎉
+      You're already in! 👋
     </h2>
     <p style="font-size:15px;color:#5a5550;line-height:1.8;margin:0 0 20px;">
-      Welcome to <strong style="color:#18160f;">Neural Brief</strong> — your weekly dose of AI news, 
-      filtered for humans. No jargon, no hype, just the <strong style="color:#18160f;">15 stories worth knowing</strong>.
+      Looks like <strong style="color:#18160f;">${email}</strong> is already subscribed to Neural Brief.
+      Your preferences have been updated.
     </p>
-
-    <div style="background:#18160f;border-radius:3px;padding:24px 28px;margin:0 0 24px;">
-      <p style="font-family:'Courier New',monospace;font-size:9px;color:rgba(255,255,255,.35);letter-spacing:.14em;text-transform:uppercase;margin:0 0 16px;">
-        WHAT TO EXPECT
-      </p>
-      ${[
-        ['📡', 'Real AI news', 'Fetched fresh every Friday from 7+ top sources'],
-        ['🧠', 'AI summarised', "Groq's Llama 3.3 70B picks the best 15 stories and writes plain English summaries"],
-        ['🇮🇳', 'Why it matters', 'Every story has India-specific context — why you as a student should care'],
-        ['⏰', 'Every Friday at 9am IST', 'Lands in your inbox every Friday — read it over chai in 3 minutes'],
-        ['₹0', 'Free forever', 'No credit card, no trial, no catch'],
-      ].map(([icon, title, desc]) => `
-      <div style="display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;">
-        <span style="font-size:18px;flex-shrink:0;">${icon}</span>
-        <div>
-          <div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:3px;">${title}</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.6;">${desc}</div>
-        </div>
-      </div>`).join('')}
-    </div>
-
-    <p style="font-size:14px;color:#5a5550;line-height:1.8;margin:0 0 16px;font-style:italic;">
-      🎁 <strong style="color:#18160f;">Bonus:</strong> This week's AI digest is on its way to your inbox right now!
+    <p style="font-size:14px;color:#5a5550;line-height:1.8;margin:0 0 24px;">
+      Your weekly digest arrives every <strong style="color:#18160f;">Friday at 9am IST</strong>.
+      Check your inbox — it might be in your spam folder if you haven't seen it yet.
     </p>
-
-    <a href="${WEBSITE}" style="display:inline-block;background:#c13d18;color:#fff;
+    <a href="https://neural-brief-eight.vercel.app" style="display:inline-block;background:#c13d18;color:#fff;
       font-family:'Helvetica Neue',sans-serif;font-size:13px;font-weight:500;
       padding:11px 22px;border-radius:3px;text-decoration:none;">
-      Share Neural Brief →
+      Visit Neural Brief →
     </a>
   </div>
 
@@ -113,9 +92,91 @@ function buildWelcomeEmail(email) {
       Neural <span style="color:#c13d18;">Brief</span>
     </div>
     Weekly AI news for students · Free forever · Every Friday<br>
-    <a href="${WEBSITE}/api/unsubscribe?email=${email}" style="color:rgba(255,255,255,.25);text-decoration:none;">Unsubscribe</a>
+    <a href="https://neural-brief-eight.vercel.app/api/unsubscribe?email=${email}" style="color:rgba(255,255,255,.25);text-decoration:none;">Unsubscribe</a>
     &nbsp;·&nbsp;
-    <a href="${WEBSITE}" style="color:rgba(255,255,255,.25);text-decoration:none;">Website</a>
+    <a href="https://neural-brief-eight.vercel.app" style="color:rgba(255,255,255,.25);text-decoration:none;">Website</a>
+  </div>
+
+</div>
+</body></html>`
+}
+
+// ── Welcome email ─────────────────────────────────────────
+function buildWelcomeEmail(email, persona = '') {
+  const personaLine = persona ? `<p style="font-size:13px;color:#5a5550;line-height:1.6;margin:0 0 20px;">
+    Your digest is personalised for <strong style="color:#18160f;">${persona}s</strong> — every story includes a "Why it matters" line written specifically for you.
+  </p>` : ''
+
+  const features = [
+    ['17+ AI sources tracked', 'TechCrunch, DeepMind, Anthropic, MIT Tech Review, HuggingFace & more'],
+    ['15 stories, hand-picked by AI', "Groq's Llama 3.3 70B picks only what actually matters — no noise"],
+    ['India-specific context', 'Every story explains why it matters for Indian students and builders'],
+    ['Every Friday at 9am IST', 'Read it over chai in 8 minutes. Done.'],
+    ['Tool of the Week', 'One student-accessible AI tool every week — with a direct link to try it'],
+    ['Free forever', 'No credit card, no trial, no catch'],
+  ].map(([title, desc]) => `
+  <div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;">
+    <div style="width:4px;height:4px;border-radius:50%;background:#c13d18;flex-shrink:0;margin-top:7px;"></div>
+    <div>
+      <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:2px;">${title}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.45);line-height:1.6;">${desc}</div>
+    </div>
+  </div>`).join('')
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f4f1ea;font-family:'Helvetica Neue',Helvetica,sans-serif;">
+<div style="max-width:600px;margin:32px auto;background:#fff;border:1px solid #d6d0c2;">
+
+  <div style="text-align:center;padding:32px 40px 20px;border-bottom:3px double #d6d0c2;">
+    <div style="font-family:Georgia,serif;font-size:38px;font-weight:bold;color:#18160f;letter-spacing:-.02em;line-height:1;">
+      Neural <span style="color:#c13d18;">Brief</span>
+    </div>
+    <div style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;letter-spacing:.14em;text-transform:uppercase;margin-top:6px;">
+      You are now subscribed
+    </div>
+  </div>
+
+  <div style="padding:36px 40px;">
+    <h2 style="font-family:Georgia,serif;font-size:26px;font-weight:bold;color:#18160f;margin:0 0 14px;line-height:1.3;">
+      You're officially in. Welcome.
+    </h2>
+    <p style="font-size:15px;color:#5a5550;line-height:1.8;margin:0 0 16px;">
+      Every Friday at 9am IST, <strong style="color:#18160f;">Neural Brief</strong> lands in your inbox — 
+      15 AI stories that actually matter, explained in plain English. No jargon, no hype.
+    </p>
+    ${personaLine}
+
+    <div style="background:#18160f;border-radius:3px;padding:24px 28px;margin:0 0 24px;">
+      <p style="font-family:'Courier New',monospace;font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.14em;text-transform:uppercase;margin:0 0 16px;">
+        What you get every Friday
+      </p>
+      ${features}
+    </div>
+
+    <div style="background:#fef9f5;border:1px solid #f5cec4;border-left:3px solid #c13d18;padding:14px 18px;margin:0 0 24px;border-radius:2px;">
+      <p style="font-size:14px;color:#18160f;margin:0;line-height:1.7;">
+        <strong>Your first issue is on its way.</strong> Check your inbox in a moment — 
+        this week's full AI digest is being sent to you right now.
+      </p>
+    </div>
+
+    <a href="${WEBSITE}" style="display:inline-block;background:#c13d18;color:#fff;
+      font-family:'Helvetica Neue',sans-serif;font-size:13px;font-weight:500;
+      padding:11px 22px;border-radius:3px;text-decoration:none;margin-right:10px;">
+      Read on website →
+    </a>
+  </div>
+
+  <div style="background:#18160f;padding:24px 40px;text-align:center;font-family:'Courier New',monospace;font-size:10px;color:rgba(255,255,255,.4);line-height:1.9;">
+    <div style="color:rgba(255,255,255,.8);font-family:Georgia,serif;font-size:14px;margin-bottom:6px;">
+      Neural <span style="color:#c13d18;">Brief</span>
+    </div>
+    Weekly AI news for students &middot; Free forever &middot; Every Friday 9am IST<br>
+    <a href="${WEBSITE}/api/unsubscribe?email=${email}" style="color:rgba(255,255,255,.4);text-decoration:none;">Unsubscribe</a>
+    &nbsp;&middot;&nbsp;
+    <a href="${WEBSITE}" style="color:rgba(255,255,255,.4);text-decoration:none;">Website</a>
   </div>
 
 </div>
@@ -275,27 +336,47 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Save to Supabase
+    // 1. Try insert — detect duplicate
     const { error: dbError } = await supabase
       .from('subscribers')
       .insert([{ email, confirmed: true, persona: persona || null, daily_optin: daily_optin || false }])
 
-    if (dbError && dbError.code !== '23505') {
+    const isAlreadyRegistered = dbError?.code === '23505'
+
+    if (dbError && !isAlreadyRegistered) {
       throw new Error(dbError.message)
     }
 
-    // 2. Send welcome email
+    // If already registered — update their persona + daily_optin in case they changed it
+    if (isAlreadyRegistered) {
+      await supabase
+        .from('subscribers')
+        .update({ persona: persona || null, daily_optin: daily_optin || false })
+        .eq('email', email)
+
+      // Send "already registered" email
+      await transporter.sendMail({
+        from:    FROM_EMAIL,
+        to:      email,
+        replyTo: REPLY_TO,
+        subject: "You're already subscribed to Neural Brief 🧠",
+        html:    buildAlreadyRegisteredEmail(email),
+      })
+      console.log('✅ Already registered email sent to:', email)
+      return res.status(200).json({ success: true, already_registered: true })
+    }
+
+    // 2. New subscriber — send welcome email
     await transporter.sendMail({
       from:    FROM_EMAIL,
       to:      email,
       replyTo: REPLY_TO,
       subject: "Welcome to Neural Brief 🧠 — You're in!",
-      html:    buildWelcomeEmail(email),
+      html:    buildWelcomeEmail(email, persona || ''),
     })
     console.log('✅ Welcome email sent to:', email)
 
     // 3. Send this week's digest from cache (non-blocking)
-    // Don't await — let it send in background so subscribe is instant
     getCachedDigest().then(async (cached) => {
       if (!cached || !cached.stories) {
         console.log('⚠️ No cached digest found — skipping digest send')
@@ -313,7 +394,6 @@ export default async function handler(req, res) {
         })
         console.log('✅ Welcome digest sent to:', email)
       } catch (e) {
-        // Digest send failed — that's ok, welcome email already sent
         console.log('⚠️ Welcome digest failed (non-critical):', e.message)
       }
     })

@@ -375,7 +375,7 @@ function LiveDigest() {
     const signal   = story.signal_label ? (SIGNAL_COLORS[story.signal_label] || SIGNAL_COLORS['Interesting']) : null
     const whyKey   = persona === 'Developer' ? 'why_developer' : persona === 'Founder' ? 'why_founder' : 'why_student'
     const whyLabel = persona === 'Developer' ? 'Why devs care' : persona === 'Founder' ? 'Why founders care' : persona === 'Creator' ? 'Why creators care' : 'Why students care'
-    const whyText  = story[whyKey] || story.why_student || story.why_it_matters || ''
+    const whyText  = story[whyKey] || story.why_student || story.why_developer || ''
 
     return (
       <div className={'accordion-item' + (isOpen ? ' open' : '')} key={i}>
@@ -685,10 +685,10 @@ function ArchivePage({ onClose }) {
                       <a href={story.link} target="_blank" rel="noopener noreferrer" className="live-title">{story.title}</a>
                       <p className="live-summary">{story.summary}</p>
                       <p className="live-tldr">{story.tldr}</p>
-                      {(story.why_student || story.why_it_matters) && (
+                      {story.why_student && (
                         <div className="why-matters">
                           <span className="why-matters-label">Why it matters </span>
-                          <span className="why-matters-text">{story.why_student || story.why_it_matters}</span>
+                          <span className="why-matters-text">{story.why_student}</span>
                         </div>
                       )}
                     </div>
@@ -813,7 +813,7 @@ export default function App() {
             </div>
             <div className="sb-section">
               <span className="sb-label">Built with</span>
-              {['AI-powered intelligence','Automated pipeline','Seamless delivery'].map(s => (
+              {['Groq · Llama 3.3 70B','Brevo · Email delivery','Supabase · Subscribers'].map(s => (
                 <div className="src-item" key={s}><span className="src-dot"></span>{s}</div>
               ))}
             </div>
