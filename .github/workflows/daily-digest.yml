@@ -1,0 +1,19 @@
+name: Daily Top 5
+
+on:
+  schedule:
+    - cron: '30 3 * * *'   # 9:00 AM IST every day (3:30 UTC)
+  workflow_dispatch:         # allow manual trigger from GitHub UI
+
+jobs:
+  send-daily:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger daily digest
+        run: |
+          curl -s -X POST https://neural-brief-eight.vercel.app/api/send-daily \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            --fail \
+            && echo "✅ Daily digest triggered successfully" \
+            || echo "❌ Daily digest trigger failed"
