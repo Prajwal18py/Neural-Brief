@@ -55,20 +55,24 @@ function buildDailyEmail(stories, email) {
     let domain = ''
     try { domain = new URL(story.link).hostname } catch {}
     const faviconUrl = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=16` : ''
+    const why = story.why || ''
 
     return `
 <tr>
-  <td style="padding:14px 0;border-bottom:1px solid #e8e3db;">
+  <td style="padding:16px 0;border-bottom:1px solid #e8e3db;">
     <div style="display:flex;align-items:flex-start;gap:12px;">
-      <span style="font-family:'Courier New',monospace;font-size:11px;color:#bfb9aa;flex-shrink:0;padding-top:2px;">${String(i+1).padStart(2,'0')}</span>
+      <span style="font-family:'Courier New',monospace;font-size:11px;color:#c4bdb0;flex-shrink:0;padding-top:3px;">${String(i+1).padStart(2,'0')}</span>
       <div style="flex:1;">
-        ${faviconUrl ? `<img src="${faviconUrl}" width="14" height="14" style="border-radius:3px;vertical-align:middle;margin-right:5px;" />` : ''}
-        <a href="${story.link}" style="font-family:Georgia,serif;font-size:16px;font-weight:bold;color:#18160f;text-decoration:none;line-height:1.35;">
-          ${story.title}
-        </a>
-        <p style="font-size:11px;font-family:'Courier New',monospace;color:#9a938a;margin:4px 0 0;">via ${story.source}</p>
+        <div style="margin-bottom:4px;">
+          ${faviconUrl ? `<img src="${faviconUrl}" width="14" height="14" style="border-radius:3px;vertical-align:middle;margin-right:5px;" />` : ''}
+          <a href="${story.link}" style="font-family:Georgia,serif;font-size:15px;font-weight:bold;color:#18160f;text-decoration:none;line-height:1.4;">
+            ${story.title}
+          </a>
+        </div>
+        ${why ? `<p style="font-family:'Courier New',monospace;font-size:10px;color:#c13d18;margin:4px 0 4px;line-height:1.5;">→ ${why}</p>` : ''}
+        <p style="font-size:10px;font-family:'Courier New',monospace;color:#a09890;margin:0;">via ${story.source}</p>
       </div>
-      <a href="${story.link}" style="font-size:14px;color:#bfb9aa;text-decoration:none;flex-shrink:0;padding-top:2px;">→</a>
+      <a href="${story.link}" style="font-size:14px;color:#c4bdb0;text-decoration:none;flex-shrink:0;padding-top:3px;">→</a>
     </div>
   </td>
 </tr>`
@@ -88,12 +92,15 @@ function buildDailyEmail(stories, email) {
     <div style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;letter-spacing:.1em;text-transform:uppercase;margin-top:5px;">
       DAILY TOP 5 · ${dateStr}
     </div>
+    <div style="font-family:Georgia,serif;font-size:13px;color:#5a5550;font-style:italic;margin-top:8px;">
+      Your 2-minute AI update — only what actually matters.
+    </div>
   </div>
 
   <!-- Meta bar -->
   <div style="padding:8px 40px;background:#f4f1ea;border-bottom:1px solid #d6d0c2;font-family:'Courier New',monospace;font-size:10px;color:#9a938a;display:flex;justify-content:space-between;">
     <span>5 stories · ~2 min read</span>
-    <span>Live · Updated daily</span>
+    <span>Updated today</span>
   </div>
 
   <!-- Stories -->
@@ -107,19 +114,19 @@ function buildDailyEmail(stories, email) {
   <div style="padding:20px 40px;text-align:center;border-top:1px solid #e8e3db;">
     <a href="${WEBSITE}#this-week"
       style="display:inline-block;background:#c13d18;color:#fff;font-family:'Helvetica Neue',sans-serif;font-size:12px;font-weight:500;padding:9px 20px;border-radius:3px;text-decoration:none;">
-      Read this week's full brief →
+      See what everyone's building this week →
     </a>
   </div>
 
   <!-- Footer -->
   <div style="background:#18160f;padding:18px 40px;text-align:center;font-family:'Courier New',monospace;font-size:10px;color:rgba(255,255,255,.3);line-height:1.9;">
-    <div style="color:rgba(255,255,255,.65);font-family:Georgia,serif;font-size:13px;margin-bottom:4px;">
+    <div style="color:rgba(255,255,255,.8);font-family:Georgia,serif;font-size:13px;margin-bottom:4px;">
       Neural <span style="color:#c13d18;">Brief</span>
     </div>
-    Daily Top 5 · Free forever · Every morning 9am IST<br>
-    <a href="${WEBSITE}/api/unsubscribe?email=${email}" style="color:rgba(255,255,255,.25);text-decoration:none;">Unsubscribe</a>
+    2 min daily · Free forever · 9am IST<br>
+    <a href="${WEBSITE}/api/unsubscribe?email=${email}" style="color:rgba(255,255,255,.4);text-decoration:none;">Unsubscribe</a>
     &nbsp;·&nbsp;
-    <a href="${WEBSITE}" style="color:rgba(255,255,255,.25);text-decoration:none;">Website</a>
+    <a href="${WEBSITE}" style="color:rgba(255,255,255,.4);text-decoration:none;">Website</a>
   </div>
 
 </div>
