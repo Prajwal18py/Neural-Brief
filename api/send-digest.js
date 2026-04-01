@@ -150,13 +150,13 @@ async function markSent(stories) {
 
 // ── Groq — pick + summarise with all new fields ───────────
 async function selectAndSummarise(stories) {
-  const storiesText = stories.slice(0, 60).map((s, i) =>
-    `[${i+1}] SOURCE: ${s.source}\nTITLE: ${s.title}\nDESC: ${s.description.slice(0, 150)}\nLINK: ${s.link}`
+  const storiesText = stories.slice(0, 40).map((s, i) =>
+    `[${i+1}] SOURCE: ${s.source}\nTITLE: ${s.title}\nDESC: ${s.description.slice(0, 100)}\nLINK: ${s.link}`
   ).join('\n\n')
 
   const prompt = `You are the editor of Neural Brief, a weekly AI news digest for Indian college students.
 
-Here are ${Math.min(stories.length, 60)} AI stories from this week:
+Here are ${Math.min(stories.length, 40)} AI stories from this week:
 ${storiesText}
 
 Pick EXACTLY ${STORIES_COUNT} most important, interesting, and varied stories. Cover different categories. Do NOT return more than ${STORIES_COUNT} stories.
@@ -544,10 +544,10 @@ export default async function handler(req, res) {
     }
 
     let sent = 0, failed = 0
-    for (const sub of subscribers) {                                          
+    for (const sub of subscribers) {                                          // ✅ fixed: was `email`
       try {
-        const html = buildHtml(result, briefNum, sub.email, sub.persona || "") 
-        await transporter.sendMail({ from: FROM_EMAIL, to: sub.email, replyTo: REPLY_TO, subject, html }) 
+        const html = buildHtml(result, briefNum, sub.email, sub.persona || "") // ✅ fixed: sub.email + sub.persona
+        await transporter.sendMail({ from: FROM_EMAIL, to: sub.email, replyTo: REPLY_TO, subject, html }) // ✅ fixed: sub.email
         sent++
       } catch (e) { failed++; console.log(`❌ ${sub.email}: ${e.message}`) }
     }

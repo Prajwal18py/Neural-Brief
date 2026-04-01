@@ -108,13 +108,13 @@ async function fetchGithubTrending() {
 
 async function summarise(stories) {
   // ✅ Cap at 60 stories to keep prompt size manageable
-  const text = stories.slice(0, 60).map((s, i) =>
-    `[${i+1}] SOURCE: ${s.source}\nTITLE: ${s.title}\nDESC: ${s.description}\nLINK: ${s.link}`
+  const text = stories.slice(0, 40).map((s, i) =>
+    `[${i+1}] SOURCE: ${s.source}\nTITLE: ${s.title}\nDESC: ${s.description.slice(0, 100)}\nLINK: ${s.link}`
   ).join('\n\n')
 
   const prompt = `You are the editor of Neural Brief, a weekly AI news digest for Indian college students.
 
-Here are ${Math.min(stories.length, 60)} recent AI stories:
+Here are ${Math.min(stories.length, 40)} recent AI stories:
 ${text}
 
 Pick EXACTLY 15 most important, interesting, and varied stories. Cover different categories. Do NOT return more than 15 stories.
