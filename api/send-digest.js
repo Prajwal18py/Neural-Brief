@@ -159,7 +159,7 @@ async function selectAndSummarise(stories) {
 Here are ${Math.min(stories.length, 40)} AI stories from this week:
 ${storiesText}
 
-Pick EXACTLY ${STORIES_COUNT} most important, interesting, and varied stories. Cover different categories. Do NOT return more than ${STORIES_COUNT} stories.
+Pick EXACTLY ${STORIES_COUNT} most important, interesting, and varied stories. Cover different categories. Do NOT return more than ${STORIES_COUNT} stories. If there are any stories about Claude or Anthropic, include at least one.
 
 Also pick ONE "biggest_move" — the single most important AI story of the week (a major launch, acquisition, or breakthrough).
 

@@ -117,7 +117,7 @@ async function summarise(stories) {
 Here are ${Math.min(stories.length, 40)} recent AI stories:
 ${text}
 
-Pick EXACTLY 15 most important, interesting, and varied stories. Cover different categories. Do NOT return more than 15 stories.
+Pick EXACTLY 15 most important, interesting, and varied stories. Cover different categories. Do NOT return more than 15 stories. If there are any stories about Claude or Anthropic, include at least one.
 
 Also pick ONE "biggest_move" — the single most important AI story of the week.
 
