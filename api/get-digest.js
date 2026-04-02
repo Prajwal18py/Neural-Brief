@@ -125,14 +125,7 @@ async function fetchGithubTrending() {
       const stars = starsMatch ? starsMatch[1].trim() : '0'
       const lang  = langMatch  ? langMatch[1].trim()  : ''
 
-      const combined  = (name + ' ' + desc).toLowerCase()
-      const paidTerms = ['enterprise', 'commercial', 'proprietary', 'saas', 'subscription', 'pricing plan', 'paid only']
-      const aiTerms   = ['ai', 'ml', 'llm', 'gpt', 'model', 'neural', 'deep', 'learn',
-                         'transformer', 'diffusion', 'agent', 'rag', 'embed', 'vector',
-                         'claude', 'openai', 'gemini', 'llama', 'vision', 'nlp', 'data']
-      if (aiTerms.some(t => combined.includes(t)) && !paidTerms.some(t => combined.includes(t))) {
-        repos.push({ name, desc, stars, lang })
-      }
+      repos.push({ name, desc, stars, lang })
       if (repos.length >= 5) break
     }
 
