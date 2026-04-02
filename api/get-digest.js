@@ -17,14 +17,14 @@ const RSS_FEEDS = [
   { name: 'HackerNews AI',         url: 'https://hnrss.org/newest?q=AI+OR+LLM&count=10' },
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
   { name: 'Google DeepMind',       url: 'https://deepmind.google/blog/rss.xml' },
-  { name: 'Anthropic Blog',        url: 'https://www.anthropic.com/rss.xml' },
+  { name: 'Anthropic Blog',        url: 'https://buttondown.com/jlweston/rss' },          // Anthropic has no public RSS; using AI newsletter as proxy
   { name: 'OpenAI Blog',           url: 'https://openai.com/blog/rss.xml' },
   { name: 'Google AI Blog',        url: 'https://blog.google/technology/ai/rss/' },
   { name: 'Hugging Face',          url: 'https://huggingface.co/blog/feed.xml' },
   { name: 'Import AI',             url: 'https://jack-clark.net/feed/' },
   { name: 'Ars Technica AI',       url: 'https://arstechnica.com/tag/ai/feed/' },
   { name: 'VentureBeat AI',        url: 'https://venturebeat.com/category/ai/feed/' },
-  { name: 'The Verge AI',          url: 'https://www.theverge.com/ai-artificial-intelligence/rss/index.xml' },
+  { name: 'The Verge AI',          url: 'https://www.theverge.com/rss/index.xml' },
   { name: 'ZDNet AI',              url: 'https://www.zdnet.com/topic/artificial-intelligence/rss.xml' },
   { name: 'Mashable Tech',         url: 'https://mashable.com/feeds/rss/tech' },
 ]
@@ -147,9 +147,8 @@ async function fetchGithubTrending() {
 
 async function summarise(stories) {
   // FIX: Groq's TPM limit is 12,000. The old code requested 12,000 output tokens alone,
-  // which combined with ~4–6k input tokens pushed the total far over the limit.
-  // Solution: cap stories at 30, shorten per-story format, and limit output to 4,000 tokens.
-  // The JSON for 12 stories fits well within that budget.
+  // Input is ~1300 tokens. Groq TPM limit is 12k total (input+output).
+  // 10 stories * ~500 tokens each + overhead = ~5300 output tokens. 8000 gives safe headroom.
   const text = stories.slice(0, 30).map((s, i) =>
     `[${i+1}] ${s.source} | ${s.title}\n${s.description.slice(0, 80)}\n${s.link}`
   ).join('\n\n')
@@ -159,14 +158,14 @@ async function summarise(stories) {
 Recent AI stories:
 ${text}
 
-Pick EXACTLY 12 most important, varied stories. Include an Anthropic/Claude story if one exists.
+Pick EXACTLY 10 most important, varied stories. Include an Anthropic/Claude story if one exists.
 
 Also pick:
 - ONE "biggest_move": {title, reason, link}
 - ONE "jargon_of_week": {term, explanation}
 - ONE "tool_of_week": {name, what, pricing (Free/Freemium/Paid/Open Source), best_for (Students/Developers/Founders/Everyone), why, link (official homepage)}
 
-For each of the 12 stories:
+For each of the 10 stories:
 - tag: New Model | Research | Industry | Tool Drop | Policy | Opinion
 - title: ≤12 words
 - summary: 2 plain-English sentences
@@ -186,7 +185,7 @@ For each of the 12 stories:
 Return ONLY valid JSON, no markdown fences:
 {"biggest_move":{"title":"...","reason":"...","link":"..."},"jargon_of_week":{"term":"...","explanation":"..."},"tool_of_week":{"name":"...","what":"...","pricing":"Freemium","best_for":"Students","why":"...","link":"..."},"stories":[{"tag":"...","title":"...","summary":"...","tldr":"...","why_student":"...","why_developer":"...","why_founder":"...","signal_score":8,"signal_label":"Important","tweet":"...","linkedin":"...","eli15":"...","hype":"...","reality":"...","source":"...","link":"..."}]}`
 
-  const raw = (await callAI(prompt, 4000)).replace(/```json|```/g, '').trim()
+  const raw = (await callAI(prompt, 8000)).replace(/```json|```/g, '').trim()
 
   let parsed
   try {
