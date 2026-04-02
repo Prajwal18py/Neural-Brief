@@ -50,6 +50,55 @@ async function fetchStories() {
 }
 
 // ── Fetch GitHub Trending AI/ML repos ────────────────────
+// ── AI call with Groq primary + Gemini fallback ───────────
+async function callAI(prompt, maxTokens = 12000) {
+  // Try Groq first
+  try {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.35,
+        max_tokens: maxTokens,
+      }),
+    })
+    const data = await resp.json()
+    if (data?.choices?.[0]?.message?.content) {
+      console.log('✅ Groq response received')
+      return data.choices[0].message.content.trim()
+    }
+    console.log('⚠️ Groq failed:', JSON.stringify(data?.error))
+  } catch (e) {
+    console.log('⚠️ Groq error:', e.message)
+  }
+
+  // Fallback to Gemini
+  if (!process.env.GEMINI_API_KEY) throw new Error('Both Groq failed and no GEMINI_API_KEY set')
+  console.log('🔄 Falling back to Gemini...')
+  try {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.35, maxOutputTokens: maxTokens },
+      }),
+    })
+    const data = await resp.json()
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
+    if (text) {
+      console.log('✅ Gemini fallback response received')
+      return text.trim()
+    }
+    console.log('⚠️ Gemini also failed:', JSON.stringify(data?.error))
+    throw new Error('Both Groq and Gemini returned empty responses')
+  } catch (e) {
+    throw new Error(`AI fallback failed: ${e.message}`)
+  }
+}
+
 async function fetchGithubTrending() {
   try {
     const res  = await fetch('https://github.com/trending/python?since=weekly&spoken_language_code=en', {
@@ -78,12 +127,15 @@ async function fetchGithubTrending() {
       const stars = starsMatch ? starsMatch[1].trim() : '0'
       const lang  = langMatch  ? langMatch[1].trim()  : ''
 
-      // Filter for AI/ML relevant repos
+      // Filter for AI/ML relevant repos — skip paid/commercial/enterprise ones
       const combined = (name + ' ' + desc).toLowerCase()
-      const aiTerms  = ['ai', 'ml', 'llm', 'gpt', 'model', 'neural', 'deep', 'learn',
-                        'transformer', 'diffusion', 'agent', 'rag', 'embed', 'vector',
-                        'claude', 'openai', 'gemini', 'llama', 'vision', 'nlp', 'data']
-      if (aiTerms.some(t => combined.includes(t))) {
+      const paidTerms = ['enterprise', 'commercial', 'proprietary', 'saas', 'subscription', 'pricing plan', 'paid only']
+      const aiTerms   = ['ai', 'ml', 'llm', 'gpt', 'model', 'neural', 'deep', 'learn',
+                         'transformer', 'diffusion', 'agent', 'rag', 'embed', 'vector',
+                         'claude', 'openai', 'gemini', 'llama', 'vision', 'nlp', 'data']
+      const isAI   = aiTerms.some(t => combined.includes(t))
+      const isPaid = paidTerms.some(t => combined.includes(t))
+      if (isAI && !isPaid) {
         repos.push({ name, desc, stars, lang })
       }
       if (repos.length >= 5) break
@@ -157,35 +209,7 @@ Return ONLY valid JSON, no backticks:
   "stories": [{"tag":"...","title":"...","summary":"...","tldr":"...","why_student":"...","why_developer":"...","why_founder":"...","signal_score":8.5,"signal_label":"Important","tweet":"...","linkedin":"...","eli15":"...","hype":"...","reality":"...","source":"...","link":"..."}]
 }`
 
-  const sleep = ms => new Promise(r => setTimeout(r, ms))
-
-  let data, attempts = 0
-  while (attempts < 3) {
-    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.35,
-        max_tokens: 12000,
-      }),
-    })
-    data = await resp.json()
-
-    if (data?.choices?.[0]?.message?.content) break
-
-    attempts++
-    const isRateLimit = data?.error?.type === 'rate_limit_exceeded' || resp.status === 429
-    console.log(`⚠️ Groq attempt ${attempts} failed. Rate limit: ${isRateLimit}. Error: ${JSON.stringify(data?.error)}`)
-    if (attempts < 3) await sleep(isRateLimit ? 30000 : 5000)
-  }
-
-  if (!data?.choices?.[0]?.message?.content) {
-    console.error('❌ Groq returned no choices after retries:', JSON.stringify(data))
-    throw new Error('Groq returned empty response. Check API key or rate limits.')
-  }
-  const raw  = data.choices[0].message.content.trim().replace(/```json|```/g, '').trim()
+  const raw = (await callAI(prompt, 12000)).replace(/```json|```/g, '').trim()
 
   // Safe JSON parse with helpful error
   let parsed
@@ -193,7 +217,7 @@ Return ONLY valid JSON, no backticks:
     parsed = JSON.parse(raw)
   } catch (e) {
     console.error('❌ JSON parse failed — likely truncated. Tail:', raw.slice(-200))
-    throw new Error('Groq response was truncated. Reduce input size or increase max_tokens.')
+    throw new Error('AI response was truncated or malformed.')
   }
 
   return parsed
@@ -226,19 +250,9 @@ export default async function handler(req, res) {
     // Attach GitHub trending repo + generate why line
     if (github_trending) {
       try {
-        await new Promise(r => setTimeout(r, 5000)) // wait 5s after main Groq call
-        const whyResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [{ role: 'user', content: `GitHub repo: ${github_trending.name}\nDescription: ${github_trending.desc}\n\nWrite ONE sharp sentence (max 12 words) — why should an Indian CS/AI student care about this repo? Be specific and actionable. No generic phrases. Return only the sentence, nothing else.` }],
-            temperature: 0.3,
-            max_tokens: 80,
-          }),
-        })
-        const whyData = await whyResp.json()
-        github_trending.why = whyData?.choices?.[0]?.message?.content?.trim().replace(/^["']|["']$/g, '') || ''
+        await new Promise(r => setTimeout(r, 3000))
+        const whyPrompt = `GitHub repo: ${github_trending.name}\nDescription: ${github_trending.desc}\n\nWrite ONE sharp sentence (max 12 words) — why should an Indian CS/AI student care about this repo? Be specific and actionable. No generic phrases. Return only the sentence, nothing else.`
+        github_trending.why = (await callAI(whyPrompt, 80)).replace(/^["']|["']$/g, '')
       } catch (e) {
         github_trending.why = ''
         console.log('⚠️ GitHub why generation failed:', e.message)

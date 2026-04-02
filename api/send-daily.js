@@ -45,27 +45,57 @@ async function getLiveStories() {
   return null
 }
 
+// ── Get tool of week from digest cache ────────────────────
+async function getToolOfDay() {
+  try {
+    const { data } = await supabase
+      .from('digest_cache')
+      .select('data')
+      .order('created_at', { ascending: false })
+      .limit(1)
+    if (data && data.length > 0 && data[0].data?.tool_of_week) {
+      return data[0].data.tool_of_week
+    }
+  } catch (e) { console.log('⚠️ Tool of day fetch failed:', e.message) }
+  return null
+}
+
 // ── Build daily email HTML ────────────────────────────────
-function buildDailyEmail(stories, email) {
+function buildDailyEmail(stories, email, tool) {
   const dateStr = new Date().toLocaleDateString('en-IN', {
     weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
   }).toUpperCase()
+
+  // Yesterday's date for "Missed yesterday" link
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  const yesterdayStr = yesterday.toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long' })
+
+  // Tag colors
+  const TAG_COLORS = {
+    'Model':    '#c13d18', 'Research': '#357025', 'Industry': '#27438a',
+    'Security': '#7a5018', 'Policy':   '#4f2fa8', 'Tool':     '#7a5018',
+  }
 
   const storyRows = stories.map((story, i) => {
     let domain = ''
     try { domain = new URL(story.link).hostname } catch {}
     const faviconUrl = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=16` : ''
-    const why = story.why || ''
+    const why        = story.why || ''
+    const tag        = story.tag || ''
+    const tagColor   = TAG_COLORS[tag] || '#27438a'
+    const isMustKnow = i === 0
 
     return `
 <tr>
-  <td style="padding:16px 0;border-bottom:1px solid #e8e3db;">
+  <td style="padding:16px 0;border-bottom:1px solid #e8e3db;${isMustKnow ? 'background:#fffdf9;border-left:3px solid #c13d18;padding-left:13px;' : ''}">
     <div style="display:flex;align-items:flex-start;gap:12px;">
-      <span style="font-family:'Courier New',monospace;font-size:11px;color:#c4bdb0;flex-shrink:0;padding-top:3px;">${String(i+1).padStart(2,'0')}</span>
+      <span style="font-family:'Courier New',monospace;font-size:11px;color:#c4bdb0;flex-shrink:0;padding-top:3px;">${isMustKnow ? '⭐' : String(i+1).padStart(2,'0')}</span>
       <div style="flex:1;">
+        ${tag ? `<span style="font-family:'Courier New',monospace;font-size:8px;color:${tagColor};letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:3px;display:block;">[${tag}]</span>` : ''}
         <div style="margin-bottom:4px;">
           ${faviconUrl ? `<img src="${faviconUrl}" width="14" height="14" style="border-radius:3px;vertical-align:middle;margin-right:5px;" />` : ''}
-          <a href="${story.link}" style="font-family:Georgia,serif;font-size:15px;font-weight:bold;color:#18160f;text-decoration:none;line-height:1.4;">
+          <a href="${story.link}" style="font-family:Georgia,serif;font-size:${isMustKnow ? '16px' : '15px'};font-weight:bold;color:#18160f;text-decoration:none;line-height:1.4;">
             ${story.title}
           </a>
         </div>
@@ -78,6 +108,22 @@ function buildDailyEmail(stories, email) {
 </tr>`
   }).join('')
 
+  // Tool of the Day block
+  const toolBlock = tool ? `
+  <!-- Tool of the Day -->
+  <div style="margin:0 40px 0;padding:16px 20px;background:#f4f1ea;border:1px solid #d6d0c2;border-top:3px solid #c13d18;">
+    <div style="font-family:'Courier New',monospace;font-size:9px;color:#9a938a;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;">
+      🧰 Tool of the Day
+    </div>
+    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
+      <span style="font-family:Georgia,serif;font-size:14px;font-weight:bold;color:#18160f;">${tool.name}</span>
+      <span style="font-family:'Courier New',monospace;font-size:9px;color:#357025;background:#edf5eb;padding:1px 6px;border:1px solid #bdd9b7;border-radius:1px;">${tool.pricing}</span>
+      <span style="font-family:'Courier New',monospace;font-size:9px;color:#27438a;background:#ebf0f9;padding:1px 6px;border:1px solid #bcc9ec;border-radius:1px;">For ${tool.best_for}</span>
+    </div>
+    <p style="font-size:12px;color:#5a5550;margin:0 0 8px;line-height:1.6;">${tool.what}</p>
+    ${tool.link ? `<a href="${tool.link}" style="font-family:'Courier New',monospace;font-size:10px;color:#c13d18;text-decoration:none;border:1px solid #f5cec4;padding:3px 10px;border-radius:2px;">Try it →</a>` : ''}
+  </div>` : ''
+
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
@@ -85,7 +131,7 @@ function buildDailyEmail(stories, email) {
 <div style="max-width:560px;margin:28px auto;background:#fff;border:1px solid #d6d0c2;">
 
   <!-- Masthead -->
-  <div style="text-align:center;padding:24px 40px 16px;border-bottom:3px double #d6d0c2;">
+  <div style="text-align:center;padding:24px 40px 14px;border-bottom:3px double #d6d0c2;">
     <div style="font-family:Georgia,serif;font-size:30px;font-weight:bold;color:#18160f;letter-spacing:-.02em;line-height:1;">
       Neural <span style="color:#c13d18;">Brief</span>
     </div>
@@ -110,6 +156,8 @@ function buildDailyEmail(stories, email) {
     </table>
   </div>
 
+  ${toolBlock}
+
   <!-- CTA -->
   <div style="padding:20px 40px;text-align:center;border-top:1px solid #e8e3db;">
     <a href="${WEBSITE}#this-week"
@@ -118,14 +166,21 @@ function buildDailyEmail(stories, email) {
     </a>
   </div>
 
+  <!-- Missed yesterday -->
+  <div style="padding:10px 40px 16px;text-align:center;">
+    <a href="${WEBSITE}" style="font-family:'Courier New',monospace;font-size:10px;color:#9a938a;text-decoration:none;">
+      Missed ${yesterdayStr}'s Top 5? → Read on website
+    </a>
+  </div>
+
   <!-- Footer -->
-  <div style="background:#18160f;padding:18px 40px;text-align:center;font-family:'Courier New',monospace;font-size:10px;color:rgba(255,255,255,.3);line-height:1.9;">
+  <div style="background:#18160f;padding:18px 40px;text-align:center;font-family:'Courier New',monospace;font-size:10px;color:rgba(255,255,255,.4);line-height:1.9;">
     <div style="color:rgba(255,255,255,.8);font-family:Georgia,serif;font-size:13px;margin-bottom:4px;">
       Neural <span style="color:#c13d18;">Brief</span>
     </div>
-    2 min daily · Free forever · 9am IST<br>
+    2 min daily &middot; Free forever &middot; 9am IST<br>
     <a href="${WEBSITE}/api/unsubscribe?email=${email}" style="color:rgba(255,255,255,.4);text-decoration:none;">Unsubscribe</a>
-    &nbsp;·&nbsp;
+    &nbsp;&middot;&nbsp;
     <a href="${WEBSITE}" style="color:rgba(255,255,255,.4);text-decoration:none;">Website</a>
   </div>
 
@@ -153,6 +208,8 @@ export default async function handler(req, res) {
       return res.status(200).json({ message: 'No live stories in cache — skipping' })
     }
 
+    const tool = await getToolOfDay()
+
     const subscribers = await getDailySubscribers()
     if (!subscribers.length) {
       return res.status(200).json({ message: 'No daily subscribers yet' })
@@ -164,7 +221,7 @@ export default async function handler(req, res) {
     let sent = 0, failed = 0
     for (const sub of subscribers) {
       try {
-        const html = buildDailyEmail(stories, sub.email)
+        const html = buildDailyEmail(stories, sub.email, tool)
         await transporter.sendMail({ from: FROM_EMAIL, to: sub.email, replyTo: REPLY_TO, subject, html })
         sent++
       } catch (e) {
