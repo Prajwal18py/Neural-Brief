@@ -148,7 +148,7 @@ async function fetchGithubTrending() {
 async function summarise(stories) {
   // FIX: Groq's TPM limit is 12,000. The old code requested 12,000 output tokens alone,
   // Input is ~1300 tokens. Groq TPM limit is 12k total (input+output).
-  // 10 stories * ~500 tokens each + overhead = ~5300 output tokens. 8000 gives safe headroom.
+  // 15 stories * ~500 tokens each + overhead = ~7800 output tokens. 8000 gives safe headroom.
   const text = stories.slice(0, 30).map((s, i) =>
     `[${i+1}] ${s.source} | ${s.title}\n${s.description.slice(0, 80)}\n${s.link}`
   ).join('\n\n')
@@ -158,14 +158,14 @@ async function summarise(stories) {
 Recent AI stories:
 ${text}
 
-Pick EXACTLY 10 most important, varied stories. Include an Anthropic/Claude story if one exists.
+Pick EXACTLY 15 most important, varied stories. Include an Anthropic/Claude story if one exists.
 
 Also pick:
 - ONE "biggest_move": {title, reason, link}
 - ONE "jargon_of_week": {term, explanation}
 - ONE "tool_of_week": {name, what, pricing (Free/Freemium/Paid/Open Source), best_for (Students/Developers/Founders/Everyone), why, link (official homepage)}
 
-For each of the 10 stories:
+For each of the 15 stories:
 - tag: New Model | Research | Industry | Tool Drop | Policy | Opinion
 - title: ≤12 words
 - summary: 2 plain-English sentences
