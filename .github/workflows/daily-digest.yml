@@ -2,7 +2,7 @@ name: Daily Top 5
 
 on:
   schedule:
-    - cron: '30 3 * * *'   # 9:00 AM IST every day (3:30 UTC)
+    - cron: '0 3 * * *'   # 8:30 AM IST every day (3:00 UTC)
   workflow_dispatch:         # allow manual trigger from GitHub UI
 
 jobs:

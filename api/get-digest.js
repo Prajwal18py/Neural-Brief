@@ -6,23 +6,25 @@ import { createClient } from '@supabase/supabase-js'
 import Parser from 'rss-parser'
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY)
-const parser   = new Parser()
+const parser   = new Parser({ timeout: 8000 })
 
+// ── RSS Feeds ─────────────────────────────────────────────
+// Removed dead feeds: Anthropic /news/rss.xml (404), The Batch (404),
+// Wired AI (404), Reuters feeds.reuters.com (ENOTFOUND), Analytics India (malformed HTML).
+// HackerNews changed from /frontpage to /newest to reduce 429s.
 const RSS_FEEDS = [
   { name: 'TechCrunch AI',         url: 'https://techcrunch.com/category/artificial-intelligence/feed/' },
-  { name: 'HackerNews AI',         url: 'https://hnrss.org/frontpage?q=AI+OR+LLM+OR+machine+learning' },
+  { name: 'HackerNews AI',         url: 'https://hnrss.org/newest?q=AI+OR+LLM&count=10' },
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
   { name: 'Google DeepMind',       url: 'https://deepmind.google/blog/rss.xml' },
-  { name: 'Anthropic News',        url: 'https://www.anthropic.com/news/rss.xml' },
+  { name: 'Anthropic Blog',        url: 'https://www.anthropic.com/rss.xml' },
   { name: 'OpenAI Blog',           url: 'https://openai.com/blog/rss.xml' },
   { name: 'Google AI Blog',        url: 'https://blog.google/technology/ai/rss/' },
   { name: 'Hugging Face',          url: 'https://huggingface.co/blog/feed.xml' },
-  { name: 'The Batch',             url: 'https://www.deeplearning.ai/the-batch/tag/the-batch/feed/' },
-  { name: 'Wired AI',              url: 'https://www.wired.com/feed/category/artificial-intelligence/latest/rss/' },
   { name: 'Import AI',             url: 'https://jack-clark.net/feed/' },
-  { name: 'Analytics India',       url: 'https://analyticsindiamag.com/feed/' },
-  { name: 'Reuters Tech',          url: 'https://feeds.reuters.com/reuters/technologyNews' },
   { name: 'Ars Technica AI',       url: 'https://arstechnica.com/tag/ai/feed/' },
+  { name: 'VentureBeat AI',        url: 'https://venturebeat.com/category/ai/feed/' },
+  { name: 'The Verge AI',          url: 'https://www.theverge.com/ai-artificial-intelligence/rss/index.xml' },
   { name: 'ZDNet AI',              url: 'https://www.zdnet.com/topic/artificial-intelligence/rss.xml' },
   { name: 'Mashable Tech',         url: 'https://mashable.com/feeds/rss/tech' },
 ]
@@ -36,11 +38,11 @@ async function fetchStories() {
   for (const feed of RSS_FEEDS) {
     try {
       const parsed = await parser.parseURL(feed.url)
-      for (const item of parsed.items.slice(0, 5)) {
+      for (const item of parsed.items.slice(0, 4)) {
         all.push({
           source:      feed.name,
           title:       item.title || 'Untitled',
-          description: (item.contentSnippet || item.summary || '').slice(0, 150), // ✅ trimmed from 800 → 150
+          description: (item.contentSnippet || item.summary || '').slice(0, 120),
           link:        item.link || '',
         })
       }
@@ -49,19 +51,18 @@ async function fetchStories() {
   return all
 }
 
-// ── Fetch GitHub Trending AI/ML repos ────────────────────
-// ── AI call with Groq primary + Gemini fallback ───────────
-async function callAI(prompt, maxTokens = 12000) {
+// ── AI call: Groq primary → Gemini 2.0 Flash fallback ─────
+async function callAI(prompt, maxTokens = 4000) {
   // Try Groq first
   try {
     const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [{ role: 'user', content: prompt }],
+        model:       'llama-3.3-70b-versatile',
+        messages:    [{ role: 'user', content: prompt }],
         temperature: 0.35,
-        max_tokens: maxTokens,
+        max_tokens:  maxTokens,
       }),
     })
     const data = await resp.json()
@@ -74,18 +75,21 @@ async function callAI(prompt, maxTokens = 12000) {
     console.log('⚠️ Groq error:', e.message)
   }
 
-  // Fallback to Gemini
-  if (!process.env.GEMINI_API_KEY) throw new Error('Both Groq failed and no GEMINI_API_KEY set')
+  // FIX: gemini-1.5-flash was deprecated/removed. Use gemini-2.0-flash instead.
+  if (!process.env.GEMINI_API_KEY) throw new Error('Groq failed and no GEMINI_API_KEY set')
   console.log('🔄 Falling back to Gemini...')
   try {
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.35, maxOutputTokens: maxTokens },
-      }),
-    })
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents:         [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.35, maxOutputTokens: maxTokens },
+        }),
+      }
+    )
     const data = await resp.json()
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
     if (text) {
@@ -106,16 +110,10 @@ async function fetchGithubTrending() {
     })
     const html = await res.text()
 
-    // Extract repo names + descriptions + stars
     const repos = []
-    const repoRegex = /href="\/([^"]+\/[^"]+)"[^>]*>\s*<\/a>\s*<\/h2>/g
-    const descRegex = /<p class="col-9[^"]*"[^>]*>\s*([\s\S]*?)\s*<\/p>/g
-    const starsRegex = /trending-repo-stars-gained[^>]*>\s*([\d,]+)\s*stars this week/g
-
-    // Simpler: just scrape article tags
     const articleMatches = [...html.matchAll(/<article[^>]*>([\s\S]*?)<\/article>/g)]
     for (const match of articleMatches.slice(0, 25)) {
-      const block = match[1]
+      const block      = match[1]
       const nameMatch  = block.match(/href="\/([^"\/]+\/[^"\/]+)"/)
       const descMatch  = block.match(/<p[^>]*col-9[^>]*>\s*([\s\S]*?)\s*<\/p>/)
       const starsMatch = block.match(/([\d,]+)\s*stars this week/)
@@ -127,31 +125,20 @@ async function fetchGithubTrending() {
       const stars = starsMatch ? starsMatch[1].trim() : '0'
       const lang  = langMatch  ? langMatch[1].trim()  : ''
 
-      // Filter for AI/ML relevant repos — skip paid/commercial/enterprise ones
-      const combined = (name + ' ' + desc).toLowerCase()
+      const combined  = (name + ' ' + desc).toLowerCase()
       const paidTerms = ['enterprise', 'commercial', 'proprietary', 'saas', 'subscription', 'pricing plan', 'paid only']
       const aiTerms   = ['ai', 'ml', 'llm', 'gpt', 'model', 'neural', 'deep', 'learn',
                          'transformer', 'diffusion', 'agent', 'rag', 'embed', 'vector',
                          'claude', 'openai', 'gemini', 'llama', 'vision', 'nlp', 'data']
-      const isAI   = aiTerms.some(t => combined.includes(t))
-      const isPaid = paidTerms.some(t => combined.includes(t))
-      if (isAI && !isPaid) {
+      if (aiTerms.some(t => combined.includes(t)) && !paidTerms.some(t => combined.includes(t))) {
         repos.push({ name, desc, stars, lang })
       }
       if (repos.length >= 5) break
     }
 
     if (repos.length === 0) return null
-
-    // Pick the top one
     const top = repos[0]
-    return {
-      name:  top.name,
-      desc:  top.desc || 'Trending AI/ML repository',
-      stars: top.stars,
-      lang:  top.lang,
-      link:  `https://github.com/${top.name}`,
-    }
+    return { name: top.name, desc: top.desc || 'Trending AI/ML repository', stars: top.stars, lang: top.lang, link: `https://github.com/${top.name}` }
   } catch (e) {
     console.log('⚠️ GitHub trending fetch failed:', e.message)
     return null
@@ -159,59 +146,48 @@ async function fetchGithubTrending() {
 }
 
 async function summarise(stories) {
-  // ✅ Cap at 60 stories to keep prompt size manageable
-  const text = stories.slice(0, 40).map((s, i) =>
-    `[${i+1}] SOURCE: ${s.source}\nTITLE: ${s.title}\nDESC: ${s.description.slice(0, 100)}\nLINK: ${s.link}`
+  // FIX: Groq's TPM limit is 12,000. The old code requested 12,000 output tokens alone,
+  // which combined with ~4–6k input tokens pushed the total far over the limit.
+  // Solution: cap stories at 30, shorten per-story format, and limit output to 4,000 tokens.
+  // The JSON for 12 stories fits well within that budget.
+  const text = stories.slice(0, 30).map((s, i) =>
+    `[${i+1}] ${s.source} | ${s.title}\n${s.description.slice(0, 80)}\n${s.link}`
   ).join('\n\n')
 
   const prompt = `You are the editor of Neural Brief, a weekly AI news digest for Indian college students.
 
-Here are ${Math.min(stories.length, 40)} recent AI stories:
+Recent AI stories:
 ${text}
 
-Pick EXACTLY 15 most important, interesting, and varied stories. Cover different categories. Do NOT return more than 15 stories. If there are any stories about Claude or Anthropic, include at least one.
+Pick EXACTLY 12 most important, varied stories. Include an Anthropic/Claude story if one exists.
 
-Also pick ONE "biggest_move" — the single most important AI story of the week.
+Also pick:
+- ONE "biggest_move": {title, reason, link}
+- ONE "jargon_of_week": {term, explanation}
+- ONE "tool_of_week": {name, what, pricing (Free/Freemium/Paid/Open Source), best_for (Students/Developers/Founders/Everyone), why, link (official homepage)}
 
-Also pick ONE "jargon_of_week" — one AI/ML term from this week's stories explained in plain English for students.
-
-Also pick ONE "tool_of_week" — one specific AI tool, product, or platform mentioned or implied in this week's stories that Indian students or developers can actually sign up for and use TODAY. Must be accessible online — no research papers, no enterprise-only products, no APIs that require approval. Prefer tools with a free tier. Write:
-- name: tool name
-- what: one sentence — what it does
-- pricing: one of [Free, Freemium, Paid, Open Source]
-- best_for: one of [Students, Developers, Founders, Everyone]
-- why: one sharp sentence — why a student should try it this week specifically
-- link: the tool's official homepage or signup page URL (NOT a news article or blog post about it — the actual tool website where users can sign up or try it)
-
-For each of the 15 stories write:
-- tag: one of [New Model, Research, Industry, Tool Drop, Policy, Opinion]
-- title: clean headline, max 12 words
-- summary: 2 sentences, plain English, zero jargon
+For each of the 12 stories:
+- tag: New Model | Research | Industry | Tool Drop | Policy | Opinion
+- title: ≤12 words
+- summary: 2 plain-English sentences
 - tldr: one punchy sentence starting with "-> TL;DR:"
-- why_student: one sharp, specific sentence — concrete impact on an Indian CS/AI student. Include a specific outcome or number if possible. Example: "Wikipedia bans AI articles → your research citations just got harder to fake, verify everything you submit." NO generic phrases like "this affects you" or "you should care."
-- why_developer: one sharp, specific sentence with concrete outcome. Example: "Claude's API just got 40% cheaper → your side project's monthly bill drops significantly." NO generic phrases.
-- why_founder: one sharp, specific sentence with business impact. Example: "OpenAI acquiring Windsurf means IDE integrations are becoming table stakes — build AI-native dev tools or get left behind." NO generic phrases.
-- signal_score: number 1-10 rating importance. 9-10=major, 7-8=significant, 5-6=interesting, below 5=minor
-- signal_label: one of ["Major", "Important", "Interesting", "Minor"]
-- tweet: ready-to-post Twitter post, punchy, end with 2-3 hashtags. Max 280 chars.
-- linkedin: polished 3-sentence thought-leader LinkedIn post. Professional tone. End with 2-3 hashtags.
-- eli15: explain in 1-2 sentences like reader is 15. Simple analogies, zero jargon.
-- hype: one sentence — what media/company claims (exaggerated/marketing spin)
-- reality: one sentence — what it actually means in plain honest truth
-- source: source name
-- link: original link exactly
+- why_student: specific concrete impact on an Indian CS/AI student
+- why_developer: specific concrete outcome for a developer
+- why_founder: specific business impact for a founder
+- signal_score: 1-10
+- signal_label: Major | Important | Interesting | Minor
+- tweet: ≤280 chars + 2-3 hashtags
+- linkedin: 3 professional sentences + 2-3 hashtags
+- eli15: 1-2 sentences for a 15-year-old
+- hype: one sentence — marketing spin
+- reality: one honest sentence
+- source, link
 
-Return ONLY valid JSON, no backticks:
-{
-  "biggest_move": {"title":"...","reason":"...","link":"..."},
-  "jargon_of_week": {"term":"...","explanation":"..."},
-  "tool_of_week": {"name":"...","what":"...","pricing":"Freemium","best_for":"Students","why":"...","link":"..."},
-  "stories": [{"tag":"...","title":"...","summary":"...","tldr":"...","why_student":"...","why_developer":"...","why_founder":"...","signal_score":8.5,"signal_label":"Important","tweet":"...","linkedin":"...","eli15":"...","hype":"...","reality":"...","source":"...","link":"..."}]
-}`
+Return ONLY valid JSON, no markdown fences:
+{"biggest_move":{"title":"...","reason":"...","link":"..."},"jargon_of_week":{"term":"...","explanation":"..."},"tool_of_week":{"name":"...","what":"...","pricing":"Freemium","best_for":"Students","why":"...","link":"..."},"stories":[{"tag":"...","title":"...","summary":"...","tldr":"...","why_student":"...","why_developer":"...","why_founder":"...","signal_score":8,"signal_label":"Important","tweet":"...","linkedin":"...","eli15":"...","hype":"...","reality":"...","source":"...","link":"..."}]}`
 
-  const raw = (await callAI(prompt, 12000)).replace(/```json|```/g, '').trim()
+  const raw = (await callAI(prompt, 4000)).replace(/```json|```/g, '').trim()
 
-  // Safe JSON parse with helpful error
   let parsed
   try {
     parsed = JSON.parse(raw)
@@ -219,7 +195,6 @@ Return ONLY valid JSON, no backticks:
     console.error('❌ JSON parse failed — likely truncated. Tail:', raw.slice(-200))
     throw new Error('AI response was truncated or malformed.')
   }
-
   return parsed
 }
 
@@ -227,7 +202,6 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
 
   try {
-    // Check cache
     const { data: cache } = await supabase
       .from('digest_cache')
       .select('*')
@@ -239,7 +213,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ ...cache[0].data, cached: true })
     }
 
-    // Fetch fresh
     console.log('🔄 Fetching fresh stories...')
     const [raw, github_trending] = await Promise.all([
       fetchStories(),
@@ -247,12 +220,11 @@ export default async function handler(req, res) {
     ])
     const result = await summarise(raw)
 
-    // Attach GitHub trending repo + generate why line
     if (github_trending) {
       try {
         await new Promise(r => setTimeout(r, 3000))
-        const whyPrompt = `GitHub repo: ${github_trending.name}\nDescription: ${github_trending.desc}\n\nWrite ONE sharp sentence (max 12 words) — why should an Indian CS/AI student care about this repo? Be specific and actionable. No generic phrases. Return only the sentence, nothing else.`
-        github_trending.why = (await callAI(whyPrompt, 80)).replace(/^["']|["']$/g, '')
+        const whyPrompt = `GitHub repo: ${github_trending.name}\nDescription: ${github_trending.desc}\n\nWrite ONE sharp sentence (max 12 words) — why should an Indian CS/AI student care about this? Be specific. Return only the sentence.`
+        github_trending.why = (await callAI(whyPrompt, 100)).replace(/^["']|["']$/g, '')
       } catch (e) {
         github_trending.why = ''
         console.log('⚠️ GitHub why generation failed:', e.message)
@@ -260,7 +232,6 @@ export default async function handler(req, res) {
       result.github_trending = github_trending
     }
 
-    // Save to cache
     await supabase.from('digest_cache').insert({
       data:       result,
       created_at: new Date().toISOString(),
