@@ -121,6 +121,8 @@ async function fetchGithubTrending() {
 
       if (!nameMatch) continue
       const name  = nameMatch[1].trim()
+      // Skip GitHub special paths that aren't real repos
+      if (/^(sponsors|orgs|topics|trending|explore|marketplace)\//.test(name)) continue
       const desc  = descMatch  ? descMatch[1].replace(/\s+/g, ' ').trim() : ''
       const stars = starsMatch ? starsMatch[1].trim() : '0'
       const lang  = langMatch  ? langMatch[1].trim()  : ''
