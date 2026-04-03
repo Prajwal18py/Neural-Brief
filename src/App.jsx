@@ -270,6 +270,7 @@ function LiveDigest() {
   const [eli15Open, setEli15Open] = useState({})
   const [showAll, setShowAll]     = useState(false)
   const [neuralAiOpen, setNeuralAiOpen] = useState(null) // story index
+  const [chatHistory, setChatHistory]   = useState({}) // persists messages per story
   const [persona, setPersona]     = useState(() => {
     try { return localStorage.getItem('nb_persona') || '' } catch { return '' }
   })
@@ -480,7 +481,12 @@ function LiveDigest() {
             </div>
             {neuralAiOpen === i && (
               <div id={`neural-ai-chat-${i}`} style={{ marginTop: '12px' }}>
-                <NeuralAIChat story={story} onClose={() => setNeuralAiOpen(null)} />
+                <NeuralAIChat
+                  story={story}
+                  initialMessages={chatHistory[i] || []}
+                  onMessagesChange={msgs => setChatHistory(h => ({ ...h, [i]: msgs }))}
+                  onClose={() => setNeuralAiOpen(null)}
+                />
               </div>
             )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
@@ -906,11 +912,19 @@ function NeuralAIFloat() {
 
 // Main App
 // ── Neural AI Chat ────────────────────────────────────────
-function NeuralAIChat({ story, onClose }) {
-  const [messages, setMessages] = useState([])
+function NeuralAIChat({ story, onClose, initialMessages = [], onMessagesChange }) {
+  const [messages, setMessages] = useState(initialMessages)
   const [input, setInput]       = useState('')
   const [loading, setLoading]   = useState(false)
-  const messagesEndRef            = useRef(null)
+  const messagesContainerRef    = useRef(null)
+
+  const updateMessages = (updater) => {
+    setMessages(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater
+      onMessagesChange?.(next)
+      return next
+    })
+  }
 
   const QUICK_ACTIONS = [
     { label: 'Explain simply', prompt: 'Explain this news in the simplest way possible.' },
@@ -920,14 +934,16 @@ function NeuralAIChat({ story, onClose }) {
   ]
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+    }
   }, [messages, loading])
 
   const ask = async (question) => {
     if (!question.trim() || loading) return
     const userMsg = question.trim()
     setInput('')
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }])
+    updateMessages(prev => [...prev, { role: 'user', text: userMsg }])
     setLoading(true)
 
     const systemPrompt = `You are Neural AI, a focused AI news assistant for Neural Brief.
@@ -948,9 +964,9 @@ Answer ONLY based on this news. Keep answers to 3-5 lines max. Use bullet points
         }),
       })
       const data = await resp.json()
-      setMessages(prev => [...prev, { role: 'ai', text: data.text || 'Sorry, could not get a response.' }])
+      updateMessages(prev => [...prev, { role: 'ai', text: data.text || 'Sorry, could not get a response.' }])
     } catch {
-      setMessages(prev => [...prev, { role: 'ai', text: 'Something went wrong. Please try again.' }])
+      updateMessages(prev => [...prev, { role: 'ai', text: 'Something went wrong. Please try again.' }])
     }
     setLoading(false)
   }
@@ -974,7 +990,7 @@ Answer ONLY based on this news. Keep answers to 3-5 lines max. Use bullet points
       </div>
 
       {/* Messages */}
-      <div className="neural-ai-messages">
+      <div className="neural-ai-messages" ref={messagesContainerRef}>
         {messages.length === 0 && (
           <div className="neural-ai-empty">
             <p>What do you want to know about this story?</p>
@@ -994,7 +1010,6 @@ Answer ONLY based on this news. Keep answers to 3-5 lines max. Use bullet points
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Quick actions — only show when no messages yet */}
@@ -1032,10 +1047,12 @@ function FloatingNeuralAI() {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState([])
   const [loading, setLoading]   = useState(false)
-  const messagesEndRef = useRef(null)
+  const messagesContainerRef = useRef(null)
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+    }
   }, [messages, loading])
 
   const ask = async (question) => {
@@ -1080,7 +1097,7 @@ Keep answers to 3-5 lines max. Use bullet points where helpful. Plain English on
             <button className="neural-ai-close" onClick={() => setOpen(false)}>✕</button>
           </div>
 
-          <div className="neural-ai-messages">
+          <div className="neural-ai-messages" ref={messagesContainerRef}>
             {messages.length === 0 && (
               <div className="neural-ai-empty">
                 <p>Ask me anything about AI news, concepts, or projects.</p>
@@ -1098,7 +1115,6 @@ Keep answers to 3-5 lines max. Use bullet points where helpful. Plain English on
                 <div className="neural-ai-typing"><span /><span /><span /></div>
               </div>
             )}
-            <div ref={messagesEndRef} />
           </div>
 
           <div className="neural-ai-input-row">
