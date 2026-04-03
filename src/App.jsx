@@ -466,12 +466,20 @@ function LiveDigest() {
                   Copy LinkedIn post
                 </button>
               )}
-              <button className="ask-neural-btn" onClick={() => setNeuralAiOpen(neuralAiOpen === i ? null : i)}>
+              <button className="ask-neural-btn" onClick={() => {
+                const newVal = neuralAiOpen === i ? null : i
+                setNeuralAiOpen(newVal)
+                if (newVal !== null) {
+                  setTimeout(() => {
+                    document.getElementById(`neural-ai-chat-${i}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                  }, 100)
+                }
+              }}>
                 💬 Ask Neural AI →
               </button>
             </div>
             {neuralAiOpen === i && (
-              <div style={{ marginTop: '12px' }}>
+              <div id={`neural-ai-chat-${i}`} style={{ marginTop: '12px' }}>
                 <NeuralAIChat story={story} onClose={() => setNeuralAiOpen(null)} />
               </div>
             )}
@@ -820,7 +828,7 @@ Keep answers short: 3-5 lines max. Use bullet points when possible. Simple Engli
       {/* Context pill */}
       {story && (
         <div className="neural-ai-context">
-          <span className="neural-ai-context-label">Talking about:</span>
+          <span className="neural-ai-context-label">Currently viewing:</span>
           <span className="neural-ai-context-title">{story.title.slice(0, 60)}{story.title.length > 60 ? '…' : ''}</span>
         </div>
       )}
