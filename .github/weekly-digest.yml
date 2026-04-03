@@ -1,0 +1,17 @@
+name: Weekly Digest
+
+on:
+  schedule:
+    - cron: '30 3 * * 5'   # Every Friday 9:00 AM IST (3:30 UTC)
+  workflow_dispatch:         # Allow manual trigger from GitHub UI
+
+jobs:
+  send-weekly:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger weekly digest
+        run: |
+          response=$(curl -s -X POST https://neural-brief-eight.vercel.app/api/send-digest \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+          echo "Response: $response"

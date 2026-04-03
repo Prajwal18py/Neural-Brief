@@ -1,5 +1,7 @@
 {
-  "crons": [
-    { "path": "/api/send-digest", "schedule": "0 3 * * *" }
-  ]
+  "functions": {
+    "api/get-digest.js":  { "maxDuration": 60 },
+    "api/send-digest.js": { "maxDuration": 60 },
+    "api/get-live-feed.js": { "maxDuration": 30 }
+  }
 }

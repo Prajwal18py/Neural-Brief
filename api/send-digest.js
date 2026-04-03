@@ -68,7 +68,7 @@ const RSS_FEEDS = [
 ]
 
 // ── AI call with Groq primary + Gemini fallback ───────────
-async function callAI(prompt, maxTokens = 12000) {
+async function callAI(prompt, maxTokens = 8000) {
   try {
     const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -82,7 +82,7 @@ async function callAI(prompt, maxTokens = 12000) {
 
   if (!process.env.GEMINI_API_KEY) throw new Error('Groq failed and no GEMINI_API_KEY set')
   console.log('🔄 Falling back to Gemini...')
-  const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+  const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.35, maxOutputTokens: maxTokens } }),
@@ -228,7 +228,7 @@ Return ONLY valid JSON, no markdown backticks:
   "stories": [{"tag":"...","title":"...","summary":"...","tldr":"...","why_student":"...","why_developer":"...","why_founder":"...","signal_score":8.5,"signal_label":"Important","tweet":"...","linkedin":"...","eli15":"...","hype":"...","reality":"...","source":"...","link":"..."}]
 }`
 
-  const raw = (await callAI(prompt, 12000)).replace(/```json|```/g, '').trim()
+  const raw = (await callAI(prompt, 8000)).replace(/```json|```/g, '').trim()
 
   let result
   try {
