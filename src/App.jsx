@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import logo from './assets/logo.jpg'
 
 const TAG_CLASS = {
@@ -35,13 +35,17 @@ function SubscribeForm({ id, ctaText = 'Get the next brief' }) {
     }
     setStatus('loading')
     try {
-      const res = await fetch('/api/subscribe', {
+      const res  = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, persona, daily_optin: dailyOptin }),
       })
-      if (res.ok) setStatus('success')
-      else { setStatus('idle'); alert('Something went wrong. Please try again.') }
+      const data = await res.json()
+      if (res.ok) {
+        setStatus(data.already_registered ? 'already' : 'success')
+      } else {
+        setStatus('idle'); alert('Something went wrong. Please try again.')
+      }
     } catch { setStatus('idle'); alert('Something went wrong. Please try again.') }
   }
 
@@ -87,6 +91,11 @@ function SubscribeForm({ id, ctaText = 'Get the next brief' }) {
           </div>
           <span className="form-note">Free · No spam · Unsubscribe anytime</span>
         </>
+      ) : status === 'already' ? (
+        <div className="success-box">
+          <span className="success-title">You're already subscribed! 👋</span>
+          <span className="success-sub">Your preferences have been updated · Brief arrives every Friday 9am IST</span>
+        </div>
       ) : (
         <div className="success-box">
           <span className="success-title">You are in{persona ? ', ' + persona : ''}!</span>
@@ -260,6 +269,7 @@ function LiveDigest() {
   const [expanded, setExpanded]   = useState({})
   const [eli15Open, setEli15Open] = useState({})
   const [showAll, setShowAll]     = useState(false)
+  const [neuralAiOpen, setNeuralAiOpen] = useState(null) // story index
   const [persona, setPersona]     = useState(() => {
     try { return localStorage.getItem('nb_persona') || '' } catch { return '' }
   })
@@ -361,6 +371,8 @@ function LiveDigest() {
       .finally(() => setLoading(false))
   }, [])
 
+  const [aiStory, setAiStory]     = useState(null)
+
   const toggle       = i => setExpanded(e => ({ ...e, [i]: !e[i] }))
   const toggleEli15  = i => setEli15Open(e => ({ ...e, [i]: !e[i] }))
   const updatePersona = p => {
@@ -454,7 +466,15 @@ function LiveDigest() {
                   Copy LinkedIn post
                 </button>
               )}
+              <button className="ask-neural-btn" onClick={() => setNeuralAiOpen(neuralAiOpen === i ? null : i)}>
+                💬 Ask Neural AI →
+              </button>
             </div>
+            {neuralAiOpen === i && (
+              <div style={{ marginTop: '12px' }}>
+                <NeuralAIChat story={story} onClose={() => setNeuralAiOpen(null)} />
+              </div>
+            )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
               <FaviconImg url={story.link} source={story.source} size={14} />
               <p style={{ fontSize: '10px', fontFamily: 'var(--mono)', color: 'var(--muted2)', margin: 0 }}>via {story.source}</p>
@@ -710,7 +730,392 @@ function ArchivePage({ onClose }) {
   )
 }
 
+// ── Neural AI Chat ────────────────────────────────────────
+function NeuralAI({ story, onClose }) {
+  const [messages, setMessages] = useState([])
+  const [input, setInput]       = useState('')
+  const [loading, setLoading]   = useState(false)
+  const bottomRef               = useRef(null)
+
+  const QUICK_ACTIONS = [
+    { label: 'Explain simply', prompt: 'Explain this news in simple terms for a student.' },
+    { label: 'Why it matters', prompt: 'Why does this news matter for Indian students and developers?' },
+    { label: 'Project ideas', prompt: 'Give me 2-3 project ideas inspired by this news.' },
+    { label: 'Summarize', prompt: 'Give me a 3-line summary of this news.' },
+  ]
+
+  const context = story
+    ? `Title: ${story.title}\nSummary: ${story.summary || ''}\nSource: ${story.source || ''}`
+    : 'General AI news assistant for Neural Brief.'
+
+  const systemPrompt = `You are Neural AI, an AI news assistant for Neural Brief — a weekly AI digest for Indian college students.
+${story ? `\nThe user is asking about this news:\n${context}\n\nAnswer ONLY based on this news. If the question is unrelated, say: "I can only help with this news story."` : ''}
+Keep answers short: 3-5 lines max. Use bullet points when possible. Simple English, no jargon.`
+
+  const ask = async (question) => {
+    if (!question.trim() || loading) return
+    const userMsg = { role: 'user', text: question }
+    setMessages(m => [...m, userMsg])
+    setInput('')
+    setLoading(true)
+
+    try {
+      // Try Groq first
+      let answer = null
+      try {
+        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}` },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              ...messages.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text })),
+              { role: 'user', content: question }
+            ],
+            temperature: 0.4,
+            max_tokens: 300,
+          }),
+        })
+        const data = await resp.json()
+        if (data?.choices?.[0]?.message?.content) {
+          answer = data.choices[0].message.content.trim()
+        }
+      } catch (e) { console.log('Groq failed, trying backend') }
+
+      // Fallback to backend API
+      if (!answer) {
+        const resp = await fetch('/api/neural-ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question, context, history: messages }),
+        })
+        const data = await resp.json()
+        answer = data.answer || 'Sorry, I could not get an answer right now.'
+      }
+
+      setMessages(m => [...m, { role: 'ai', text: answer }])
+    } catch {
+      setMessages(m => [...m, { role: 'ai', text: 'Something went wrong. Please try again.' }])
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, loading])
+
+  return (
+    <div className="neural-ai-panel">
+      {/* Header */}
+      <div className="neural-ai-header">
+        <div className="neural-ai-header-left">
+          <span className="neural-ai-dot" />
+          <span className="neural-ai-title">Neural AI</span>
+          <span className="neural-ai-sub">Your AI news assistant</span>
+        </div>
+        <button className="neural-ai-close" onClick={onClose}>✕</button>
+      </div>
+
+      {/* Context pill */}
+      {story && (
+        <div className="neural-ai-context">
+          <span className="neural-ai-context-label">Talking about:</span>
+          <span className="neural-ai-context-title">{story.title.slice(0, 60)}{story.title.length > 60 ? '…' : ''}</span>
+        </div>
+      )}
+
+      {/* Messages */}
+      <div className="neural-ai-messages">
+        {messages.length === 0 && (
+          <div className="neural-ai-empty">
+            <p>Ask me anything about this story.</p>
+          </div>
+        )}
+        {messages.map((msg, i) => (
+          <div key={i} className={`neural-ai-msg neural-ai-msg-${msg.role}`}>
+            {msg.role === 'ai' && <span className="neural-ai-msg-label">Neural AI</span>}
+            <p>{msg.text}</p>
+          </div>
+        ))}
+        {loading && (
+          <div className="neural-ai-msg neural-ai-msg-ai">
+            <span className="neural-ai-msg-label">Neural AI</span>
+            <div className="neural-ai-typing">
+              <span /><span /><span />
+            </div>
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Quick actions */}
+      {messages.length === 0 && (
+        <div className="neural-ai-quick">
+          {QUICK_ACTIONS.map(a => (
+            <button key={a.label} className="neural-ai-quick-btn" onClick={() => ask(a.prompt)}>
+              {a.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Input */}
+      <div className="neural-ai-input-row">
+        <input
+          className="neural-ai-input"
+          placeholder="Ask anything about this news…"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && ask(input)}
+          disabled={loading}
+        />
+        <button className="neural-ai-send" onClick={() => ask(input)} disabled={loading || !input.trim()}>
+          →
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Neural AI Floating Button ─────────────────────────────
+function NeuralAIFloat() {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      {open && (
+        <div className="neural-ai-float-panel">
+          <NeuralAI story={null} onClose={() => setOpen(false)} />
+        </div>
+      )}
+      <button className="neural-ai-float-btn" onClick={() => setOpen(o => !o)}>
+        <span className="neural-ai-float-icon">✦</span>
+        <span>Neural AI</span>
+      </button>
+    </>
+  )
+}
+
 // Main App
+// ── Neural AI Chat ────────────────────────────────────────
+function NeuralAIChat({ story, onClose }) {
+  const [messages, setMessages] = useState([])
+  const [input, setInput]       = useState('')
+  const [loading, setLoading]   = useState(false)
+  const messagesEndRef            = useRef(null)
+
+  const QUICK_ACTIONS = [
+    { label: 'Explain simply', prompt: 'Explain this news in the simplest way possible.' },
+    { label: 'Why it matters', prompt: 'Why does this news matter for an Indian CS/AI student specifically?' },
+    { label: 'Project ideas', prompt: 'Give me 2-3 project ideas inspired by this news that a student can build.' },
+    { label: 'Summarize', prompt: 'Give me a 3-line summary of this news.' },
+  ]
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, loading])
+
+  const ask = async (question) => {
+    if (!question.trim() || loading) return
+    const userMsg = question.trim()
+    setInput('')
+    setMessages(prev => [...prev, { role: 'user', text: userMsg }])
+    setLoading(true)
+
+    const systemPrompt = `You are Neural AI, a focused AI news assistant for Neural Brief.
+Context — this news story:
+Title: ${story.title}
+Summary: ${story.summary || ''}
+Source: ${story.source}
+
+Answer ONLY based on this news. Keep answers to 3-5 lines max. Use bullet points where helpful. Plain English only, no jargon. If the question is unrelated to this news, respond: "I can only help with this specific news story."`
+
+    try {
+      const resp = await fetch('/api/neural-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemPrompt,
+          messages: [{ role: 'user', content: userMsg }],
+        }),
+      })
+      const data = await resp.json()
+      setMessages(prev => [...prev, { role: 'ai', text: data.text || 'Sorry, could not get a response.' }])
+    } catch {
+      setMessages(prev => [...prev, { role: 'ai', text: 'Something went wrong. Please try again.' }])
+    }
+    setLoading(false)
+  }
+
+  return (
+    <div className="neural-ai-panel">
+      {/* Header */}
+      <div className="neural-ai-header">
+        <div className="neural-ai-header-left">
+          <span className="neural-ai-dot" />
+          <span className="neural-ai-title">Neural AI</span>
+          <span className="neural-ai-subtitle">Ask about this news</span>
+        </div>
+        <button className="neural-ai-close" onClick={onClose}>✕</button>
+      </div>
+
+      {/* Context pill */}
+      <div className="neural-ai-context">
+        <span className="neural-ai-context-label">Context:</span>
+        <span className="neural-ai-context-title">{story.title.slice(0, 60)}{story.title.length > 60 ? '…' : ''}</span>
+      </div>
+
+      {/* Messages */}
+      <div className="neural-ai-messages">
+        {messages.length === 0 && (
+          <div className="neural-ai-empty">
+            <p>What do you want to know about this story?</p>
+          </div>
+        )}
+        {messages.map((msg, i) => (
+          <div key={i} className={`neural-ai-msg neural-ai-msg-${msg.role}`}>
+            {msg.role === 'ai' && <span className="neural-ai-msg-label">Neural AI</span>}
+            <p>{msg.text}</p>
+          </div>
+        ))}
+        {loading && (
+          <div className="neural-ai-msg neural-ai-msg-ai">
+            <span className="neural-ai-msg-label">Neural AI</span>
+            <div className="neural-ai-typing">
+              <span /><span /><span />
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Quick actions — only show when no messages yet */}
+      {messages.length === 0 && (
+        <div className="neural-ai-quick">
+          {QUICK_ACTIONS.map(a => (
+            <button key={a.label} className="neural-ai-quick-btn" onClick={() => ask(a.prompt)}>
+              {a.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Input */}
+      <div className="neural-ai-input-row">
+        <input
+          className="neural-ai-input"
+          placeholder="Ask anything about this news…"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && ask(input)}
+          disabled={loading}
+        />
+        <button className="neural-ai-send" onClick={() => ask(input)} disabled={loading || !input.trim()}>
+          →
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Floating Neural AI Button ─────────────────────────────
+function FloatingNeuralAI() {
+  const [open, setOpen]   = useState(false)
+  const [input, setInput] = useState('')
+  const [messages, setMessages] = useState([])
+  const [loading, setLoading]   = useState(false)
+  const messagesEndRef = useRef(null)
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, loading])
+
+  const ask = async (question) => {
+    if (!question.trim() || loading) return
+    const userMsg = question.trim()
+    setInput('')
+    setMessages(prev => [...prev, { role: 'user', text: userMsg }])
+    setLoading(true)
+
+    const systemPrompt = `You are Neural AI, a focused AI news assistant for Neural Brief — a weekly AI digest for Indian college students.
+Answer questions about AI news, explain AI concepts, suggest project ideas, and help students understand AI developments.
+Keep answers to 3-5 lines max. Use bullet points where helpful. Plain English only, no jargon.`
+
+    try {
+      const resp = await fetch('/api/neural-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemPrompt,
+          messages: [{ role: 'user', content: userMsg }],
+        }),
+      })
+      const data = await resp.json()
+      setMessages(prev => [...prev, { role: 'ai', text: data.text || 'Sorry, could not get a response.' }])
+    } catch {
+      setMessages(prev => [...prev, { role: 'ai', text: 'Something went wrong. Please try again.' }])
+    }
+    setLoading(false)
+  }
+
+  return (
+    <>
+      {/* Floating panel */}
+      {open && (
+        <div className="floating-neural-panel">
+          <div className="neural-ai-header">
+            <div className="neural-ai-header-left">
+              <span className="neural-ai-dot" />
+              <span className="neural-ai-title">Neural AI</span>
+              <span className="neural-ai-subtitle">Your AI news assistant</span>
+            </div>
+            <button className="neural-ai-close" onClick={() => setOpen(false)}>✕</button>
+          </div>
+
+          <div className="neural-ai-messages">
+            {messages.length === 0 && (
+              <div className="neural-ai-empty">
+                <p>Ask me anything about AI news, concepts, or projects.</p>
+              </div>
+            )}
+            {messages.map((msg, i) => (
+              <div key={i} className={`neural-ai-msg neural-ai-msg-${msg.role}`}>
+                {msg.role === 'ai' && <span className="neural-ai-msg-label">Neural AI</span>}
+                <p>{msg.text}</p>
+              </div>
+            ))}
+            {loading && (
+              <div className="neural-ai-msg neural-ai-msg-ai">
+                <span className="neural-ai-msg-label">Neural AI</span>
+                <div className="neural-ai-typing"><span /><span /><span /></div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="neural-ai-input-row">
+            <input
+              className="neural-ai-input"
+              placeholder="Ask about AI news…"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && ask(input)}
+              disabled={loading}
+            />
+            <button className="neural-ai-send" onClick={() => ask(input)} disabled={loading || !input.trim()}>→</button>
+          </div>
+        </div>
+      )}
+
+      {/* Floating button */}
+      <button className="floating-neural-btn" onClick={() => setOpen(o => !o)}>
+        <span className="floating-neural-icon">💬</span>
+        <span className="floating-neural-label">Neural AI</span>
+      </button>
+    </>
+  )
+}
+
 export default function App() {
   const [showArchive, setShowArchive] = useState(false)
 
@@ -813,7 +1218,7 @@ export default function App() {
             </div>
             <div className="sb-section">
               <span className="sb-label">Built with</span>
-              {['AI-powered intelligence','Automated pipeline','Seamless delivery'].map(s => (
+              {['Groq · Llama 3.3 70B','Brevo · Email delivery','Supabase · Subscribers'].map(s => (
                 <div className="src-item" key={s}><span className="src-dot"></span>{s}</div>
               ))}
             </div>
@@ -988,6 +1393,8 @@ export default function App() {
         <a href="mailto:neuralbrief18@gmail.com">Contact</a><br /><br />
         <span style={{ opacity: 0.4 }}>© 2025 Neural Brief · Made with coffee somewhere in India</span>
       </footer>
+
+      <FloatingNeuralAI />
     </>
   )
 }
