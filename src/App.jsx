@@ -467,7 +467,7 @@ function LiveDigest() {
                   Copy LinkedIn post
                 </button>
               )}
-              <button className="ask-neural-btn" onClick={() => {
+              <button className={`ask-neural-btn${i === 0 ? ' ask-neural-btn-featured' : ''}`} onClick={() => {
                 const newVal = neuralAiOpen === i ? null : i
                 setNeuralAiOpen(newVal)
                 if (newVal !== null) {
@@ -476,7 +476,7 @@ function LiveDigest() {
                   }, 100)
                 }
               }}>
-                💬 Ask Neural AI →
+                💬 Ask Neural AI →{i === 0 ? <span className="ask-neural-new">NEW</span> : null}
               </button>
             </div>
             {neuralAiOpen === i && (
@@ -840,10 +840,15 @@ Keep answers short: 3-5 lines max. Use bullet points when possible. Simple Engli
       )}
 
       {/* Messages */}
-      <div className="neural-ai-messages">
+      <div className="neural-ai-messages" ref={messagesContainerRef}>
         {messages.length === 0 && (
           <div className="neural-ai-empty">
-            <p>Ask me anything about this story.</p>
+            <p style={{ marginBottom: '8px' }}>Try asking:</p>
+            <p style={{ opacity: 0.5, fontSize: '11px', lineHeight: 1.8 }}>
+              – Explain this simply<br />
+              – Why does this matter?<br />
+              – Give project ideas
+            </p>
           </div>
         )}
         {messages.map((msg, i) => (
@@ -1100,7 +1105,12 @@ Keep answers to 3-5 lines max. Use bullet points where helpful. Plain English on
           <div className="neural-ai-messages" ref={messagesContainerRef}>
             {messages.length === 0 && (
               <div className="neural-ai-empty">
-                <p>Ask me anything about AI news, concepts, or projects.</p>
+                <p style={{ marginBottom: '8px' }}>Ask me anything about AI.</p>
+                <p style={{ opacity: 0.5, fontSize: '11px', lineHeight: 1.8 }}>
+                  – Explain this week's top story<br />
+                  – What is RAG / fine-tuning?<br />
+                  – Give me a project idea
+                </p>
               </div>
             )}
             {messages.map((msg, i) => (
@@ -1212,6 +1222,12 @@ export default function App() {
             <p style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--muted2)', letterSpacing: '.08em', marginBottom: '16px' }}>
               ✦ Curated from 15+ AI sources daily
             </p>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#18160f', borderRadius: '4px', padding: '8px 14px', marginBottom: '20px' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#c13d18', boxShadow: '0 0 6px #c13d18', flexShrink: 0 }} />
+              <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'rgba(255,255,255,.7)', letterSpacing: '.04em' }}>
+                Now with <strong style={{ color: '#fff' }}>Neural AI</strong> — ask anything about the news
+              </span>
+            </div>
             <div className="cta-group">
               <a className="btn-primary btn-large" href="#subscribe">Get AI insights every Friday</a>
               <a className="btn-secondary" href="#this-week">Read this week's issue</a>
@@ -1242,7 +1258,7 @@ export default function App() {
             </div>
             <div className="sb-section">
               <span className="sb-label">Built with</span>
-              {['AI-powered intelligence','AI-powered intelligence','Automated pipeline'].map(s => (
+              {['AI-powered intelligence','Automated pipeline','Seamless delivery'].map(s => (
                 <div className="src-item" key={s}><span className="src-dot"></span>{s}</div>
               ))}
             </div>
@@ -1280,7 +1296,7 @@ export default function App() {
             <div>
               <h2>Today's Top 5</h2>
               <p style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--muted2)', marginTop: '4px' }}>
-                Live · Updated daily
+                Live · Updated daily · <span style={{ color: 'var(--accent)' }}>Ask Neural AI anything →</span>
               </p>
             </div>
           </div>
@@ -1296,7 +1312,7 @@ export default function App() {
             <div>
               <h2>Weekly AI Intelligence</h2>
               <p style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--muted2)', marginTop: '4px' }}>
-                The 15 most important AI updates this week · AI-powered
+                The 15 most important AI updates this week · <span style={{ color: 'var(--accent)' }}>Read. Understand. Ask Neural AI.</span>
               </p>
             </div>
           </div>
@@ -1345,7 +1361,7 @@ export default function App() {
           <div className="steps">
             {[
               { n:'01', i:'📡', t:'We track top AI sources',  d:'Every Friday we pull fresh stories from 7+ top AI sources — TechCrunch, HackerNews, DeepMind, arXiv, MIT Tech Review, and more.' },
-              { n:'02', i:'🔍', t:'Filter out the noise',      d:"Groq's Llama 3.3 70B reads everything and picks only the 15 stories worth your attention. No fluff, no duplication." },
+              { n:'02', i:'🔍', t:'Filter out the noise',      d:"AI reads everything and picks only the 15 stories worth your attention. No fluff, no duplication." },
               { n:'03', i:'✍️', t:'Summarise what matters',   d:'Each story gets a plain English summary, a TL;DR, a why-it-matters callout, and a ready-to-share social post.' },
               { n:'04', i:'📬', t:'Delivered to your inbox',  d:'Every Friday at 9am IST a clean, beautifully formatted digest lands in your inbox. Read it over chai in ~8 minutes.' },
             ].map((s, i) => (
@@ -1387,7 +1403,7 @@ export default function App() {
               <strong>Free. No spam. Unsubscribe anytime.</strong>
             </p>
             <div className="cta-feature-pills">
-              {['Signal Score per story', 'Break it down', 'LinkedIn post generator', 'Jargon of the week', 'Why it matters for you', 'Source labels'].map(f => (
+              {['Signal Score per story', 'Break it down', 'LinkedIn post generator', 'Jargon of the week', 'Why it matters for you', 'Ask Neural AI anything'].map(f => (
                 <span className="cta-pill" key={f}>{f}</span>
               ))}
             </div>
