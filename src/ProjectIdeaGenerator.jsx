@@ -41,7 +41,7 @@ export default function ProjectIdeaGenerator({ stories = [] }) {
     setIdea(null)
   }
 
-  const generate = async (overrideMode) => {
+  const generate = async (overrideMode, existingIdea = null) => {
     const m = overrideMode || mode
     if (selected.length === 0) return
     setLoading(true)
@@ -56,31 +56,43 @@ export default function ProjectIdeaGenerator({ stories = [] }) {
 
     const pickedStories = selected.map(i => stories[i]).filter(Boolean)
     const storiesText = pickedStories.map((s, i) =>
-      `Story ${i + 1}: ${s.title}\nSummary: ${s.summary || ''}`
+      `Story ${i + 1}: ${s.title}\nSummary: ${s.summary || s.why || ''}`
     ).join('\n\n')
 
-    const modeInstruction =
-      m === 'simple'   ? 'Make it very simple — 1-2 core features only. Short sentences.' :
-      m === 'beginner' ? 'Make it beginner-friendly. Assume the user just started coding. Use only basic tools like Python, HTML, or no-code.' :
-      selected.length === 1
-        ? 'Simple focused idea based on this one story.'
-        : 'Combine ALL the stories into one creative project idea.'
+    // For simplify/beginner — work on the existing idea, don't regenerate
+    const isRefinement = (m === 'simple' || m === 'beginner') && existingIdea
+
+    const modeInstruction = isRefinement
+      ? m === 'simple'
+        ? `Take this existing project idea and simplify it. Keep the same name. Cut scope to just 1-2 core features. Shorter sentences. Same JSON structure.\n\nExisting idea: "${existingIdea.name}" — ${existingIdea.what_it_does}`
+        : `Take this existing project idea and make it beginner-friendly. Keep the same name. Use only Python, HTML/CSS, or no-code tools. Assume user just started coding. Same JSON structure.\n\nExisting idea: "${existingIdea.name}" — ${existingIdea.what_it_does}`
+      : m === 'normal' && existingIdea
+        ? `Generate a COMPLETELY DIFFERENT project idea from before. Do NOT repeat "${existingIdea.name}" or anything similar. Be creative and unexpected.${selected.length > 1 ? ' Combine ALL the stories.' : ''}`
+        : selected.length === 1
+          ? 'Generate a simple focused project idea based on this story.'
+          : 'Combine ALL the stories into one creative project idea.'
 
     const prompt = `You are a creative AI project idea generator for Neural Brief — a weekly AI digest for Indian college students.
 
-Based on these AI news stories:
-${storiesText}
+${isRefinement ? 'Refine this project idea based on the instruction below.' : `Based on these AI news stories:\n${storiesText}`}
 
 ${modeInstruction}
 
-Return ONLY valid JSON, no markdown, no extra text:
+Rules:
+- Output must be a real buildable project, not vague
+- Stack must be specific tools (e.g. "Python", "FastAPI", "Streamlit", "OpenAI API")
+- Keep what_it_does to 2-3 plain sentences max
+- Each bullet point max 10 words
+- difficulty must be exactly: Beginner OR Intermediate OR Advanced
+
+Return ONLY valid JSON, no markdown:
 {
   "name": "Project name (5-8 words, catchy)",
   "tagline": "One punchy sentence — what it does",
-  "what_it_does": "2-3 plain English sentences. What the user builds and why it's useful.",
-  "how_it_uses_ai": ["bullet 1 (max 10 words)", "bullet 2 (max 10 words)", "bullet 3 optional"],
-  "why_useful": ["bullet 1 (max 10 words)", "bullet 2 (max 10 words)"],
-  "stack": ["e.g. Python", "OpenAI API", "Streamlit"],
+  "what_it_does": "2-3 plain English sentences.",
+  "how_it_uses_ai": ["bullet 1", "bullet 2", "optional bullet 3"],
+  "why_useful": ["bullet 1", "bullet 2"],
+  "stack": ["tool1", "tool2", "tool3"],
   "difficulty": "Beginner OR Intermediate OR Advanced",
   "time_to_build": "e.g. 1 weekend OR 2-3 days"
 }`
@@ -90,8 +102,9 @@ Return ONLY valid JSON, no markdown, no extra text:
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          systemPrompt: 'You are a project idea generator. Return only valid JSON. No markdown. No explanation.',
+          systemPrompt: 'You are a project idea generator. Return ONLY valid JSON. No markdown. No explanation. No backticks.',
           messages: [{ role: 'user', content: prompt }],
+          temperature: m === 'normal' && existingIdea ? 0.95 : 0.7,
         }),
       })
       const data = await resp.json()
@@ -106,9 +119,9 @@ Return ONLY valid JSON, no markdown, no extra text:
   }
 
   const handleGenerate = () => { setMode('normal'); generate('normal') }
-  const handleSimplify = () => { setMode('simple'); generate('simple') }
-  const handleBeginner = () => { setMode('beginner'); generate('beginner') }
-  const handleAnother  = () => { generate(mode) }
+  const handleSimplify = () => { setMode('simple'); generate('simple', idea) }
+  const handleBeginner = () => { setMode('beginner'); generate('beginner', idea) }
+  const handleAnother  = () => { generate('normal', idea) }
 
   const diffColors = idea?.difficulty ? (DIFFICULTY_COLORS[idea.difficulty] || DIFFICULTY_COLORS['Intermediate']) : null
 

@@ -575,7 +575,7 @@ function LiveDigest() {
       </div>
 
       {/* Project Idea Generator */}
-      <ProjectIdeaGenerator stories={stories} />
+      
 
       {/* GitHub Trending Repo */}
       {github_trending && (
@@ -1186,6 +1186,53 @@ Keep answers to 3-5 lines max. Use bullet points where helpful. Plain English on
   )
 }
 
+// Standalone wrapper — fetches digest stories, filters to tool/model ones for the generator
+function ProjectIdeaGeneratorStandalone() {
+  const [stories, setStories] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const TOOL_KEYWORDS = [
+    'model', 'api', 'sdk', 'tool', 'release', 'launch', 'open source', 'open-source',
+    'gpt', 'gemini', 'claude', 'llama', 'mistral', 'grok', 'copilot', 'cursor',
+    'hugging face', 'diffusion', 'whisper', 'sora', 'dalle', 'midjourney', 'runway',
+    'framework', 'library', 'plugin', 'extension', 'agent', 'assistant',
+    'openai', 'anthropic', 'deepmind', 'meta ai', 'microsoft ai', 'google ai',
+    'fine-tun', 'training', 'inference', 'embedding', 'vector', 'rag',
+  ]
+
+  const isToolStory = (story) => {
+    const text = ((story.title || '') + ' ' + (story.summary || '') + ' ' + (story.tag || '')).toLowerCase()
+    return TOOL_KEYWORDS.some(kw => text.includes(kw)) || ['New Model', 'Tool Drop', 'Research'].includes(story.tag)
+  }
+
+  useEffect(() => {
+    fetch('/api/get-digest')
+      .then(r => r.json())
+      .then(d => {
+        const all = d.stories || []
+        const filtered = all.filter(isToolStory)
+        // fallback to all stories if filter is too aggressive
+        setStories(filtered.length >= 3 ? filtered : all)
+      })
+      .catch(() => setStories([]))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return (
+    <div style={{ padding: '20px 0', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted2)' }}>
+      LOADING STORIES...
+    </div>
+  )
+
+  if (stories.length === 0) return (
+    <div style={{ padding: '20px 0', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted2)' }}>
+      No stories available right now. Check back soon.
+    </div>
+  )
+
+  return <ProjectIdeaGenerator stories={stories} />
+}
+
 export default function App() {
   const [showArchive, setShowArchive] = useState(false)
 
@@ -1356,6 +1403,22 @@ export default function App() {
         </div>
       </div>
 
+      {/* PROJECT IDEA GENERATOR */}
+      <div className="wrap">
+        <div className="section fi reveal">
+          <div className="section-hd">
+            <span className="section-sym">§</span>
+            <div>
+              <h2>Build from the news</h2>
+              <p style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--muted2)', marginTop: '4px' }}>
+                Pick AI tool stories · Neural AI generates a real project you can build
+              </p>
+            </div>
+          </div>
+          <ProjectIdeaGeneratorStandalone />
+        </div>
+      </div>
+
       <div className="wrap">
         <div className="preview-section fi reveal">
           <div className="section-hd"><span className="section-sym">§</span><h2>What lands in your inbox</h2></div>
@@ -1436,7 +1499,7 @@ export default function App() {
           <div className="section-hd"><span className="section-sym">§</span><h2>How Neural Brief works</h2></div>
           <div className="steps">
             {[
-              { n:'01', i:'📡', t:'We track top AI sources',  d:'Every Friday we pull fresh stories from 7+ top AI sources — TechCrunch, HackerNews, DeepMind, arXiv, MIT Tech Review, and more.' },
+              { n:'01', i:'📡', t:'We track top AI sources',  d:'Every Friday we pull fresh stories from 15+ top AI sources — TechCrunch, HackerNews, DeepMind, arXiv, MIT Tech Review, and more.' },
               { n:'02', i:'🔍', t:'Filter out the noise',      d:"AI reads everything and picks only the 15 stories worth your attention. No fluff, no duplication." },
               { n:'03', i:'✍️', t:'Summarise what matters',   d:'Each story gets a plain English summary, a TL;DR, a why-it-matters callout, and a ready-to-share social post.' },
               { n:'04', i:'📬', t:'Delivered to your inbox',  d:'Every Friday at 9am IST a clean, beautifully formatted digest lands in your inbox. Read it over chai in ~8 minutes.' },
@@ -1500,7 +1563,7 @@ export default function App() {
 
       <footer>
         <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2026<br />
-        AI-powered summaries · Made by a student, for students · Free forever<br />
+        AI-powered summaries · Sent via Brevo · Subscribers on Supabase<br />
         Sources: DeepMind · Anthropic · Google AI · MIT Tech Review · TechCrunch · Ars Technica & more<br />
         Built by <strong>PRAJWAL.A</strong> — an AIML student who got tired of AI noise<br /><br />
         <a href="#">Unsubscribe</a> &nbsp;·&nbsp;
