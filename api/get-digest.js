@@ -128,12 +128,36 @@ async function fetchGithubTrending() {
       const lang  = langMatch  ? langMatch[1].trim()  : ''
 
       repos.push({ name, desc, stars, lang })
-      if (repos.length >= 5) break
     }
 
     if (repos.length === 0) return null
-    const top = repos[0]
-    return { name: top.name, desc: top.desc || 'Trending AI/ML repository', stars: top.stars, lang: top.lang, link: `https://github.com/${top.name}` }
+
+    // ── Filter to AI/ML relevant repos ──────────────────────────
+    const AI_REPO_KEYWORDS = [
+      'ai', 'ml', 'llm', 'gpt', 'language model', 'machine learning', 'deep learning',
+      'neural', 'transformer', 'diffusion', 'stable diffusion', 'inference', 'embedding',
+      'rag', 'agent', 'chatbot', 'vision', 'multimodal', 'nlp', 'speech', 'image',
+      'training', 'fine-tun', 'dataset', 'benchmark', 'openai', 'anthropic', 'gemini',
+      'claude', 'llama', 'mistral', 'hugging', 'pytorch', 'tensorflow', 'jax',
+      'generative', 'vector', 'onnx', 'cuda', 'gpu', 'model', 'reasoning',
+      'autonomous', 'robot', 'computer vision', 'text', 'audio', 'video generation',
+    ]
+
+    const isAIRepo = (name, desc) => {
+      const combined = (name + ' ' + desc).toLowerCase()
+      return AI_REPO_KEYWORDS.some(kw => combined.includes(kw))
+    }
+
+    // Pick first AI repo, fallback to top repo if none match
+    const aiRepo = repos.find(r => isAIRepo(r.name, r.desc)) || repos[0]
+
+    return {
+      name:  aiRepo.name,
+      desc:  aiRepo.desc || 'Trending AI/ML repository',
+      stars: aiRepo.stars,
+      lang:  aiRepo.lang,
+      link:  `https://github.com/${aiRepo.name}`,
+    }
   } catch (e) {
     console.log('⚠️ GitHub trending fetch failed:', e.message)
     return null

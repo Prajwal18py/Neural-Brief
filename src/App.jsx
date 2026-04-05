@@ -1060,15 +1060,43 @@ function FloatingNeuralAI() {
     }
   }, [messages, loading])
 
+  const AI_TOPICS = [
+    'ai','artificial intelligence','machine learning','deep learning','neural','llm','gpt','gemini',
+    'claude','llama','model','chatgpt','openai','anthropic','deepmind','hugging face','mistral',
+    'transformer','diffusion','stable diffusion','midjourney','dall-e','sora','copilot','cursor',
+    'windsurf','groq','rag','retrieval','embedding','vector','fine-tun','inference','token',
+    'benchmark','dataset','training','inference','agent','agentic','chatbot','computer vision',
+    'multimodal','reasoning','alignment','hallucination','safety','regulation','policy','nvidia',
+    'gpu','tpu','semiconductor','robotics','autonomous','open source','research','paper','arxiv',
+    'huggingface','perplexity','notion ai','github copilot','project idea','ml','data science',
+    'neural brief','this week','news','story','stories','brief','digest','what is','explain',
+    'how does','summarize','summary','techcrunch','wired','mit','google','meta','microsoft',
+  ]
+
+  const isAIQuestion = (q) => {
+    const lower = q.toLowerCase()
+    return AI_TOPICS.some(kw => lower.includes(kw))
+  }
+
   const ask = async (question) => {
     if (!question.trim() || loading) return
     const userMsg = question.trim()
     setInput('')
+
+    if (!isAIQuestion(userMsg)) {
+      setMessages(prev => [...prev,
+        { role: 'user', text: userMsg },
+        { role: 'ai', text: "I'm Neural AI — I only answer questions about AI, machine learning, and tech news. Try asking about a model, concept, or this week's AI stories!" }
+      ])
+      return
+    }
+
     setMessages(prev => [...prev, { role: 'user', text: userMsg }])
     setLoading(true)
 
     const systemPrompt = `You are Neural AI, a focused AI news assistant for Neural Brief — a weekly AI digest for Indian college students.
-Answer questions about AI news, explain AI concepts, suggest project ideas, and help students understand AI developments.
+ONLY answer questions about: AI, machine learning, deep learning, LLMs, AI tools, AI news, AI concepts, tech companies (OpenAI, Google, Anthropic, Meta, etc.), AI projects, and related topics.
+If asked anything unrelated to AI or technology, respond: "I only help with AI-related questions. Try asking about a model, concept, or AI news story!"
 Keep answers to 3-5 lines max. Use bullet points where helpful. Plain English only, no jargon.`
 
     try {
@@ -1191,7 +1219,7 @@ export default function App() {
         <div className="masthead-inner">
           <div className="masthead-name">Neural<br /><em>Brief</em></div>
           <div className="masthead-meta">
-            Vol. 1, No. 1 &nbsp;·&nbsp; Est. 2025<br />
+            Vol. 1, No. 1 &nbsp;·&nbsp; Est. 2026<br />
             Weekly AI digest for students<br />
             Plain English · Free forever<br />
             <strong style={{ color: 'var(--accent)' }}>neural-brief-eight.vercel.app</strong>
@@ -1339,17 +1367,57 @@ export default function App() {
                 <span>neural-brief-eight.vercel.app</span>
               </div>
               {[
-                { tag:'t-model',    label:'New Model', title:'Google drops Gemini 2.5 with 2M token context',      body:'Biggest context window yet — processes entire codebases. Strong reasoning gains.', tldr:'TL;DR: Longer memory, smarter answers.' },
-                { tag:'t-research', label:'Research',  title:'MIT: LLMs plan complex tasks without fine-tuning',   body:'Base models execute 10+ step tasks through structured prompting alone.', tldr:'TL;DR: Prompting beats fine-tuning.' },
-                { tag:'t-industry', label:'Industry',  title:'OpenAI in talks to acquire Windsurf for $3B',        body:'OpenAI acquiring Windsurf for a direct IDE-level product.', tldr:'TL;DR: Code editors are the new AI battlefield.' },
+                { tag:'t-model',    label:'New Model', title:'Google drops Gemini 2.5 with 2M token context',      body:'Biggest context window yet — processes entire codebases. Strong reasoning gains.', tldr:'TL;DR: Longer memory, smarter answers.', why:'You can now build AI apps that read your entire codebase at once.' },
+                { tag:'t-research', label:'Research',  title:'MIT: LLMs plan complex tasks without fine-tuning',   body:'Base models execute 10+ step tasks through structured prompting alone.', tldr:'TL;DR: Prompting beats fine-tuning.', why:'Less compute, more power — great for student projects with no GPU budget.' },
+                { tag:'t-industry', label:'Industry',  title:'OpenAI in talks to acquire Windsurf for $3B',        body:'OpenAI acquiring Windsurf for a direct IDE-level product.', tldr:'TL;DR: Code editors are the new AI battlefield.', why:'The tools you code with are becoming AI-first — learn them early.' },
               ].map(s => (
                 <div className="em-story" key={s.title}>
-                  <span className={'stag ' + s.tag}>{s.label}</span>
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '5px', flexWrap: 'wrap' }}>
+                    <span className={'stag ' + s.tag}>{s.label}</span>
+                  </div>
                   <p className="em-title">{s.title}</p>
                   <p className="em-body">{s.body}</p>
-                  <p className="em-tldr">{s.tldr}</p>
+                  <p className="em-tldr">→ {s.tldr}</p>
+                  <div style={{ background: '#f4f1ea', borderLeft: '3px solid #c13d18', padding: '5px 8px', margin: '5px 0 0', fontSize: '10px', color: '#5a5550', lineHeight: 1.6 }}>
+                    <span style={{ fontFamily: 'var(--mono)', fontSize: '8px', color: '#9a938a', textTransform: 'uppercase', letterSpacing: '.08em' }}>Why students care → </span>
+                    {s.why}
+                  </div>
                 </div>
               ))}
+
+              {/* GitHub Trending Repo */}
+              <div style={{ background: '#f4f1ea', border: '1px solid #d6d0c2', borderRadius: '3px', padding: '10px 12px', margin: '10px 0 6px' }}>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: '8px', color: '#9a938a', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: '5px' }}>🔥 Trending GitHub Repo</div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                  <span style={{ fontFamily: 'var(--serif)', fontSize: '13px', fontWeight: 700, color: '#18160f' }}>microsoft/phi-4</span>
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: '#9a938a' }}>⭐ 3,142 stars this week</span>
+                </div>
+                <p style={{ fontSize: '11px', color: '#5a5550', margin: '0 0 4px', lineHeight: 1.5 }}>Microsoft's small language model — powerful reasoning at tiny scale.</p>
+                <p style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: '#c13d18', margin: '0 0 8px' }}>→ Run a capable LLM on your laptop — no GPU needed.</p>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: '8px', color: '#27438a', background: '#ebf0f9', border: '1px solid #bcc9ec', padding: '2px 7px', borderRadius: '2px' }}>Python</span>
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: '8px', color: '#27438a', background: '#ebf0f9', border: '1px solid #bcc9ec', padding: '2px 7px', borderRadius: '2px' }}>Use case: Projects / Learning</span>
+                </div>
+              </div>
+
+              {/* Tool of the Week */}
+              <div style={{ background: '#f4f1ea', border: '1px solid #d6d0c2', borderRadius: '3px', padding: '10px 12px', margin: '6px 0' }}>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: '8px', color: '#9a938a', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: '5px' }}>🧰 Tool of the Week</div>
+                <span style={{ fontFamily: 'var(--serif)', fontSize: '13px', fontWeight: 700, color: '#18160f' }}>Cursor</span>
+                <p style={{ fontSize: '11px', color: '#5a5550', margin: '4px 0', lineHeight: 1.5 }}>AI-first code editor — write, edit, and debug with a built-in LLM that knows your codebase.</p>
+                <p style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: '#c13d18', margin: '0 0 8px' }}>→ Best AI coding tool for students right now — free tier available.</p>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: '8px', color: '#357025', background: '#edf5eb', border: '1px solid #bdd9b7', padding: '2px 7px', borderRadius: '2px' }}>Freemium</span>
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: '8px', color: '#27438a', background: '#ebf0f9', border: '1px solid #bcc9ec', padding: '2px 7px', borderRadius: '2px' }}>Best for: Students</span>
+                </div>
+              </div>
+
+              {/* Jargon */}
+              <div style={{ background: '#f4f1ea', border: '1px solid #d6d0c2', borderRadius: '3px', padding: '10px 12px', marginTop: '6px' }}>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: '8px', color: '#9a938a', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: '5px' }}>📖 Jargon of the week</div>
+                <span style={{ fontFamily: 'var(--serif)', fontSize: '13px', fontWeight: 700, color: '#18160f' }}>RAG (Retrieval Augmented Generation)</span>
+                <p style={{ fontSize: '11px', color: '#5a5550', margin: '4px 0 0', lineHeight: 1.6 }}>An AI technique that looks up real information before answering — like giving it a search engine and a brain at the same time.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -1360,7 +1428,7 @@ export default function App() {
           <div className="section-hd"><span className="section-sym">§</span><h2>How Neural Brief works</h2></div>
           <div className="steps">
             {[
-              { n:'01', i:'📡', t:'We track top AI sources',  d:'Every Friday we pull fresh stories from 7+ top AI sources — TechCrunch, HackerNews, DeepMind, arXiv, MIT Tech Review, and more.' },
+              { n:'01', i:'📡', t:'We track top AI sources',  d:'Every Friday we pull fresh stories from 15+ top AI sources — TechCrunch, HackerNews, DeepMind, arXiv, MIT Tech Review, and more.' },
               { n:'02', i:'🔍', t:'Filter out the noise',      d:"AI reads everything and picks only the 15 stories worth your attention. No fluff, no duplication." },
               { n:'03', i:'✍️', t:'Summarise what matters',   d:'Each story gets a plain English summary, a TL;DR, a why-it-matters callout, and a ready-to-share social post.' },
               { n:'04', i:'📬', t:'Delivered to your inbox',  d:'Every Friday at 9am IST a clean, beautifully formatted digest lands in your inbox. Read it over chai in ~8 minutes.' },
@@ -1423,15 +1491,14 @@ export default function App() {
       </div>
 
       <footer>
-        <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2025<br />
-        AI-powered summaries · Sent via Brevo · Subscribers on Supabase<br />
+        <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2026<br />
+        AI-powered summaries · Made by a student, for students · Free forever<br />
         Sources: DeepMind · Anthropic · Google AI · MIT Tech Review · TechCrunch · Ars Technica & more<br />
         Built by <strong>PRAJWAL.A</strong> — an AIML student who got tired of AI noise<br /><br />
         <a href="#">Unsubscribe</a> &nbsp;·&nbsp;
         <a href="https://neural-brief-eight.vercel.app">Website</a> &nbsp;·&nbsp;
-        <a href="https://github.com/Prajwal18py/Neural-Brief">GitHub</a> &nbsp;·&nbsp;
         <a href="mailto:neuralbrief18@gmail.com">Contact</a><br /><br />
-        <span style={{ opacity: 0.4 }}>© 2025 Neural Brief · Made with coffee somewhere in India</span>
+        <span style={{ opacity: 0.4 }}>© 2026 Neural Brief · Made with coffee somewhere in India</span>
       </footer>
 
       <FloatingNeuralAI />
