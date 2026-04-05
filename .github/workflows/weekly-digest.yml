@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Trigger weekly digest
         run: |
-          response=$(curl -s -X POST https://neural-brief-eight.vercel.app/api/send-digest \
+          response=$(curl -s -X POST https://neuralbriefai.vercel.app/api/send-digest \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json")
           echo "Response: $response"

@@ -22,7 +22,7 @@ const transporter = nodemailer.createTransport({
   },
 })
 
-const WEBSITE     = 'https://neural-brief-eight.vercel.app'
+const WEBSITE     = 'https://neuralbriefai.vercel.app'
 const FROM_EMAIL  = `Neural Brief <${process.env.BREVO_FROM_EMAIL}>`
 const REPLY_TO    = process.env.BREVO_FROM_EMAIL
 
@@ -80,7 +80,7 @@ function buildAlreadyRegisteredEmail(email) {
       Your weekly digest arrives every <strong style="color:#18160f;">Friday at 9am IST</strong>.
       Check your inbox — it might be in your spam folder if you haven't seen it yet.
     </p>
-    <a href="https://neural-brief-eight.vercel.app" style="display:inline-block;background:#c13d18;color:#fff;
+    <a href="https://neuralbriefai.vercel.app" style="display:inline-block;background:#c13d18;color:#fff;
       font-family:'Helvetica Neue',sans-serif;font-size:13px;font-weight:500;
       padding:11px 22px;border-radius:3px;text-decoration:none;">
       Visit Neural Brief →
@@ -92,9 +92,9 @@ function buildAlreadyRegisteredEmail(email) {
       Neural <span style="color:#c13d18;">Brief</span>
     </div>
     Weekly AI news for students · Free forever · Every Friday<br>
-    <a href="https://neural-brief-eight.vercel.app/api/unsubscribe?email=${email}" style="color:rgba(255,255,255,.25);text-decoration:none;">Unsubscribe</a>
+    <a href="https://neuralbriefai.vercel.app/api/unsubscribe?email=${email}" style="color:rgba(255,255,255,.25);text-decoration:none;">Unsubscribe</a>
     &nbsp;·&nbsp;
-    <a href="https://neural-brief-eight.vercel.app" style="color:rgba(255,255,255,.25);text-decoration:none;">Website</a>
+    <a href="https://neuralbriefai.vercel.app" style="color:rgba(255,255,255,.25);text-decoration:none;">Website</a>
   </div>
 
 </div>
@@ -263,7 +263,7 @@ function buildDigestEmail(data, briefNum, email, persona = '') {
   <div style="display:flex;justify-content:space-between;padding:10px 40px;background:#f4f1ea;border-bottom:1px solid #d6d0c2;font-family:'Courier New',monospace;font-size:10px;color:#9a938a;">
     <span>${stories.length} stories</span>
     <span>~3 min read</span>
-    <span>neural-brief-eight.vercel.app</span>
+    <span>neuralbriefai.vercel.app</span>
   </div>
 
   ${biggestBanner}

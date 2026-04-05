@@ -19,7 +19,7 @@ const parser = new Parser()
 
 const FROM_EMAIL = `Neural Brief <${process.env.BREVO_FROM_EMAIL}>`
 const REPLY_TO   = process.env.BREVO_FROM_EMAIL
-const WEBSITE    = 'https://neural-brief-eight.vercel.app'
+const WEBSITE    = 'https://neuralbriefai.vercel.app'
 const STORIES_COUNT = 15
 
 // ── Source credibility labels ─────────────────────────────
@@ -404,7 +404,7 @@ function buildHtml(result, briefNum, email, persona = "") {
   <div style="display:flex;justify-content:space-between;padding:10px 40px;background:#f4f1ea;border-bottom:1px solid #d6d0c2;font-family:'Courier New',monospace;font-size:10px;color:#9a938a;">
     <span>${stories.length} stories</span>
     <span>~${stories.length} min read</span>
-    <span>neural-brief-eight.vercel.app</span>
+    <span>neuralbriefai.vercel.app</span>
   </div>
 
   <!-- Biggest Move -->

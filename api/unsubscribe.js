@@ -64,9 +64,9 @@ function successPage(email) {
     <h1>You've been unsubscribed.</h1>
     <p>Sorry to see you go! You won't receive any more emails from Neural Brief.</p>
     <p class="email">${email}</p>
-    <a href="https://neural-brief-eight.vercel.app" class="btn">Visit Neural Brief →</a>
+    <a href="https://neuralbriefai.vercel.app" class="btn">Visit Neural Brief →</a>
     <hr class="divider">
-    <p class="footer">Changed your mind? You can always subscribe again at neural-brief-eight.vercel.app</p>
+    <p class="footer">Changed your mind? You can always subscribe again at neuralbriefai.vercel.app</p>
   </div>
 </body>
 </html>`
@@ -99,7 +99,7 @@ function errorPage(message) {
     <div class="icon">⚠️</div>
     <h1>Something went wrong.</h1>
     <p>${message}</p>
-    <a href="https://neural-brief-eight.vercel.app" class="btn">Go to website →</a>
+    <a href="https://neuralbriefai.vercel.app" class="btn">Go to website →</a>
   </div>
 </body>
 </html>`

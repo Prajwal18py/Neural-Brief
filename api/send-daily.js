@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
 
 const FROM_EMAIL = `Neural Brief <${process.env.BREVO_FROM_EMAIL}>`
 const REPLY_TO   = process.env.BREVO_FROM_EMAIL
-const WEBSITE    = 'https://neural-brief-eight.vercel.app'
+const WEBSITE    = 'https://neuralbriefai.vercel.app'
 
 // ── Get opted-in subscribers ──────────────────────────────
 async function getDailySubscribers() {

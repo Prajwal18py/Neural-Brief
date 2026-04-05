@@ -30,7 +30,7 @@ BREVO_SMTP_KEY   = os.environ["BREVO_SMTP_KEY"]
 
 FROM_EMAIL    = f"Neural Brief <{os.environ.get('BREVO_FROM_EMAIL', 'neuralbrief18@gmail.com')}>"
 REPLY_TO      = os.environ.get('BREVO_FROM_EMAIL', 'neuralbrief18@gmail.com')
-WEBSITE       = "https://neural-brief-eight.vercel.app"
+WEBSITE       = "https://neuralbriefai.vercel.app"
 STORIES_COUNT = 15
 
 # ── Source credibility labels ─────────────────────────────────
@@ -282,7 +282,7 @@ def build_html(result, brief_num, email):
   <div style="display:flex;justify-content:space-between;padding:10px 40px;background:#f4f1ea;border-bottom:1px solid #d6d0c2;font-family:'Courier New',monospace;font-size:10px;color:#9a938a;">
     <span>{len(stories)} stories</span>
     <span>~{len(stories)} min read</span>
-    <span>neural-brief-eight.vercel.app</span>
+    <span>neuralbriefai.vercel.app</span>
   </div>
 
   {biggest_banner}

@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import logo from './assets/logo.jpg'
+import ShareCard from './ShareCard'
+import ProjectIdeaGenerator from './ProjectIdeaGenerator'
 
 const TAG_CLASS = {
   'New Model': 't-model', 'Research': 't-research',
@@ -460,7 +462,7 @@ function LiveDigest() {
               )}
               {story.linkedin && (
                 <button className="share-btn share-li" onClick={() => {
-                  navigator.clipboard.writeText(story.linkedin + '\n\n' + story.link + '\n\nvia Neural Brief -> neural-brief-eight.vercel.app')
+                  navigator.clipboard.writeText(story.linkedin + '\n\n' + story.link + '\n\nvia Neural Brief -> neuralbriefai.vercel.app')
                     .then(() => alert('LinkedIn post copied! Paste it on LinkedIn'))
                     .catch(() => alert('Could not copy. Please copy manually.'))
                 }}>
@@ -492,6 +494,9 @@ function LiveDigest() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
               <FaviconImg url={story.link} source={story.source} size={14} />
               <p style={{ fontSize: '10px', fontFamily: 'var(--mono)', color: 'var(--muted2)', margin: 0 }}>via {story.source}</p>
+            </div>
+            <div style={{ marginTop: '12px' }}>
+              <ShareCard story={story} />
             </div>
           </div>
         )}
@@ -568,6 +573,9 @@ function LiveDigest() {
           </button>
         )}
       </div>
+
+      {/* Project Idea Generator */}
+      <ProjectIdeaGenerator stories={stories} />
 
       {/* GitHub Trending Repo */}
       {github_trending && (
@@ -1219,10 +1227,10 @@ export default function App() {
         <div className="masthead-inner">
           <div className="masthead-name">Neural<br /><em>Brief</em></div>
           <div className="masthead-meta">
-            Vol. 1, No. 1 &nbsp;·&nbsp; Est. 2026<br />
+            Vol. 1, No. 1 &nbsp;·&nbsp; Est. 2025<br />
             Weekly AI digest for students<br />
             Plain English · Free forever<br />
-            <strong style={{ color: 'var(--accent)' }}>neural-brief-eight.vercel.app</strong>
+            <strong style={{ color: 'var(--accent)' }}>neuralbriefai.vercel.app</strong>
           </div>
         </div>
         <div className="masthead-rule">
@@ -1364,7 +1372,7 @@ export default function App() {
               <div className="em-meta">
                 <span>Friday, 21 March 2026</span>
                 <span>15 stories · ~8 min read</span>
-                <span>neural-brief-eight.vercel.app</span>
+                <span>neuralbriefai.vercel.app</span>
               </div>
               {[
                 { tag:'t-model',    label:'New Model', title:'Google drops Gemini 2.5 with 2M token context',      body:'Biggest context window yet — processes entire codebases. Strong reasoning gains.', tldr:'TL;DR: Longer memory, smarter answers.', why:'You can now build AI apps that read your entire codebase at once.' },
@@ -1428,7 +1436,7 @@ export default function App() {
           <div className="section-hd"><span className="section-sym">§</span><h2>How Neural Brief works</h2></div>
           <div className="steps">
             {[
-              { n:'01', i:'📡', t:'We track top AI sources',  d:'Every Friday we pull fresh stories from 15+ top AI sources — TechCrunch, HackerNews, DeepMind, arXiv, MIT Tech Review, and more.' },
+              { n:'01', i:'📡', t:'We track top AI sources',  d:'Every Friday we pull fresh stories from 7+ top AI sources — TechCrunch, HackerNews, DeepMind, arXiv, MIT Tech Review, and more.' },
               { n:'02', i:'🔍', t:'Filter out the noise',      d:"AI reads everything and picks only the 15 stories worth your attention. No fluff, no duplication." },
               { n:'03', i:'✍️', t:'Summarise what matters',   d:'Each story gets a plain English summary, a TL;DR, a why-it-matters callout, and a ready-to-share social post.' },
               { n:'04', i:'📬', t:'Delivered to your inbox',  d:'Every Friday at 9am IST a clean, beautifully formatted digest lands in your inbox. Read it over chai in ~8 minutes.' },
@@ -1491,14 +1499,14 @@ export default function App() {
       </div>
 
       <footer>
-        <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2026<br />
-        AI-powered summaries · Made by a student, for students · Free forever<br />
+        <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2025<br />
+        AI-powered summaries · Sent via Brevo · Subscribers on Supabase<br />
         Sources: DeepMind · Anthropic · Google AI · MIT Tech Review · TechCrunch · Ars Technica & more<br />
         Built by <strong>PRAJWAL.A</strong> — an AIML student who got tired of AI noise<br /><br />
         <a href="#">Unsubscribe</a> &nbsp;·&nbsp;
-        <a href="https://neural-brief-eight.vercel.app">Website</a> &nbsp;·&nbsp;
+        <a href="https://neuralbriefai.vercel.app">Website</a> &nbsp;·&nbsp;
         <a href="mailto:neuralbrief18@gmail.com">Contact</a><br /><br />
-        <span style={{ opacity: 0.9 }}>© 2026 Neural Brief · Made with coffee somewhere in India</span>
+        <span style={{ opacity: 0.9 }}>© 2025 Neural Brief · Made with coffee somewhere in India</span>
       </footer>
 
       <FloatingNeuralAI />

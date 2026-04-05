@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Trigger daily digest
         run: |
-          curl -s -X POST https://neural-brief-eight.vercel.app/api/send-daily \
+          curl -s -X POST https://neuralbriefai.vercel.app/api/send-daily \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
             --fail \
