@@ -1498,7 +1498,7 @@ export default function App() {
         <a href="#">Unsubscribe</a> &nbsp;·&nbsp;
         <a href="https://neural-brief-eight.vercel.app">Website</a> &nbsp;·&nbsp;
         <a href="mailto:neuralbrief18@gmail.com">Contact</a><br /><br />
-        <span style={{ opacity: 0.4 }}>© 2026 Neural Brief · Made with coffee somewhere in India</span>
+        <span style={{ opacity: 0.9 }}>© 2026 Neural Brief · Made with coffee somewhere in India</span>
       </footer>
 
       <FloatingNeuralAI />
