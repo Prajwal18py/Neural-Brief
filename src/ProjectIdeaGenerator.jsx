@@ -105,6 +105,7 @@ Return ONLY valid JSON, no markdown:
           systemPrompt: 'You are a project idea generator. Return ONLY valid JSON. No markdown. No explanation. No backticks.',
           messages: [{ role: 'user', content: prompt }],
           temperature: m === 'normal' && existingIdea ? 0.95 : 0.7,
+          max_tokens: 1200,
         }),
       })
       const data = await resp.json()

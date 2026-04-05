@@ -9,8 +9,11 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { messages, systemPrompt } = req.body
+  const { messages, systemPrompt, temperature, max_tokens } = req.body
   if (!messages || !systemPrompt) return res.status(400).json({ error: 'Missing messages or systemPrompt' })
+
+  const temp     = typeof temperature === 'number' ? temperature : 0.4
+  const maxTok   = typeof max_tokens  === 'number' ? max_tokens  : 1000
 
   // Try Groq first
   try {
@@ -26,8 +29,8 @@ export default async function handler(req, res) {
           { role: 'system', content: systemPrompt },
           ...messages,
         ],
-        temperature: 0.4,
-        max_tokens: 400,
+        temperature: temp,
+        max_tokens:  maxTok,
       }),
     })
     const data = await resp.json()
@@ -49,7 +52,7 @@ export default async function handler(req, res) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: fullPrompt }] }],
-        generationConfig: { temperature: 0.4, maxOutputTokens: 400 },
+        generationConfig: { temperature: temp, maxOutputTokens: maxTok },
       }),
     })
     const data = await resp.json()

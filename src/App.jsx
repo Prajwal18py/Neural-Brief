@@ -1191,18 +1191,31 @@ function ProjectIdeaGeneratorStandalone() {
   const [stories, setStories] = useState([])
   const [loading, setLoading] = useState(true)
 
+  const TOOL_TAGS = ['New Model', 'Tool Drop', 'Research']
+
   const TOOL_KEYWORDS = [
-    'model', 'api', 'sdk', 'tool', 'release', 'launch', 'open source', 'open-source',
+    'releases', 'released', 'launches', 'launched', 'drops', 'introduces', 'unveils',
+    'open source', 'open-source', 'api', 'sdk', 'model', 'framework', 'library',
     'gpt', 'gemini', 'claude', 'llama', 'mistral', 'grok', 'copilot', 'cursor',
-    'hugging face', 'diffusion', 'whisper', 'sora', 'dalle', 'midjourney', 'runway',
-    'framework', 'library', 'plugin', 'extension', 'agent', 'assistant',
-    'openai', 'anthropic', 'deepmind', 'meta ai', 'microsoft ai', 'google ai',
-    'fine-tun', 'training', 'inference', 'embedding', 'vector', 'rag',
+    'diffusion', 'whisper', 'sora', 'runway', 'hugging face',
+    'fine-tun', 'training', 'inference', 'embedding', 'rag', 'agent',
+    'benchmark', 'paper', 'research', 'dataset',
+  ]
+
+  const BLOCK_KEYWORDS = [
+    'acquires', 'acquisition', 'buys', 'bought', 'funding', 'raises', 'billion',
+    'million', 'lawsuit', 'regulation', 'policy', 'ban', 'manipulation', 'warfare',
+    'market', 'stock', 'invest', 'surrender', 'privacy', 'harm', 'safety concern',
+    'layoff', 'fired', 'ceo', 'chief', 'executive',
   ]
 
   const isToolStory = (story) => {
-    const text = ((story.title || '') + ' ' + (story.summary || '') + ' ' + (story.tag || '')).toLowerCase()
-    return TOOL_KEYWORDS.some(kw => text.includes(kw)) || ['New Model', 'Tool Drop', 'Research'].includes(story.tag)
+    const text = ((story.title || '') + ' ' + (story.summary || '')).toLowerCase()
+    const blocked = BLOCK_KEYWORDS.some(kw => text.includes(kw))
+    if (blocked) return false
+    const hasTag = TOOL_TAGS.includes(story.tag)
+    const hasKeyword = TOOL_KEYWORDS.some(kw => text.includes(kw))
+    return hasTag || hasKeyword
   }
 
   useEffect(() => {
