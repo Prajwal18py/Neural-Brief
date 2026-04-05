@@ -1227,7 +1227,7 @@ export default function App() {
         <div className="masthead-inner">
           <div className="masthead-name">Neural<br /><em>Brief</em></div>
           <div className="masthead-meta">
-            Vol. 1, No. 1 &nbsp;·&nbsp; Est. 2025<br />
+            Vol. 1, No. 1 &nbsp;·&nbsp; Est. 2026<br />
             Weekly AI digest for students<br />
             Plain English · Free forever<br />
             <strong style={{ color: 'var(--accent)' }}>neuralbriefai.vercel.app</strong>
@@ -1499,14 +1499,14 @@ export default function App() {
       </div>
 
       <footer>
-        <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2025<br />
-        AI-powered summaries · Sent via Brevo · Subscribers on Supabase<br />
+        <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2026<br />
+        AI-powered summaries · Made by a student, for students · Free forever<br />
         Sources: DeepMind · Anthropic · Google AI · MIT Tech Review · TechCrunch · Ars Technica & more<br />
         Built by <strong>PRAJWAL.A</strong> — an AIML student who got tired of AI noise<br /><br />
         <a href="#">Unsubscribe</a> &nbsp;·&nbsp;
         <a href="https://neuralbriefai.vercel.app">Website</a> &nbsp;·&nbsp;
         <a href="mailto:neuralbrief18@gmail.com">Contact</a><br /><br />
-        <span style={{ opacity: 0.9 }}>© 2025 Neural Brief · Made with coffee somewhere in India</span>
+        <span style={{ opacity: 0.9 }}>© 2026 Neural Brief · Made with coffee somewhere in India</span>
       </footer>
 
       <FloatingNeuralAI />
