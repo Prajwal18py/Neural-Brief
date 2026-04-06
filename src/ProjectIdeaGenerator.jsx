@@ -80,7 +80,9 @@ ${modeInstruction}
 
 Rules:
 - Output must be a real buildable project, not vague
-- Stack must be specific tools (e.g. "Python", "FastAPI", "Streamlit", "OpenAI API")
+- Stack MUST use the actual AI tools/models mentioned in the stories (e.g. if story is about Gemma 4, use Gemma 4 — NOT OpenAI API)
+- Stack must be specific tools (e.g. "Python", "Gemma 4", "Streamlit", "Ollama", "Google AI Studio")
+- Never suggest OpenAI API unless the story is specifically about OpenAI
 - Keep what_it_does to 2-3 plain sentences max
 - Each bullet point max 10 words
 - difficulty must be exactly: Beginner OR Intermediate OR Advanced

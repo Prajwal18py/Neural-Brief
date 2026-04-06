@@ -169,7 +169,9 @@ async function fetchGithubTrending() {
       const name  = nameMatch[1].trim()
       // Skip GitHub special paths that aren't real repos
       if (/^(sponsors|orgs|topics|trending|explore|marketplace)\//.test(name)) continue
-      const desc  = descMatch  ? descMatch[1].replace(/\s+/g, ' ').trim() : ''
+      // Strip HTML tags from description
+      const rawDesc = descMatch ? descMatch[1].replace(/\s+/g, ' ').trim() : ''
+      const desc  = rawDesc.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim()
       const stars = starsMatch ? starsMatch[1].trim() : '0'
       const lang  = langMatch  ? langMatch[1].trim()  : ''
 
@@ -180,17 +182,24 @@ async function fetchGithubTrending() {
 
     // ── Filter to AI/ML relevant repos ──────────────────────────
     const AI_REPO_KEYWORDS = [
-      'ai', 'ml', 'llm', 'gpt', 'language model', 'machine learning', 'deep learning',
+      'ai', 'llm', 'gpt', 'language model', 'machine learning', 'deep learning',
       'neural', 'transformer', 'diffusion', 'stable diffusion', 'inference', 'embedding',
-      'rag', 'agent', 'chatbot', 'vision', 'multimodal', 'nlp', 'speech', 'image',
-      'training', 'fine-tun', 'dataset', 'benchmark', 'openai', 'anthropic', 'gemini',
+      'rag', 'agent', 'chatbot', 'vision', 'multimodal', 'nlp', 'speech',
+      'fine-tun', 'dataset', 'benchmark', 'openai', 'anthropic', 'gemini',
       'claude', 'llama', 'mistral', 'hugging', 'pytorch', 'tensorflow', 'jax',
-      'generative', 'vector', 'onnx', 'cuda', 'gpu', 'model', 'reasoning',
-      'autonomous', 'robot', 'computer vision', 'text', 'audio', 'video generation',
+      'generative', 'vector', 'onnx', 'cuda', 'reasoning',
+      'autonomous', 'robot', 'computer vision', 'video generation',
+    ]
+
+    const REPO_BLOCK_KEYWORDS = [
+      'quant', 'trading', 'finance', 'stock', 'investment', 'crypto', 'blockchain',
+      'market', 'forex', 'hedge', 'portfolio', 'defi', 'nft', 'web3',
     ]
 
     const isAIRepo = (name, desc) => {
       const combined = (name + ' ' + desc).toLowerCase()
+      const blocked = REPO_BLOCK_KEYWORDS.some(kw => combined.includes(kw))
+      if (blocked) return false
       return AI_REPO_KEYWORDS.some(kw => combined.includes(kw))
     }
 
