@@ -33,21 +33,67 @@ function isFresh(cachedAt) {
   return Date.now() - new Date(cachedAt).getTime() < 24 * 60 * 60 * 1000
 }
 
+// ── Strict AI relevance filter ─────────────────────────────
+const AI_KEYWORDS = [
+  'artificial intelligence', 'machine learning', 'deep learning',
+  'neural network', 'llm', 'large language model', 'generative ai',
+  'foundation model', 'transformer', 'diffusion', 'reinforcement learning',
+  'gpt', 'chatgpt', 'gemini', 'claude', 'llama', 'mistral', 'grok',
+  'copilot', 'midjourney', 'stable diffusion', 'dall-e', 'sora',
+  'whisper', 'runway', 'perplexity', 'cursor', 'windsurf',
+  'openai', 'anthropic', 'deepmind', 'google ai', 'meta ai',
+  'microsoft ai', 'nvidia', 'hugging face', 'cohere', 'mistral ai',
+  'stability ai', 'groq', 'together ai', 'replicate', 'scale ai',
+  'fine-tuning', 'fine tuning', 'rag', 'retrieval', 'embedding',
+  'vector database', 'inference', 'context window', 'tokenizer',
+  'robotics', 'autonomous', 'self-driving', 'computer vision',
+  'image generation', 'text to image', 'multimodal', 'reasoning model',
+  'coding ai', 'ai safety', 'alignment', 'hallucination',
+  'ai regulation', 'ai policy', 'ai funding', 'ai startup', 'ai tool',
+  'ai agent', 'agentic', 'chatbot', 'voice ai', 'speech model',
+  'benchmark', 'ai model', 'language model', 'model release',
+  'gpu', 'tpu', 'semiconductor', 'ai chip',
+]
+
+const BLOCK_KEYWORDS = [
+  'gas price', 'fuel price', 'gasoline', 'petrol', 'plastic',
+  'spacex', 'ipo', 'stock market', 'crypto', 'bitcoin', 'ethereum',
+  'real estate', 'housing', 'mortgage', 'recipe', 'cooking', 'food',
+  'sports', 'nba', 'nfl', 'soccer', 'cricket', 'weather',
+  'electric vehicle', 'tesla stock', 'climate change', 'war', 'military',
+  'warfare', 'election', 'politics', 'congress', 'senate',
+]
+
+function isAIRelevant(title, description = '') {
+  const text = (title + ' ' + description).toLowerCase()
+  const blocked = BLOCK_KEYWORDS.some(kw => text.includes(kw))
+  if (blocked) return false
+  return AI_KEYWORDS.some(kw => text.includes(kw))
+}
+
 async function fetchStories() {
   const all = []
   for (const feed of RSS_FEEDS) {
     try {
       const parsed = await parser.parseURL(feed.url)
       for (const item of parsed.items.slice(0, 4)) {
+        const title = item.title || 'Untitled'
+        const description = (item.contentSnippet || item.summary || '').slice(0, 120)
+        // Skip non-AI stories at source level
+        if (!isAIRelevant(title, description)) {
+          console.log(`⛔ Filtered out: ${title}`)
+          continue
+        }
         all.push({
           source:      feed.name,
-          title:       item.title || 'Untitled',
-          description: (item.contentSnippet || item.summary || '').slice(0, 120),
+          title,
+          description,
           link:        item.link || '',
         })
       }
     } catch (e) { console.log(`⚠️ ${feed.name}: ${e.message}`) }
   }
+  console.log(`✅ ${all.length} AI-relevant stories after filtering`)
   return all
 }
 
