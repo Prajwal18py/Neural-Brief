@@ -1175,14 +1175,15 @@ function ProjectIdeaGeneratorStandalone() {
     'gpt', 'gemini', 'claude', 'llama', 'mistral', 'grok', 'copilot', 'cursor',
     'diffusion', 'whisper', 'sora', 'runway', 'hugging face',
     'fine-tun', 'training', 'inference', 'embedding', 'rag', 'agent',
-    'benchmark', 'paper', 'research', 'dataset',
+    'benchmark', 'paper', 'research', 'dataset', 'multimodal', 'vision',
   ]
 
   const BLOCK_KEYWORDS = [
     'acquires', 'acquisition', 'buys', 'bought', 'funding', 'raises', 'billion',
     'million', 'lawsuit', 'regulation', 'policy', 'ban', 'manipulation', 'warfare',
     'market', 'stock', 'invest', 'surrender', 'privacy', 'harm', 'safety concern',
-    'layoff', 'fired', 'ceo', 'chief', 'executive',
+    'layoff', 'fired', 'ceo', 'chief', 'executive', 'pricing', 'pay extra',
+    'subscription', 'subscribers to pay', 'cost', 'revenue', 'profit',
   ]
 
   const isToolStory = (story) => {
@@ -1194,14 +1195,24 @@ function ProjectIdeaGeneratorStandalone() {
     return hasTag || hasKeyword
   }
 
+  // Deduplicate by first 3 words of title
+  const deduped = (stories) => {
+    const seen = new Set()
+    return stories.filter(s => {
+      const key = (s.title || '').toLowerCase().split(' ').slice(0, 3).join(' ')
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+  }
+
   useEffect(() => {
     fetch('/api/get-digest')
       .then(r => r.json())
       .then(d => {
         const all = d.stories || []
-        const filtered = all.filter(isToolStory)
-        // fallback to all stories if filter is too aggressive
-        setStories(filtered.length >= 3 ? filtered : all)
+        const filtered = deduped(all.filter(isToolStory))
+        setStories(filtered.length >= 3 ? filtered : deduped(all))
       })
       .catch(() => setStories([]))
       .finally(() => setLoading(false))
@@ -1553,7 +1564,7 @@ export default function App() {
 
       <footer>
         <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2026<br />
-        AI-powered summaries · Made by a student, for students · Free forever<br />
+        AI-powered summaries · Sent via Brevo · Subscribers on Supabase<br />
         Sources: DeepMind · Anthropic · Google AI · MIT Tech Review · TechCrunch · Ars Technica & more<br />
         Built by <strong>PRAJWAL.A</strong> — an AIML student who got tired of AI noise<br /><br />
         <a href="#">Unsubscribe</a> &nbsp;·&nbsp;
