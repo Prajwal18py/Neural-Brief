@@ -262,6 +262,21 @@ Return ONLY valid JSON, no markdown:
               🎓 Make it beginner-friendly
             </button>
           </div>
+
+          {/* Try it yourself CTA */}
+          <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--rule)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+            <p style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--muted2)', margin: 0 }}>
+              Got your idea? Start building 👇
+            </p>
+            <a
+              href="https://github.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: '#c13d18', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}
+            >
+              Try it yourself →
+            </a>
+          </div>
         </div>
       )}
 

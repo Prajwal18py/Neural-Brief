@@ -1384,7 +1384,7 @@ export default function App() {
             <div>
               <h2>Weekly AI Intelligence</h2>
               <p style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--muted2)', marginTop: '4px' }}>
-                The 15 most important AI updates this week · <span style={{ color: 'var(--accent)' }}>Read. Understand. Ask Neural AI.</span>
+                The 15 most important AI updates this week · <span style={{ color: 'var(--accent)' }}>Open any story → Ask Neural AI about it.</span>
               </p>
             </div>
           </div>
@@ -1394,13 +1394,14 @@ export default function App() {
 
       {/* PROJECT IDEA GENERATOR */}
       <div className="wrap">
+        <div style={{ borderTop: '2px solid var(--rule)', marginBottom: '0' }} />
         <div className="section fi reveal">
           <div className="section-hd">
             <span className="section-sym">§</span>
             <div>
-              <h2>Build from the news</h2>
+              <h2>Turn AI news into real projects</h2>
               <p style={{ fontSize: '11px', fontFamily: 'var(--mono)', color: 'var(--muted2)', marginTop: '4px' }}>
-                Pick AI tool stories · Neural AI generates a real project you can build
+                Select stories from this week · Neural AI generates a buildable project idea
               </p>
             </div>
           </div>
@@ -1525,7 +1526,7 @@ export default function App() {
         <div className="final-cta-section fi reveal">
           <div className="final-cta-inner">
             <p className="final-cta-eyebrow">Join Neural Brief</p>
-            <h2 style={{ marginBottom: '12px' }}>Stay ahead in AI —<br />2 min daily, 8 min on Fridays.</h2>
+            <h2 style={{ marginBottom: '12px' }}>Stay ahead in AI —<br />2 min daily. 8 min Fridays.</h2>
             <p className="cta-sub">
               No noise. No jargon. Just the 15 stories that actually moved the needle this week.<br />
               <strong>Free. No spam. Unsubscribe anytime.</strong>
