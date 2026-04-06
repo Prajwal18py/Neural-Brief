@@ -758,6 +758,7 @@ function NeuralAI({ story, onClose }) {
   const [input, setInput]       = useState('')
   const [loading, setLoading]   = useState(false)
   const bottomRef               = useRef(null)
+  const messagesContainerRef    = useRef(null)
 
   const QUICK_ACTIONS = [
     { label: 'Explain simply', prompt: 'Explain this news in simple terms for a student.' },
@@ -782,41 +783,16 @@ Keep answers short: 3-5 lines max. Use bullet points when possible. Simple Engli
     setLoading(true)
 
     try {
-      // Try Groq first
-      let answer = null
-      try {
-        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}` },
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [
-              { role: 'system', content: systemPrompt },
-              ...messages.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text })),
-              { role: 'user', content: question }
-            ],
-            temperature: 0.4,
-            max_tokens: 300,
-          }),
-        })
-        const data = await resp.json()
-        if (data?.choices?.[0]?.message?.content) {
-          answer = data.choices[0].message.content.trim()
-        }
-      } catch (e) { console.log('Groq failed, trying backend') }
-
-      // Fallback to backend API
-      if (!answer) {
-        const resp = await fetch('/api/neural-ai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question, context, history: messages }),
-        })
-        const data = await resp.json()
-        answer = data.answer || 'Sorry, I could not get an answer right now.'
-      }
-
-      setMessages(m => [...m, { role: 'ai', text: answer }])
+      const resp = await fetch('/api/neural-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemPrompt,
+          messages: [{ role: 'user', content: question }],
+        }),
+      })
+      const data = await resp.json()
+      setMessages(m => [...m, { role: 'ai', text: data.text || 'Sorry, I could not get an answer right now.' }])
     } catch {
       setMessages(m => [...m, { role: 'ai', text: 'Something went wrong. Please try again.' }])
     }
@@ -1576,7 +1552,7 @@ export default function App() {
 
       <footer>
         <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2026<br />
-        AI-powered summaries · Sent via Brevo · Subscribers on Supabase<br />
+        AI-powered summaries · Made by a student, for students · Free forever<br />
         Sources: DeepMind · Anthropic · Google AI · MIT Tech Review · TechCrunch · Ars Technica & more<br />
         Built by <strong>PRAJWAL.A</strong> — an AIML student who got tired of AI noise<br /><br />
         <a href="#">Unsubscribe</a> &nbsp;·&nbsp;
