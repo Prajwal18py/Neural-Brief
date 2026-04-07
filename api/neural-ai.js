@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   if (!messages || !systemPrompt) return res.status(400).json({ error: 'Missing messages or systemPrompt' })
 
   const temp     = typeof temperature === 'number' ? temperature : 0.4
-  const maxTok   = typeof max_tokens  === 'number' ? max_tokens  : 1000
+  const maxTok   = typeof max_tokens  === 'number' ? max_tokens  : 600
 
   // Try Groq first
   try {

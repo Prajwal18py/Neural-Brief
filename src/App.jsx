@@ -773,7 +773,7 @@ function NeuralAI({ story, onClose }) {
 
   const systemPrompt = `You are Neural AI, an AI news assistant for Neural Brief — a weekly AI digest for Indian college students.
 ${story ? `\nThe user is asking about this news:\n${context}\n\nAnswer ONLY based on this news. If the question is unrelated, say: "I can only help with this news story."` : ''}
-Keep answers short: 3-5 lines max. Use bullet points when possible. Simple English, no jargon.`
+Keep answers to up to 300 words. Use bullet points when possible. Simple English, no jargon.`
 
   const ask = async (question) => {
     if (!question.trim() || loading) return
@@ -941,7 +941,7 @@ Title: ${story.title}
 Summary: ${story.summary || ''}
 Source: ${story.source}
 
-Answer ONLY based on this news. Keep answers to 3-5 lines max. Use bullet points where helpful. Plain English only, no jargon. If the question is unrelated to this news, respond: "I can only help with this specific news story."`
+Answer ONLY based on this news. Keep answers to up to 300 words. Use bullet points where helpful. Plain English only, no jargon. If the question is unrelated to this news, respond: "I can only help with this specific news story."`
 
     try {
       const resp = await fetch('/api/neural-ai', {
@@ -1081,7 +1081,7 @@ function FloatingNeuralAI() {
     const systemPrompt = `You are Neural AI, a focused AI news assistant for Neural Brief — a weekly AI digest for Indian college students.
 ONLY answer questions about: AI, machine learning, deep learning, LLMs, AI tools, AI news, AI concepts, tech companies (OpenAI, Google, Anthropic, Meta, etc.), AI projects, and related topics.
 If asked anything unrelated to AI or technology, respond: "I only help with AI-related questions. Try asking about a model, concept, or AI news story!"
-Keep answers to 3-5 lines max. Use bullet points where helpful. Plain English only, no jargon.`
+Keep answers to up to 300 words. Use bullet points where helpful. Plain English only, no jargon.`
 
     try {
       const resp = await fetch('/api/neural-ai', {
@@ -1564,7 +1564,7 @@ export default function App() {
 
       <footer>
         <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2026<br />
-        AI-powered summaries · Sent via Brevo · Subscribers on Supabase<br />
+        AI-powered summaries · Made by a student, for students · Free forever<br />
         Sources: DeepMind · Anthropic · Google AI · MIT Tech Review · TechCrunch · Ars Technica & more<br />
         Built by <strong>PRAJWAL.A</strong> — an AIML student who got tired of AI noise<br /><br />
         <a href="#">Unsubscribe</a> &nbsp;·&nbsp;
