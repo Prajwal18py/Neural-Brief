@@ -13,20 +13,28 @@ const parser   = new Parser({ timeout: 8000 })
 // Wired AI (404), Reuters feeds.reuters.com (ENOTFOUND), Analytics India (malformed HTML).
 // HackerNews changed from /frontpage to /newest to reduce 429s.
 const RSS_FEEDS = [
-  { name: 'TechCrunch AI',         url: 'https://techcrunch.com/category/artificial-intelligence/feed/' },
-  { name: 'HackerNews AI',         url: 'https://hnrss.org/newest?q=AI+OR+LLM+OR+Claude+OR+Anthropic&count=10' },
-  { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
-  { name: 'Google DeepMind',       url: 'https://deepmind.google/blog/rss.xml' },
-  { name: 'Anthropic Blog',        url: 'https://buttondown.com/jlweston/rss' },          // Anthropic has no public RSS; using AI newsletter as proxy
-  { name: 'OpenAI Blog',           url: 'https://openai.com/blog/rss.xml' },
-  { name: 'Google AI Blog',        url: 'https://blog.google/technology/ai/rss/' },
-  { name: 'Hugging Face',          url: 'https://huggingface.co/blog/feed.xml' },
-  { name: 'Import AI',             url: 'https://jack-clark.net/feed/' },
-  { name: 'Ars Technica AI',       url: 'https://arstechnica.com/tag/ai/feed/' },
-  { name: 'VentureBeat AI',        url: 'https://venturebeat.com/category/ai/feed/' },
-  { name: 'The Verge AI',          url: 'https://www.theverge.com/rss/index.xml' },
-  { name: 'ZDNet AI',              url: 'https://www.zdnet.com/topic/artificial-intelligence/rss.xml' },
-  { name: 'Mashable Tech',         url: 'https://mashable.com/feeds/rss/tech' },
+  { name: 'TechCrunch AI',          url: 'https://techcrunch.com/category/artificial-intelligence/feed/' },
+  { name: 'HackerNews AI',          url: 'https://hnrss.org/newest?q=AI+OR+LLM+OR+Claude+OR+Anthropic&count=10' },
+  { name: 'MIT Technology Review',  url: 'https://www.technologyreview.com/feed/' },
+  { name: 'Google DeepMind',        url: 'https://deepmind.google/blog/rss.xml' },
+  { name: 'Anthropic Blog',         url: 'https://buttondown.com/jlweston/rss' },
+  { name: 'OpenAI Blog',            url: 'https://openai.com/blog/rss.xml' },
+  { name: 'Google AI Blog',         url: 'https://blog.google/technology/ai/rss/' },
+  { name: 'Hugging Face',           url: 'https://huggingface.co/blog/feed.xml' },
+  { name: 'Import AI',              url: 'https://jack-clark.net/feed/' },
+  { name: 'Ars Technica AI',        url: 'https://arstechnica.com/tag/ai/feed/' },
+  { name: 'VentureBeat AI',         url: 'https://venturebeat.com/category/ai/feed/' },
+  { name: 'The Verge AI',           url: 'https://www.theverge.com/rss/index.xml' },
+  { name: 'ZDNet AI',               url: 'https://www.zdnet.com/topic/artificial-intelligence/rss.xml' },
+  { name: 'Mashable Tech',          url: 'https://mashable.com/feeds/rss/tech' },
+  // Research papers
+  { name: 'arXiv AI',               url: 'https://rss.arxiv.org/rss/cs.AI' },
+  { name: 'arXiv ML',               url: 'https://rss.arxiv.org/rss/cs.LG' },
+  // Developer/community signal
+  { name: 'Reddit MachineLearning', url: 'https://www.reddit.com/r/MachineLearning/top/.rss?t=week' },
+  { name: 'Reddit LocalLLaMA',      url: 'https://www.reddit.com/r/LocalLLaMA/top/.rss?t=week' },
+  // Business angle
+  { name: 'CNBC Tech',              url: 'https://www.cnbc.com/id/19854910/device/rss/rss.html' },
 ]
 
 function isFresh(cachedAt) {

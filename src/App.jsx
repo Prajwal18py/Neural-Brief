@@ -780,15 +780,16 @@ ${context}
 Answer based on this story. If the question is unrelated, say: "I can only help with this news story."` : 'Answer questions about AI news, tools, models, and concepts.'}
 
 ALWAYS structure your response like this (use only what's relevant):
-• **What's happening** — 2-3 sharp bullet points on the actual development
-• **Why it matters** — 1-2 lines on real impact for students/developers
-• **Project idea** (optional) — one-liner if a buildable idea is obvious
+• What's happening — 2-3 sharp bullet points on the actual development
+• Why it matters — 1-2 lines on real impact for students/developers
+• Project idea (optional) — one-liner if a buildable idea is obvious
 
 Rules:
 - Max 6 bullet points total, no paragraphs
 - No generic history or Wikipedia-style explanations
 - Focus on recent relevance, not background
 - Plain English, no jargon
+- NEVER use markdown bold (**text**) or any markdown formatting
 - If asked about "latest news" on a topic, share what you know and note you're trained up to a cutoff`
 
   const ask = async (question) => {
@@ -961,15 +962,16 @@ Source: ${story.source}
 Your style is sharp, concise, useful — like an AI news editor, not a textbook.
 
 ALWAYS structure your response like this (use only what's relevant):
-• **What's happening** — 2-3 sharp bullet points on the actual development
-• **Why it matters** — 1-2 lines on real impact for students/developers  
-• **Project idea** (optional) — one-liner if a buildable idea is obvious
+• What's happening — 2-3 sharp bullet points on the actual development
+• Why it matters — 1-2 lines on real impact for students/developers  
+• Project idea (optional) — one-liner if a buildable idea is obvious
 
 Rules:
 - Max 6 bullet points total, no paragraphs
 - No generic history or Wikipedia-style explanations
 - Focus on this story specifically
 - Plain English, no jargon
+- NEVER use markdown bold (**text**) or any markdown formatting
 - If question is unrelated to this story: "I can only help with this specific news story."`
 
     try {
@@ -1115,15 +1117,16 @@ If asked anything unrelated, respond: "I only help with AI-related questions. Tr
 Your style is sharp, concise, useful — like an AI news editor, not a textbook.
 
 ALWAYS structure your response like this (use only what's relevant):
-• **What's happening** — 2-3 sharp bullet points on the actual development or concept
-• **Why it matters** — 1-2 lines on real impact for students/developers
-• **Project idea** (optional) — one-liner if a buildable idea is obvious
+• What's happening — 2-3 sharp bullet points on the actual development or concept
+• Why it matters — 1-2 lines on real impact for students/developers
+• Project idea (optional) — one-liner if a buildable idea is obvious
 
 Rules:
 - Max 6 bullet points total, no long paragraphs
 - No generic Wikipedia-style history dumps
 - Focus on recent relevance and practical use
 - Plain English, no jargon
+- NEVER use markdown bold (**text**) or any markdown formatting
 - If asked about "latest news", share what you know and be honest about your knowledge cutoff`
 
     try {
@@ -1317,7 +1320,7 @@ export default function App() {
         <div className="masthead-inner">
           <div className="masthead-name">Neural<br /><em>Brief</em></div>
           <div className="masthead-meta">
-            Vol. 1, No. 1 &nbsp;·&nbsp; Est. 2026<br />
+            Vol. 1, No. 1 &nbsp;·&nbsp; Est. 2025<br />
             Weekly AI digest for students<br />
             Plain English · Free forever<br />
             <strong style={{ color: 'var(--accent)' }}>neuralbriefai.vercel.app</strong>
@@ -1543,7 +1546,7 @@ export default function App() {
           <div className="section-hd"><span className="section-sym">§</span><h2>How Neural Brief works</h2></div>
           <div className="steps">
             {[
-              { n:'01', i:'📡', t:'We track top AI sources',  d:'Every Friday we pull fresh stories from 15+ top AI sources — TechCrunch, HackerNews, DeepMind, arXiv, MIT Tech Review, and more.' },
+              { n:'01', i:'📡', t:'We track top AI sources',  d:'Every Friday we pull fresh stories from 7+ top AI sources — TechCrunch, HackerNews, DeepMind, arXiv, MIT Tech Review, and more.' },
               { n:'02', i:'🔍', t:'Filter out the noise',      d:"AI reads everything and picks only the 15 stories worth your attention. No fluff, no duplication." },
               { n:'03', i:'✍️', t:'Summarise what matters',   d:'Each story gets a plain English summary, a TL;DR, a why-it-matters callout, and a ready-to-share social post.' },
               { n:'04', i:'📬', t:'Delivered to your inbox',  d:'Every Friday at 9am IST a clean, beautifully formatted digest lands in your inbox. Read it over chai in ~8 minutes.' },
@@ -1606,17 +1609,18 @@ export default function App() {
       </div>
 
       <footer>
-        <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2026<br />
+        <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2025<br />
         AI-powered summaries · Sent via Brevo · Subscribers on Supabase<br />
         Sources: DeepMind · Anthropic · Google AI · MIT Tech Review · TechCrunch · Ars Technica & more<br />
         Built by <strong>PRAJWAL.A</strong> — an AIML student who got tired of AI noise<br /><br />
         <a href="#">Unsubscribe</a> &nbsp;·&nbsp;
         <a href="https://neuralbriefai.vercel.app">Website</a> &nbsp;·&nbsp;
+        <a href="https://github.com/Prajwal18py/Neural-Brief">GitHub</a> &nbsp;·&nbsp;
         <a href="mailto:neuralbrief18@gmail.com">Contact</a><br /><br />
-        <span style={{ opacity: 0.9 }}>© 2026 Neural Brief · Made with coffee somewhere in India</span>
+        <span style={{ opacity: 0.4 }}>© 2025 Neural Brief · Made with coffee somewhere in India</span>
       </footer>
 
       <FloatingNeuralAI />
     </>
   )
-} 
+}
