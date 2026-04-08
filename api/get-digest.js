@@ -14,7 +14,7 @@ const parser   = new Parser({ timeout: 8000 })
 // HackerNews changed from /frontpage to /newest to reduce 429s.
 const RSS_FEEDS = [
   { name: 'TechCrunch AI',         url: 'https://techcrunch.com/category/artificial-intelligence/feed/' },
-  { name: 'HackerNews AI',         url: 'https://hnrss.org/newest?q=AI+OR+LLM&count=10' },
+  { name: 'HackerNews AI',         url: 'https://hnrss.org/newest?q=AI+OR+LLM+OR+Claude+OR+Anthropic&count=10' },
   { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/' },
   { name: 'Google DeepMind',       url: 'https://deepmind.google/blog/rss.xml' },
   { name: 'Anthropic Blog',        url: 'https://buttondown.com/jlweston/rss' },          // Anthropic has no public RSS; using AI newsletter as proxy
@@ -161,7 +161,7 @@ async function fetchGithubTrending() {
     for (const match of articleMatches.slice(0, 25)) {
       const block      = match[1]
       const nameMatch  = block.match(/href="\/([^"\/]+\/[^"\/]+)"/)
-      const descMatch  = block.match(/<p[^>]*col-9[^>]*>\s*([\s\S]*?)\s*<\/p>/)
+      const descMatch  = block.match(/<p[^>]*col-9[^>]*>([\s\S]*?)<\/p>/)
       const starsMatch = block.match(/([\d,]+)\s*stars this week/)
       const langMatch  = block.match(/itemprop="programmingLanguage"[^>]*>\s*([^<]+)\s*</)
 
@@ -171,7 +171,7 @@ async function fetchGithubTrending() {
       if (/^(sponsors|orgs|topics|trending|explore|marketplace)\//.test(name)) continue
       // Strip HTML tags from description
       const rawDesc = descMatch ? descMatch[1].replace(/\s+/g, ' ').trim() : ''
-      const desc  = rawDesc.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim()
+      const desc  = rawDesc.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').trim()
       const stars = starsMatch ? starsMatch[1].trim() : '0'
       const lang  = langMatch  ? langMatch[1].trim()  : ''
 
