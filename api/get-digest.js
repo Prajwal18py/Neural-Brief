@@ -139,9 +139,13 @@ function deduplicateStories(stories) {
   })
 }
 
+const REDDIT_SOURCES = ['Reddit MachineLearning', 'Reddit LocalLLaMA']
+
 async function fetchStories() {
   const all = []
   for (const feed of RSS_FEEDS) {
+    // Skip Reddit — handled separately as Community Signal
+    if (REDDIT_SOURCES.includes(feed.name)) continue
     try {
       const parsed = await parser.parseURL(feed.url)
       for (const item of parsed.items.slice(0, 5)) {
@@ -150,26 +154,79 @@ async function fetchStories() {
         const pubDate     = item.pubDate || item.isoDate || null
         const score       = scoreStory(title, description, feed.name, pubDate)
 
-        if (score < 0) {
-          console.log(`⛔ Blocked: ${title}`)
-          continue
-        }
-        if (score === 0) {
-          console.log(`⚠️ Low signal (skipped): ${title}`)
-          continue
-        }
+        if (score < 0) { console.log(`⛔ Blocked: ${title}`); continue }
+        if (score === 0) { console.log(`⚠️ Low signal (skipped): ${title}`); continue }
 
         all.push({ source: feed.name, title, description, link: item.link || '', score, pubDate })
       }
     } catch (e) { console.log(`⚠️ ${feed.name}: ${e.message}`) }
   }
 
-  // Sort by score descending, then deduplicate
   all.sort((a, b) => b.score - a.score)
   const deduped = deduplicateStories(all)
-
   console.log(`✅ ${deduped.length} stories after scoring + dedup (from ${all.length} raw)`)
   return deduped
+}
+
+// ── Community Signal — top Reddit discussions ──────────────
+const REDDIT_BLOCK = [
+  'how do i', 'how to learn', 'beginner', 'newbie', 'noob',
+  'help me', 'career advice', 'resume', 'job hunt', 'salary',
+  'rant', 'meme', 'weekly thread', 'discussion thread',
+]
+
+async function fetchCommunitySignal() {
+  const posts = []
+  for (const feed of RSS_FEEDS) {
+    if (!REDDIT_SOURCES.includes(feed.name)) continue
+    try {
+      const parsed = await parser.parseURL(feed.url)
+      for (const item of parsed.items.slice(0, 10)) {
+        const title = (item.title || '').trim()
+        const text  = title.toLowerCase()
+        // Block low-quality posts
+        if (REDDIT_BLOCK.some(kw => text.includes(kw))) continue
+        // Must have AI relevance
+        const hasAI = HIGH_SIGNAL.some(kw => text.includes(kw)) || MEDIUM_SIGNAL.some(kw => text.includes(kw))
+        if (!hasAI) continue
+        posts.push({
+          title,
+          link:   item.link || '',
+          source: feed.name,
+        })
+        if (posts.length >= 3) break
+      }
+    } catch (e) { console.log(`⚠️ ${feed.name}: ${e.message}`) }
+    if (posts.length >= 3) break
+  }
+
+  if (posts.length === 0) return null
+
+  // Use AI to pick the best one and write a 1-line insight
+  try {
+    const postsText = posts.map((p, i) => `[${i+1}] ${p.title}`).join('\n')
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: `Pick the BEST post from this list for an Indian CS/AI student (most insightful, not a beginner question):
+${postsText}
+
+Return ONLY valid JSON:
+{"index": 0, "insight": "one sharp sentence — why this discussion matters for AI developers (max 15 words)"}` }],
+        temperature: 0.3,
+        max_tokens: 100,
+      }),
+    })
+    const data  = await resp.json()
+    const raw   = data.choices[0].message.content.trim().replace(/```json|```/g, '').trim()
+    const picked = JSON.parse(raw)
+    const best  = posts[picked.index] || posts[0]
+    return { title: best.title, link: best.link, source: best.source, insight: picked.insight }
+  } catch {
+    return { title: posts[0].title, link: posts[0].link, source: posts[0].source, insight: '' }
+  }
 }
 
 // ── AI call: Groq primary → Gemini 2.0 Flash fallback ─────
@@ -389,9 +446,10 @@ export default async function handler(req, res) {
     }
 
     console.log('🔄 Fetching fresh stories...')
-    const [raw, github_trending] = await Promise.all([
+    const [raw, github_trending, community_signal] = await Promise.all([
       fetchStories(),
       fetchGithubTrending(),
+      fetchCommunitySignal(),
     ])
     const result = await summarise(raw)
 
@@ -406,6 +464,8 @@ export default async function handler(req, res) {
       }
       result.github_trending = github_trending
     }
+
+    if (community_signal) result.community_signal = community_signal
 
     await supabase.from('digest_cache').insert({
       data:       result,

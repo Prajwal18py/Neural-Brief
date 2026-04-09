@@ -26,8 +26,6 @@ const RSS_FEEDS = [
   { name: 'ZDNet AI',               url: 'https://www.zdnet.com/topic/artificial-intelligence/rss.xml' },
   { name: 'Mashable Tech',          url: 'https://mashable.com/feeds/rss/tech' },
   { name: 'arXiv AI',               url: 'https://rss.arxiv.org/rss/cs.AI' },
-  { name: 'Reddit MachineLearning', url: 'https://www.reddit.com/r/MachineLearning/top/.rss?t=day' },
-  { name: 'Reddit LocalLLaMA',      url: 'https://www.reddit.com/r/LocalLLaMA/top/.rss?t=day' },
   { name: 'CNBC Tech',              url: 'https://www.cnbc.com/id/19854910/device/rss/rss.html' },
 ]
 

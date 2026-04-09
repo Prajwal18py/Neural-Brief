@@ -202,8 +202,17 @@ function LiveFeed() {
   }, [])
 
   if (loading) return (
-    <div style={{ padding: '20px 0', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted2)' }}>
-      LOADING LATEST...
+    <div className="skeleton-wrap" style={{ gap: '8px' }}>
+      {[1,2,3,4,5].map(i => (
+        <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '10px 0' }}>
+          <div className="skeleton" style={{ width: '20px', height: '12px', marginTop: '2px', flexShrink: 0 }} />
+          <div className="skeleton" style={{ width: '20px', height: '20px', borderRadius: '50%', flexShrink: 0 }} />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div className="skeleton skeleton-line" style={{ width: '90%', height: '14px' }} />
+            <div className="skeleton skeleton-line" style={{ width: '50%', height: '10px' }} />
+          </div>
+        </div>
+      ))}
     </div>
   )
 
@@ -516,14 +525,21 @@ function LiveDigest() {
   }
 
   if (loading) return (
-    <div style={{ padding: '48px 0', textAlign: 'center' }}>
-      <div style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted2)', letterSpacing: '0.1em' }}>
-        LOADING THIS WEEK'S STORIES...
-      </div>
+    <div className="skeleton-wrap">
+      {[1,2,3].map(i => (
+        <div className="skeleton-story" key={i}>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
+            <div className="skeleton skeleton-line" style={{ width: '60px' }} />
+            <div className="skeleton skeleton-line" style={{ width: '80px' }} />
+          </div>
+          <div className="skeleton skeleton-line" style={{ width: '85%', height: '16px' }} />
+          <div className="skeleton skeleton-line" style={{ width: '60%' }} />
+        </div>
+      ))}
     </div>
   )
 
-  const { stories, biggest_move, jargon_of_week, tool_of_week, github_trending } = data
+  const { stories, biggest_move, jargon_of_week, tool_of_week, github_trending, community_signal } = data
 
   return (
     <div>
@@ -613,6 +629,25 @@ function LiveDigest() {
           </div>
           <a href={github_trending.link} target="_blank" rel="noopener noreferrer" className="extra-box-cta">View repo →</a>
         </div>
+        </div>
+      )}
+
+      {/* Community Signal */}
+      {community_signal && (
+        <div className="extra-box" style={{ borderLeft: '3px solid #27438a' }}>
+          <span className="extra-box-label">💬 Community Signal</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', background: '#ebf0f9', color: '#27438a', border: '1px solid #bcc9ec', padding: '2px 7px', borderRadius: '2px' }}>Community</span>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: '9px', color: 'var(--muted2)' }}>via {community_signal.source}</span>
+          </div>
+          <div className="extra-box-rule" />
+          <a href={community_signal.link} target="_blank" rel="noopener noreferrer" className="extra-box-title" style={{ display: 'block', marginBottom: '6px' }}>
+            {community_signal.title}
+          </a>
+          {community_signal.insight && (
+            <p className="live-tldr" style={{ margin: '0 0 10px' }}>→ {community_signal.insight}</p>
+          )}
+          <a href={community_signal.link} target="_blank" rel="noopener noreferrer" className="extra-box-cta">Join discussion →</a>
         </div>
       )}
 
@@ -1276,8 +1311,13 @@ function ProjectIdeaGeneratorStandalone() {
   }, [])
 
   if (loading) return (
-    <div style={{ padding: '20px 0', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted2)' }}>
-      LOADING STORIES...
+    <div className="skeleton-wrap" style={{ gap: '8px' }}>
+      {[1,2,3].map(i => (
+        <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'center', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: '4px' }}>
+          <div className="skeleton" style={{ width: '16px', height: '16px', borderRadius: '3px', flexShrink: 0 }} />
+          <div className="skeleton skeleton-line" style={{ flex: 1, height: '13px' }} />
+        </div>
+      ))}
     </div>
   )
 
@@ -1292,8 +1332,20 @@ function ProjectIdeaGeneratorStandalone() {
 
 export default function App() {
   const [showArchive, setShowArchive] = useState(false)
+  const [readingProgress, setReadingProgress] = useState(0)
 
   useEffect(() => {
+    const handleScroll = () => {
+      const nav = document.querySelector('nav')
+      if (nav) nav.classList.toggle('scrolled', window.scrollY > 60)
+
+      // Reading progress
+      const scrollTop = window.scrollY
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight
+      const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0
+      setReadingProgress(Math.min(progress, 100))
+    }
+
     const revealEls = document.querySelectorAll('.reveal, .reveal-child')
     const io = new IntersectionObserver((entries) => {
       entries.forEach(e => {
@@ -1302,17 +1354,15 @@ export default function App() {
     }, { threshold: 0.08 })
     revealEls.forEach(el => io.observe(el))
 
-    const handleScroll = () => {
-      const nav = document.querySelector('nav')
-      if (nav) nav.classList.toggle('scrolled', window.scrollY > 60)
-    }
     window.addEventListener('scroll', handleScroll, { passive: true })
-
     return () => { io.disconnect(); window.removeEventListener('scroll', handleScroll) }
   }, [])
 
   return (
     <>
+      {/* Reading Progress Bar */}
+      <div className="reading-progress" style={{ width: `${readingProgress}%` }} />
+
       {showArchive && <ArchivePage onClose={() => setShowArchive(false)} />}
 
       <nav>
