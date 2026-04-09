@@ -1671,7 +1671,7 @@ export default function App() {
 
       <footer>
         <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2026<br />
-        AI-powered summaries · Sent via Brevo · Subscribers on Supabase<br />
+        AI-powered summaries · Made by a student, for students · Free forever<br />
         Sources: DeepMind · Anthropic · OpenAI · MIT Tech Review · TechCrunch · arXiv · Reddit ML & more<br />
         Built by <strong>PRAJWAL.A</strong> — an AIML student who got tired of AI noise<br /><br />
         <a href="#">Unsubscribe</a> &nbsp;·&nbsp;
