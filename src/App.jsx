@@ -772,10 +772,10 @@ function NeuralAI({ story, onClose }) {
   const messagesContainerRef    = useRef(null)
 
   const QUICK_ACTIONS = [
-    { label: 'Explain simply', prompt: 'Explain this news in simple terms for a student.' },
-    { label: 'Why it matters', prompt: 'Why does this news matter for Indian students and developers?' },
-    { label: 'Project ideas', prompt: 'Give me 2-3 project ideas inspired by this news.' },
-    { label: 'Summarize', prompt: 'Give me a 3-line summary of this news.' },
+    { label: '🔧 Build a project', prompt: 'Give me a specific project idea I can build using the technology in this news. Include stack and steps.' },
+    { label: '🆚 Compare alternatives', prompt: 'How does this compare to similar existing tools or models? What are the key differences?' },
+    { label: '📚 Tech behind this', prompt: 'Explain the core technology or technique behind this news in simple terms.' },
+    { label: '🌍 Global impact', prompt: 'What is the broader global impact of this development on the AI industry?' },
   ]
 
   const context = story
@@ -944,10 +944,10 @@ function NeuralAIChat({ story, onClose, initialMessages = [], onMessagesChange }
   }
 
   const QUICK_ACTIONS = [
-    { label: 'Explain simply', prompt: 'Explain this news in the simplest way possible.' },
-    { label: 'Why it matters', prompt: 'Why does this news matter for an Indian CS/AI student specifically?' },
-    { label: 'Project ideas', prompt: 'Give me 2-3 project ideas inspired by this news that a student can build.' },
-    { label: 'Summarize', prompt: 'Give me a 3-line summary of this news.' },
+    { label: '🔧 Build a project', prompt: 'Give me a specific project idea I can build using the technology in this news. Include stack and steps.' },
+    { label: '🆚 Compare alternatives', prompt: 'How does this compare to similar existing tools or models? What are the key differences?' },
+    { label: '📚 Tech behind this', prompt: 'Explain the core technology or technique behind this news in simple terms.' },
+    { label: '🌍 Global impact', prompt: 'What is the broader global impact of this development on the AI industry?' },
   ]
 
   useEffect(() => {

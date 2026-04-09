@@ -302,34 +302,61 @@ async function summarise(stories) {
     `[${i+1}] ${s.source} | ${s.title}\n${s.description.slice(0, 80)}\n${s.link}`
   ).join('\n\n')
 
-  const prompt = `You are the editor of Neural Brief, a weekly AI news digest for Indian college students.
+  const prompt = `You are the editor of Neural Brief — a sharp, no-BS AI news digest for Indian college students and developers. You write like a smart senior developer who reads everything and cuts through hype.
 
-Recent AI stories:
+Recent AI stories (pre-scored by relevance):
 ${text}
 
-Pick EXACTLY 15 most important, varied stories. Include an Anthropic/Claude story if one exists.
+Pick EXACTLY 15 most important, varied stories. Prioritise: model releases, tool launches, research breakthroughs, major industry moves. Always include an Anthropic/Claude story if one exists.
 
 Also pick:
-- ONE "biggest_move": {title, reason, link}
-- ONE "jargon_of_week": {term, explanation}
-- ONE "tool_of_week": {name, what, pricing (Free/Freemium/Paid/Open Source), best_for (Students/Developers/Founders/Everyone), why, link (official homepage)}
+- ONE "biggest_move": {title, reason, link} — the single most impactful development this week
+- ONE "jargon_of_week": {term, explanation} — explain like the user is smart but new to AI
+- ONE "tool_of_week": {name, what, pricing (Free/Freemium/Paid/Open Source), best_for (Students/Developers/Founders/Everyone), why, link}
 
-For each of the 15 stories:
-- tag: New Model | Research | Industry | Tool Drop | Policy | Opinion
-- title: ≤12 words
-- summary: 2 plain-English sentences
-- tldr: one punchy sentence starting with "-> TL;DR:"
-- why_student: specific concrete impact on an Indian CS/AI student
-- why_developer: specific concrete outcome for a developer
-- why_founder: specific business impact for a founder
-- signal_score: 1-10
-- signal_label: Major | Important | Interesting | Minor
-- tweet: ≤280 chars + 2-3 hashtags
-- linkedin: 3 professional sentences + 2-3 hashtags
-- eli15: 1-2 sentences for a 15-year-old
-- hype: one sentence — marketing spin
-- reality: one honest sentence
-- source, link
+For each of the 15 stories, follow these rules STRICTLY:
+
+TITLE (≤12 words):
+- Must be punchy and create curiosity
+- Include the actual product/company name
+- Add a hook: "— strong benchmarks, real gaps" or "— faster than GPT-4" etc.
+- BAD: "New Model Released" | GOOD: "Meta unveils Muse Spark — strong benchmarks, real gaps"
+
+SUMMARY (2 sentences):
+- Sentence 1: What exactly happened — be specific, name the product/model/company
+- Sentence 2: What makes it significant or different from what came before
+
+TLDR (one sentence starting with "-> TL;DR:"):
+- Must be actionable insight, not just a repeat of the title
+- BAD: "-> TL;DR: New model released" | GOOD: "-> TL;DR: Developers can now run GPT-4 level reasoning at 10x lower cost"
+
+WHY_STUDENT (1-2 sentences):
+- Must be SPECIFIC and ACTIONABLE for an Indian CS/AI student
+- Mention what they can actually DO with this — build, test, compare, use in project
+- BAD: "Students can explore this technology" | GOOD: "You can now fine-tune Gemma 4 on a free Colab GPU — try it for your next NLP project"
+
+WHY_DEVELOPER (1-2 sentences):
+- Concrete outcome — what changes in their workflow or stack
+
+WHY_FOUNDER (1-2 sentences):
+- Business impact — cost, opportunity, competitive angle
+
+SIGNAL_SCORE + SIGNAL_LABEL:
+- Score must have a 1-line reason baked into the summary context
+- Major = changes the field | Important = worth knowing | Interesting = worth watching | Minor = FYI
+
+HYPE (one sentence):
+- What the marketing/press is saying — slightly exaggerated
+- BAD: "Revolutionary AI" | GOOD: "Meta claims Muse Spark is the most capable open model ever built"
+
+REALITY (one sentence):
+- Honest, specific assessment — name the actual limitation
+- BAD: "Has some limitations" | GOOD: "Strong on benchmarks but still inconsistent on multi-step reasoning tasks"
+
+ELI15 (1-2 sentences): Explain to a curious 15-year-old with zero AI background
+
+TWEET (≤280 chars + 2-3 hashtags): Punchy, shareable
+LINKEDIN (3 professional sentences + 2-3 hashtags): Insight-driven, not just news
 
 Return ONLY valid JSON, no markdown fences:
 {"biggest_move":{"title":"...","reason":"...","link":"..."},"jargon_of_week":{"term":"...","explanation":"..."},"tool_of_week":{"name":"...","what":"...","pricing":"Freemium","best_for":"Students","why":"...","link":"..."},"stories":[{"tag":"...","title":"...","summary":"...","tldr":"...","why_student":"...","why_developer":"...","why_founder":"...","signal_score":8,"signal_label":"Important","tweet":"...","linkedin":"...","eli15":"...","hype":"...","reality":"...","source":"...","link":"..."}]}`
