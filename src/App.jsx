@@ -10,10 +10,21 @@ const TAG_CLASS = {
 }
 
 const SOURCE_LABELS = {
+  // Official
   'Google DeepMind': 'Official', 'OpenAI Blog': 'Official',
-  'TechCrunch AI': 'Media', 'MIT Technology Review': 'Research',
-  'Wired AI': 'Media', 'arXiv CS.AI': 'Research',
-  'Ars Technica AI': 'Media', 'ZDNet AI': 'Media', 'The Register AI': 'Media', 'Mashable Tech': 'Media',
+  'Anthropic Blog': 'Official', 'Anthropic News': 'Official',
+  'Google AI Blog': 'Official', 'Hugging Face': 'Official',
+  // Research
+  'MIT Technology Review': 'Research', 'arXiv CS.AI': 'Research',
+  'arXiv AI': 'Research', 'arXiv ML': 'Research', 'Import AI': 'Research',
+  // Media
+  'TechCrunch AI': 'Media', 'Wired AI': 'Media', 'Ars Technica AI': 'Media',
+  'ZDNet AI': 'Media', 'The Register AI': 'Media', 'Mashable Tech': 'Media',
+  'VentureBeat AI': 'Media', 'The Verge AI': 'Media', 'CNBC Tech': 'Media',
+  'Reuters Tech': 'Media', 'Analytics India': 'Media',
+  // Community
+  'HackerNews AI': 'Community', 'Reddit MachineLearning': 'Community',
+  'Reddit LocalLLaMA': 'Community',
 }
 
 const SIGNAL_COLORS = {
@@ -1320,7 +1331,7 @@ export default function App() {
         <div className="masthead-inner">
           <div className="masthead-name">Neural<br /><em>Brief</em></div>
           <div className="masthead-meta">
-            Vol. 1, No. 1 &nbsp;·&nbsp; Est. 2025<br />
+            Vol. 1, No. 1 &nbsp;·&nbsp; Est. 2026<br />
             Weekly AI digest for students<br />
             Plain English · Free forever<br />
             <strong style={{ color: 'var(--accent)' }}>neuralbriefai.vercel.app</strong>
@@ -1381,7 +1392,7 @@ export default function App() {
             </div>
             <div className="sb-section">
               <span className="sb-label">Sources we track</span>
-              {['Google DeepMind','Anthropic Blog','Google AI Blog','MIT Tech Review','TechCrunch AI','Wired AI','& many more'].map(s => (
+              {['Google DeepMind','Anthropic Blog','OpenAI Blog','MIT Tech Review','TechCrunch AI','arXiv AI','Reddit ML','& many more'].map(s => (
                 <div className="src-item" key={s}><span className="src-dot"></span>{s}</div>
               ))}
             </div>
@@ -1546,7 +1557,7 @@ export default function App() {
           <div className="section-hd"><span className="section-sym">§</span><h2>How Neural Brief works</h2></div>
           <div className="steps">
             {[
-              { n:'01', i:'📡', t:'We track top AI sources',  d:'Every Friday we pull fresh stories from 7+ top AI sources — TechCrunch, HackerNews, DeepMind, arXiv, MIT Tech Review, and more.' },
+              { n:'01', i:'📡', t:'We track top AI sources',  d:'Every Friday we pull fresh stories from 15+ top AI sources — TechCrunch, HackerNews, DeepMind, arXiv, MIT Tech Review, and more.' },
               { n:'02', i:'🔍', t:'Filter out the noise',      d:"AI reads everything and picks only the 15 stories worth your attention. No fluff, no duplication." },
               { n:'03', i:'✍️', t:'Summarise what matters',   d:'Each story gets a plain English summary, a TL;DR, a why-it-matters callout, and a ready-to-share social post.' },
               { n:'04', i:'📬', t:'Delivered to your inbox',  d:'Every Friday at 9am IST a clean, beautifully formatted digest lands in your inbox. Read it over chai in ~8 minutes.' },
@@ -1609,15 +1620,14 @@ export default function App() {
       </div>
 
       <footer>
-        <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2025<br />
+        <strong>Neural Brief</strong> · Weekly AI news for students · Est. 2026<br />
         AI-powered summaries · Sent via Brevo · Subscribers on Supabase<br />
-        Sources: DeepMind · Anthropic · Google AI · MIT Tech Review · TechCrunch · Ars Technica & more<br />
+        Sources: DeepMind · Anthropic · OpenAI · MIT Tech Review · TechCrunch · arXiv · Reddit ML & more<br />
         Built by <strong>PRAJWAL.A</strong> — an AIML student who got tired of AI noise<br /><br />
         <a href="#">Unsubscribe</a> &nbsp;·&nbsp;
         <a href="https://neuralbriefai.vercel.app">Website</a> &nbsp;·&nbsp;
-        <a href="https://github.com/Prajwal18py/Neural-Brief">GitHub</a> &nbsp;·&nbsp;
         <a href="mailto:neuralbrief18@gmail.com">Contact</a><br /><br />
-        <span style={{ opacity: 0.4 }}>© 2025 Neural Brief · Made with coffee somewhere in India</span>
+        <span style={{ opacity: 0.9 }}>© 2026 Neural Brief · Made with coffee somewhere in India</span>
       </footer>
 
       <FloatingNeuralAI />

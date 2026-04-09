@@ -123,7 +123,8 @@ async function fetchLatest() {
     const sourceCounts = {}
     const result       = []
     for (const s of pool) {
-      const key         = s.title.toLowerCase().slice(0, 50)
+      // Dedup by first 4 words — catches same story from multiple sources
+      const key         = s.title.toLowerCase().split(/\s+/).slice(0, 4).join(' ')
       const sourceCount = sourceCounts[s.source] || 0
       if (!seen.has(key) && sourceCount < cap) {
         seen.add(key)

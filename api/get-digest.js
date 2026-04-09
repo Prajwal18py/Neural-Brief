@@ -41,42 +41,102 @@ function isFresh(cachedAt) {
   return Date.now() - new Date(cachedAt).getTime() < 24 * 60 * 60 * 1000
 }
 
-// ── Strict AI relevance filter ─────────────────────────────
-const AI_KEYWORDS = [
-  'artificial intelligence', 'machine learning', 'deep learning',
-  'neural network', 'llm', 'large language model', 'generative ai',
-  'foundation model', 'transformer', 'diffusion', 'reinforcement learning',
-  'gpt', 'chatgpt', 'gemini', 'claude', 'llama', 'mistral', 'grok',
-  'copilot', 'midjourney', 'stable diffusion', 'dall-e', 'sora',
+// ── Scoring system ─────────────────────────────────────────
+const HIGH_SIGNAL = [
+  'gpt', 'chatgpt', 'gemini', 'claude', 'llama', 'mistral', 'grok', 'sora',
+  'openai', 'anthropic', 'deepmind', 'hugging face', 'google ai', 'meta ai',
+  'llm', 'large language model', 'foundation model', 'model release',
+  'announces', 'launches', 'releases', 'introduces', 'unveils', 'drops',
+  'generative ai', 'reasoning model', 'multimodal', 'ai agent',
+]
+
+const MEDIUM_SIGNAL = [
+  'machine learning', 'deep learning', 'neural network', 'transformer',
+  'diffusion', 'reinforcement learning', 'fine-tuning', 'fine tuning',
+  'rag', 'retrieval', 'embedding', 'vector database', 'inference',
+  'context window', 'benchmark', 'ai model', 'language model',
+  'computer vision', 'image generation', 'text to image', 'voice ai',
+  'ai safety', 'alignment', 'hallucination', 'ai funding', 'ai startup',
+  'ai tool', 'agentic', 'chatbot', 'speech model', 'coding ai',
+  'nvidia', 'gpu', 'tpu', 'semiconductor', 'ai chip',
+  'copilot', 'midjourney', 'stable diffusion', 'dall-e',
   'whisper', 'runway', 'perplexity', 'cursor', 'windsurf',
-  'openai', 'anthropic', 'deepmind', 'google ai', 'meta ai',
-  'microsoft ai', 'nvidia', 'hugging face', 'cohere', 'mistral ai',
-  'stability ai', 'groq', 'together ai', 'replicate', 'scale ai',
-  'fine-tuning', 'fine tuning', 'rag', 'retrieval', 'embedding',
-  'vector database', 'inference', 'context window', 'tokenizer',
-  'robotics', 'autonomous', 'self-driving', 'computer vision',
-  'image generation', 'text to image', 'multimodal', 'reasoning model',
-  'coding ai', 'ai safety', 'alignment', 'hallucination',
-  'ai regulation', 'ai policy', 'ai funding', 'ai startup', 'ai tool',
-  'ai agent', 'agentic', 'chatbot', 'voice ai', 'speech model',
-  'benchmark', 'ai model', 'language model', 'model release',
-  'gpu', 'tpu', 'semiconductor', 'ai chip',
+  'cohere', 'groq', 'together ai', 'replicate', 'scale ai',
+  'robotics', 'autonomous', 'self-driving', 'tokenizer',
+  'ai regulation', 'ai policy', 'artificial intelligence',
 ]
 
 const BLOCK_KEYWORDS = [
   'gas price', 'fuel price', 'gasoline', 'petrol', 'plastic',
-  'spacex', 'ipo', 'stock market', 'crypto', 'bitcoin', 'ethereum',
-  'real estate', 'housing', 'mortgage', 'recipe', 'cooking', 'food',
-  'sports', 'nba', 'nfl', 'soccer', 'cricket', 'weather',
-  'electric vehicle', 'tesla stock', 'climate change', 'war', 'military',
-  'warfare', 'election', 'politics', 'congress', 'senate',
+  'spacex rocket', 'stock market crash', 'crypto crash', 'bitcoin price', 'ethereum price',
+  'real estate', 'housing market', 'mortgage', 'recipe', 'cooking', 'food review',
+  'nba', 'nfl', 'soccer match', 'cricket score', 'weather forecast',
+  'electric vehicle recall', 'tesla stock', 'climate change protest',
+  'war crimes', 'military strike', 'election results', 'congress vote', 'senate bill',
 ]
 
-function isAIRelevant(title, description = '') {
+const SOURCE_WEIGHT = {
+  'OpenAI Blog':            5,
+  'Google DeepMind':        5,
+  'Anthropic News':         5,
+  'Google AI Blog':         5,
+  'Hugging Face':           4,
+  'TechCrunch AI':          4,
+  'MIT Technology Review':  4,
+  'Import AI':              4,
+  'VentureBeat AI':         3,
+  'Ars Technica AI':        3,
+  'The Verge AI':           3,
+  'arXiv AI':               3,
+  'arXiv ML':               3,
+  'HackerNews AI':          3,
+  'Wired AI':               3,
+  'ZDNet AI':               2,
+  'Mashable Tech':          2,
+  'Analytics India':        2,
+  'CNBC Tech':              2,
+  'Reuters Tech':           2,
+  'Reddit MachineLearning': 2,
+  'Reddit LocalLLaMA':      2,
+}
+
+function scoreStory(title, description, source, pubDate) {
   const text = (title + ' ' + description).toLowerCase()
-  const blocked = BLOCK_KEYWORDS.some(kw => text.includes(kw))
-  if (blocked) return false
-  return AI_KEYWORDS.some(kw => text.includes(kw))
+
+  // Hard block — no AI keyword present alongside block keyword
+  const hasBlock = BLOCK_KEYWORDS.some(kw => text.includes(kw))
+  const hasAI    = HIGH_SIGNAL.some(kw => text.includes(kw)) || MEDIUM_SIGNAL.some(kw => text.includes(kw))
+  if (hasBlock && !hasAI) return -1
+
+  let score = 0
+
+  // Keyword scoring
+  HIGH_SIGNAL.forEach(kw => { if (text.includes(kw)) score += 3 })
+  MEDIUM_SIGNAL.forEach(kw => { if (text.includes(kw)) score += 1 })
+
+  // Source weight
+  score += (SOURCE_WEIGHT[source] || 1)
+
+  // Recency boost
+  if (pubDate) {
+    const ageHours = (Date.now() - new Date(pubDate).getTime()) / 3600000
+    if (ageHours < 6)  score += 3
+    else if (ageHours < 12) score += 2
+    else if (ageHours < 24) score += 1
+  }
+
+  return score
+}
+
+// Deduplicate by title similarity (first 4 words)
+function deduplicateStories(stories) {
+  const seen = new Set()
+  return stories.filter(s => {
+    const key = s.title.toLowerCase().split(/\s+/).slice(0, 4).join(' ')
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 }
 
 async function fetchStories() {
@@ -84,25 +144,32 @@ async function fetchStories() {
   for (const feed of RSS_FEEDS) {
     try {
       const parsed = await parser.parseURL(feed.url)
-      for (const item of parsed.items.slice(0, 4)) {
-        const title = item.title || 'Untitled'
-        const description = (item.contentSnippet || item.summary || '').slice(0, 120)
-        // Skip non-AI stories at source level
-        if (!isAIRelevant(title, description)) {
-          console.log(`⛔ Filtered out: ${title}`)
+      for (const item of parsed.items.slice(0, 5)) {
+        const title       = (item.title || 'Untitled').trim()
+        const description = (item.contentSnippet || item.summary || '').slice(0, 150)
+        const pubDate     = item.pubDate || item.isoDate || null
+        const score       = scoreStory(title, description, feed.name, pubDate)
+
+        if (score < 0) {
+          console.log(`⛔ Blocked: ${title}`)
           continue
         }
-        all.push({
-          source:      feed.name,
-          title,
-          description,
-          link:        item.link || '',
-        })
+        if (score === 0) {
+          console.log(`⚠️ Low signal (skipped): ${title}`)
+          continue
+        }
+
+        all.push({ source: feed.name, title, description, link: item.link || '', score, pubDate })
       }
     } catch (e) { console.log(`⚠️ ${feed.name}: ${e.message}`) }
   }
-  console.log(`✅ ${all.length} AI-relevant stories after filtering`)
-  return all
+
+  // Sort by score descending, then deduplicate
+  all.sort((a, b) => b.score - a.score)
+  const deduped = deduplicateStories(all)
+
+  console.log(`✅ ${deduped.length} stories after scoring + dedup (from ${all.length} raw)`)
+  return deduped
 }
 
 // ── AI call: Groq primary → Gemini 2.0 Flash fallback ─────
