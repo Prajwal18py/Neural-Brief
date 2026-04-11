@@ -836,6 +836,7 @@ Rules:
 - Focus on recent relevance, not background
 - Plain English, no jargon
 - NEVER use markdown bold (**text**) or any markdown formatting
+- NEVER make up or guess specific facts about companies, people, or products you are not sure about. If unsure, say: "I don't have reliable info on this — check the source directly."
 - If asked about "latest news" on a topic, share what you know and note you're trained up to a cutoff`
 
   const ask = async (question) => {
@@ -1018,6 +1019,7 @@ Rules:
 - Focus on this story specifically
 - Plain English, no jargon
 - NEVER use markdown bold (**text**) or any markdown formatting
+- NEVER make up or guess specific facts about companies, people, or products you are not sure about. If unsure, say: "I don't have reliable info on this — check the source directly."
 - If question is unrelated to this story: "I can only help with this specific news story."`
 
     try {
@@ -1173,6 +1175,7 @@ Rules:
 - Focus on recent relevance and practical use
 - Plain English, no jargon
 - NEVER use markdown bold (**text**) or any markdown formatting
+- NEVER make up or guess specific facts about companies, people, or products you are not sure about. If unsure, say: "I don't have reliable info on this — check the source directly."
 - If asked about "latest news", share what you know and be honest about your knowledge cutoff`
 
     try {
@@ -1461,12 +1464,12 @@ export default function App() {
           <div className="section-hd"><span className="section-sym">§</span><h2>What makes Neural Brief different</h2></div>
           <div className="diff-grid">
             {[
-              { icon: '📡', title: 'Only signal, no noise', desc: 'We track 7 top AI sources, read everything, and send you only what actually matters.' },
-              { icon: '💬', title: 'Plain English, always', desc: "No jargon. No hype. Every story explained like you're talking to a friend." },
-              { icon: '🌏', title: '"Why it matters" for India', desc: 'Every story has a dedicated callout — why should an Indian student or developer care?' },
-              { icon: '🔖', title: 'Source credibility labels', desc: 'Official, Media, Research, or Community — know how much to trust each story.' },
-              { icon: '📖', title: 'Jargon of the week', desc: 'One AI term explained simply every Friday. RAG, fine-tuning, embeddings — demystified.' },
-              { icon: '🔗', title: 'Ready-to-share posts', desc: 'Every story has a tweet and LinkedIn post written by AI — share your knowledge in one click.' },
+              { icon: '📡', title: 'Only signal, no noise', desc: 'We score 20+ AI sources daily — weighted by relevance, recency, and source quality. Only the best make it.' },
+              { icon: '🤖', title: 'Neural AI per story', desc: 'Every story has a built-in AI assistant. Ask it to compare, explain the tech, suggest a project, or find global impact.' },
+              { icon: '💡', title: 'Project Idea Generator', desc: 'Select stories from this week and Neural AI generates a real buildable project idea with stack, steps, and difficulty.' },
+              { icon: '⚡', title: 'Hype vs Reality', desc: 'Every story has an honest breakdown — what the marketing says vs what actually changed. No more falling for AI hype.' },
+              { icon: '📊', title: 'Signal scoring system', desc: 'Every story is scored 1-10 with a label — Major, Important, Interesting. Know instantly what actually moved the needle.' },
+              { icon: '💬', title: 'Community Signal', desc: 'Top AI discussions from Reddit ML and LocalLLaMA — curated separately so dev insights never mix with news.' },
             ].map((d, i) => (
               <div className="diff-card reveal-child" key={d.title}>
                 <span className="diff-icon">{d.icon}</span>
@@ -1607,7 +1610,7 @@ export default function App() {
           <div className="section-hd"><span className="section-sym">§</span><h2>How Neural Brief works</h2></div>
           <div className="steps">
             {[
-              { n:'01', i:'📡', t:'We track top AI sources',  d:'Every Friday we pull fresh stories from 15+ top AI sources — TechCrunch, HackerNews, DeepMind, arXiv, MIT Tech Review, and more.' },
+              { n:'01', i:'📡', t:'We track top AI sources',  d:'Every Friday we pull fresh stories from 20+ top AI sources — TechCrunch, HackerNews, DeepMind, arXiv, MIT Tech Review, and more.' },
               { n:'02', i:'🔍', t:'Filter out the noise',      d:"AI reads everything and picks only the 15 stories worth your attention. No fluff, no duplication." },
               { n:'03', i:'✍️', t:'Summarise what matters',   d:'Each story gets a plain English summary, a TL;DR, a why-it-matters callout, and a ready-to-share social post.' },
               { n:'04', i:'📬', t:'Delivered to your inbox',  d:'Every Friday at 9am IST a clean, beautifully formatted digest lands in your inbox. Read it over chai in ~8 minutes.' },
@@ -1650,7 +1653,7 @@ export default function App() {
               <strong>Free. No spam. Unsubscribe anytime.</strong>
             </p>
             <div className="cta-feature-pills">
-              {['Signal Score per story', 'Break it down', 'LinkedIn post generator', 'Jargon of the week', 'Why it matters for you', 'Ask Neural AI anything'].map(f => (
+              {['Signal Score per story', 'Neural AI per story', 'Project Idea Generator', 'Share card generator', 'Community Signal', 'Jargon of the week', 'Hype vs Reality', 'LinkedIn post generator'].map(f => (
                 <span className="cta-pill" key={f}>{f}</span>
               ))}
             </div>

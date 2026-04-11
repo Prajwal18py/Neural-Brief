@@ -34,7 +34,6 @@ const RSS_FEEDS = [
   { name: 'Reddit MachineLearning', url: 'https://www.reddit.com/r/MachineLearning/top/.rss?t=week' },
   { name: 'Reddit LocalLLaMA',      url: 'https://www.reddit.com/r/LocalLLaMA/top/.rss?t=week' },
   // Business angle
-  { name: 'CNBC Tech',              url: 'https://www.cnbc.com/id/19854910/device/rss/rss.html' },
 ]
 
 function isFresh(cachedAt) {
@@ -94,7 +93,6 @@ const SOURCE_WEIGHT = {
   'ZDNet AI':               2,
   'Mashable Tech':          2,
   'Analytics India':        2,
-  'CNBC Tech':              2,
   'Reuters Tech':           2,
   'Reddit MachineLearning': 2,
   'Reddit LocalLLaMA':      2,

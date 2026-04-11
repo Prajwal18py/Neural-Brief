@@ -26,7 +26,6 @@ const RSS_FEEDS = [
   { name: 'ZDNet AI',               url: 'https://www.zdnet.com/topic/artificial-intelligence/rss.xml' },
   { name: 'Mashable Tech',          url: 'https://mashable.com/feeds/rss/tech' },
   { name: 'arXiv AI',               url: 'https://rss.arxiv.org/rss/cs.AI' },
-  { name: 'CNBC Tech',              url: 'https://www.cnbc.com/id/19854910/device/rss/rss.html' },
 ]
 
 // ✅ Decode HTML entities in RSS titles
