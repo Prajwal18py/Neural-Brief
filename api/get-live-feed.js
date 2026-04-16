@@ -24,8 +24,6 @@ const RSS_FEEDS = [
   { name: 'Reuters Tech',           url: 'https://feeds.reuters.com/reuters/technologyNews' },
   { name: 'Ars Technica AI',        url: 'https://arstechnica.com/tag/ai/feed/' },
   { name: 'ZDNet AI',               url: 'https://www.zdnet.com/topic/artificial-intelligence/rss.xml' },
-  { name: 'Mashable Tech',          url: 'https://mashable.com/feeds/rss/tech' },
-  { name: 'arXiv AI',               url: 'https://rss.arxiv.org/rss/cs.AI' },
 ]
 
 // ✅ Decode HTML entities in RSS titles
