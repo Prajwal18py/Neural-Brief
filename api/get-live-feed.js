@@ -11,7 +11,8 @@ const parser   = new Parser({ timeout: 8000 })
 
 const RSS_FEEDS = [
   { name: 'TechCrunch AI',          url: 'https://techcrunch.com/category/artificial-intelligence/feed/' },
-  { name: 'HackerNews AI',          url: 'https://hnrss.org/frontpage?q=artificial+intelligence+OR+LLM+OR+GPT+OR+Claude+OR+Anthropic&points=50' },
+  { name: 'HackerNews AI',          url: 'https://hnrss.org/frontpage?q=artificial+intelligence+OR+LLM+OR+GPT+OR+Claude+OR+Anthropic&points=10' },
+  { name: 'HackerNews Claude',      url: 'https://hnrss.org/newest?q=Claude+OR+Anthropic&points=5' },
   { name: 'MIT Technology Review',  url: 'https://www.technologyreview.com/feed/' },
   { name: 'Anthropic News',         url: 'https://www.anthropic.com/news/rss.xml' },
   { name: 'OpenAI Blog',            url: 'https://openai.com/blog/rss.xml' },
