@@ -67,9 +67,21 @@ const AI_KEYWORDS = [
   'ai policy', 'ai funding', 'ai startup', 'ai tool',
 ]
 
+// Block low-quality story patterns
+const BLOCK_TITLE_PATTERNS = [
+  'i tried', 'i tested', 'i used', 'review:', 'hands-on', 'hands on',
+  'show hn:', 'ask hn:', 'tell hn:', 'who is hiring', 'seeking freelance',
+  'deal:', 'sale:', 'off right now', 'discount', 'coupon', 'promo',
+  'how to use', 'tutorial:', 'beginners guide', 'getting started with',
+  'vs.', ' vs ', 'compared to', 'best apps', 'best tools', 'top 10', 'top 5',
+  'opinion:', 'why i', 'here\'s why', 'unpopular opinion',
+]
+
 // Check if title is AI relevant
 function isAIRelevant(title) {
   const t = title.toLowerCase()
+  const blocked = BLOCK_TITLE_PATTERNS.some(p => t.includes(p))
+  if (blocked) return false
   return AI_KEYWORDS.some(kw => t.includes(kw))
 }
 
