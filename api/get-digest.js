@@ -201,7 +201,7 @@ async function fetchCommunitySignal() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'qwen/qwen3.6-27b',
         messages: [{ role: 'user', content: `Pick the BEST post from this list for an Indian CS/AI student (most insightful, not a beginner question, not a rant):
 ${postsText}
 
@@ -222,44 +222,22 @@ Return ONLY valid JSON:
 }
 
 async function callAI(prompt, maxTokens = 4000) {
-  try {
-    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
-      body: JSON.stringify({
-        model: 'qwen/qwen3.6-27b',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.35,
-        max_tokens: maxTokens,
-      }),
-    })
-    const data = await resp.json()
-    if (data?.choices?.[0]?.message?.content) {
-      console.log('✅ Groq response received')
-      return data.choices[0].message.content.trim()
-    }
-    console.log('⚠️ Groq failed:', JSON.stringify(data?.error))
-  } catch (e) { console.log('⚠️ Groq error:', e.message) }
-
-  if (!process.env.GEMINI_API_KEY) throw new Error('Groq failed and no GEMINI_API_KEY set')
-  console.log('🔄 Falling back to Gemini...')
-  try {
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.35, maxOutputTokens: maxTokens },
-        }),
-      }
-    )
-    const data = await resp.json()
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
-    if (text) { console.log('✅ Gemini fallback received'); return text.trim() }
-    throw new Error('Gemini returned empty response')
-  } catch (e) { throw new Error(`AI fallback failed: ${e.message}`) }
+  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+    body: JSON.stringify({
+      model: 'qwen/qwen3.6-27b',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.35,
+      max_tokens: maxTokens,
+    }),
+  })
+  const data = await resp.json()
+  if (data?.choices?.[0]?.message?.content) {
+    console.log('✅ Groq response received')
+    return data.choices[0].message.content.trim()
+  }
+  throw new Error(`Groq failed: ${JSON.stringify(data?.error)}`)
 }
 
 async function fetchGithubTrending() {
