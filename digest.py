@@ -158,7 +158,7 @@ Return ONLY valid JSON, no markdown backticks:
 }}"""
 
     resp = groq_client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="qwen/qwen3.6-27b",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.35,
         max_tokens=8000,
@@ -409,8 +409,3 @@ def run():
 
 if __name__ == "__main__":
     run()
-
-# ── .env needs ───────────────────────────────────────────────
-# GROQ_API_KEY, SUPABASE_URL, SUPABASE_KEY
-# BREVO_SMTP_LOGIN, BREVO_SMTP_KEY, BREVO_FROM_EMAIL
-# Cron: 30 3 * * 5 (every Friday 9am IST)

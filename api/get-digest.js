@@ -227,7 +227,7 @@ async function callAI(prompt, maxTokens = 4000) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'qwen/qwen3.6-27b',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.35,
         max_tokens: maxTokens,
