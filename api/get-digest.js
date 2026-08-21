@@ -201,7 +201,7 @@ async function fetchCommunitySignal() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
       body: JSON.stringify({
-        model: 'qwen/qwen3.6-27b',
+        model: 'llama-3.1-8b-instant',
         messages: [{ role: 'user', content: `Pick the BEST post from this list for an Indian CS/AI student (most insightful, not a beginner question, not a rant):
 ${postsText}
 
@@ -226,7 +226,7 @@ async function callAI(prompt, maxTokens = 4000) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
     body: JSON.stringify({
-      model: 'qwen/qwen3.6-27b',
+      model: 'llama-3.1-8b-instant',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.35,
       max_tokens: maxTokens,
@@ -285,7 +285,7 @@ async function fetchGithubTrending() {
 }
 
 async function summarise(stories) {
-  const text = stories.slice(0, 30).map((s, i) =>
+  const text = stories.slice(0, 20).map((s, i) =>
     `[${i+1}] ${s.source} | ${s.title}\n${s.description.slice(0, 80)}\n${s.link}`
   ).join('\n\n')
 
